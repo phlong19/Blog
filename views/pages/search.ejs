@@ -1,0 +1,161 @@
+<%- include('../components/header.ejs') %>
+</head>
+
+<%- include('../components/nav.ejs') %>
+
+<section class="featured-articles section section-header-offset">
+    <div class="featured-articles-container container d-grid">
+        <div class="featured-content d-grid">
+
+            <div class="headline-banner">
+                <h3 class="headline fancy-border">
+                    <span class="place-items-center">Search result: </span>
+                </h3>
+                <span class="headline-description">Co 8 bai viet lien quan den "key word"</span>
+            </div>
+
+            <a href="./post.html" class="article article-search article-search-1">
+                <img src="~/images/featured/featured-1.jpg" alt="" class="article-image">
+
+                <div class="article-data-container">
+
+                    <div class="article-data">
+                        <span>Dec 5th 2021</span>
+                        <span class="article-data-spacer"></span>
+                        <span>8 Min read</span>
+                    </div>
+                    <h3 class="title article-title">Is VR the future?</h3>
+                </div>
+            </a>
+
+            <a href="/post" class="article article-search article-search-2">
+                <img src="/images/featured/featured-2.jpg" alt="" class="article-image">
+                <div class="article-data-container">
+                    <div class="article-data">
+                        <span>Dec 6th 2021</span>
+                        <span class="article-data-spacer"></span>
+                        <span>4 Min read</span>
+                    </div>
+                    <h3 class="title article-title">Fine dining 101</h3>
+                </div>
+            </a>
+
+            <a href="/post" class="article article-search article-search-1">
+                <img src="/images/featured/featured-3.jpg" alt="" class="article-image">
+                <div class="article-data-container">
+                    <div class="article-data">
+                        <span>Dec 5th 2021</span>
+                        <span class="article-data-spacer"></span>
+                        <span>5 Min read</span>
+                    </div>
+                    <h3 class="title article-title">Natural fat burner</h3>
+                </div>
+            </a>
+
+            <a href="/post" class="article article-search article-search-2">
+                <img src="/images/featured/featured-3.jpg" alt="" class="article-image">
+                <div class="article-data-container">
+                    <div class="article-data">
+                        <span>Dec 5th 2021</span>
+                        <span class="article-data-spacer"></span>
+                        <span>5 Min read</span>
+                    </div>
+                    <h3 class="title article-title">Natural fat burner</h3>
+                </div>
+            </a>
+
+            <a href="/post" class="article article-search article-search-1">
+                <img src="/images/featured/featured-3.jpg" alt="" class="article-image">
+
+                <div class="article-data-container">
+
+                    <div class="article-data">
+                        <span>Dec 5th 2021</span>
+                        <span class="article-data-spacer"></span>
+                        <span>5 Min read</span>
+                    </div>
+
+                    <h3 class="title article-title">Natural fat burner</h3>
+
+                </div>
+            </a>
+
+            <a href="/post" class="article article-search article-search-2">
+                <img src="/images/featured/featured-3.jpg" alt="" class="article-image">
+
+                <div class="article-data-container">
+
+                    <div class="article-data">
+                        <span>Dec 5th 2021</span>
+                        <span class="article-data-spacer"></span>
+                        <span>5 Min read</span>
+                    </div>
+
+                    <h3 class="title article-title">Natural fat burner</h3>
+
+                </div>
+            </a>
+
+            <a href="/post" class="article article-search article-search-1">
+                <img src="/images/featured/featured-3.jpg" alt="" class="article-image">
+
+                <div class="article-data-container">
+
+                    <div class="article-data">
+                        <span>Dec 5th 2021</span>
+                        <span class="article-data-spacer"></span>
+                        <span>5 Min read</span>
+                    </div>
+
+                    <h3 class="title article-title">Natural fat burner</h3>
+
+                </div>
+            </a>
+
+            <a href="/post" class="article article-search article-search-2">
+                <img src="/images/featured/featured-3.jpg" alt="" class="article-image">
+
+                <div class="article-data-container">
+
+                    <div class="article-data">
+                        <span>Dec 5th 2021</span>
+                        <span class="article-data-spacer"></span>
+                        <span>5 Min read</span>
+                    </div>
+
+                    <h3 class="title article-title">Natural fat burner</h3>
+
+                </div>
+            </a>
+
+        </div>
+        <div class="sidebar d-grid">
+            ads ti le 1 doc = 3 ngang
+            <img id="doc" style="display: none;" src="https://i.pinimg.com/originals/35/1d/5e/351d5e3f0c8693ba7f1ea58bb7fc9d35.jpg" alt="">
+            <br>
+            <img id="doc1" style="display: none;" src="https://i.pinimg.com/originals/35/1d/5e/351d5e3f0c8693ba7f1ea58bb7fc9d35.jpg" alt="">
+
+            <img id="ngang" style="display: none;" src="https://gcoads.vn/wp-content/uploads/2022/07/chien-luoc-marketing-cua-shopee-7.jpg" alt="">
+            <img id="ngang1" style="display: none;" src="https://gcoads.vn/wp-content/uploads/2022/07/chien-luoc-marketing-cua-shopee-7.jpg" alt="">
+            <img id="ngang2" style="display: none;" src="https://gcoads.vn/wp-content/uploads/2022/07/chien-luoc-marketing-cua-shopee-7.jpg" alt="">
+
+            <script>
+                var ad = 3;
+                if (ad == 1) {
+                    document.getElementById('doc').style.display = "block";
+                    document.getElementById('doc1').style.display = "block";
+                }
+                if (ad == 2) {
+                    document.getElementById('ngang').style.display = "block";
+                    document.getElementById('ngang1').style.display = "block";
+                    document.getElementById('ngang2').style.display = "block";
+                }
+                if (ad == 3) {
+                    document.getElementById('ngang').style.display = "block";
+                }
+            </script>
+        </div>
+    </div>
+</section>
+
+<%- include('../components/footer.ejs') %>

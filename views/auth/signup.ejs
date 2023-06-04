@@ -1,0 +1,83 @@
+<%- include('../components/header.ejs') %>
+  <link rel="stylesheet" href="/css/auth.css">
+
+</head>
+
+  <%- include('../components/nav.ejs') %>
+  <div>
+    <form id="registerForm" class="formlogin" method="post" action="/auth/signup">
+        <div class="control"> <h1><%= pageTitle %></h1> </div>
+
+        <div class="control block-cube block-input">
+            <input for="name" class="form-control" placeholder='Tên tài khoản' aria-required="true">
+
+            <div class="bg-top">
+                <div class="bg-inner"></div>
+            </div>
+            <div class="bg-right">
+                <div class="bg-inner"></div>
+            </div>
+            <div class="bg">
+                <div class="bg-inner"></div>
+            </div>
+        </div>
+
+        <div class="control block-cube block-input form-floating">
+            <input for="email" class="form-control" placeholder="Email" aria-required="true" />
+
+            <div class="bg-top">
+                <div class="bg-inner"></div>
+            </div>
+            <div class="bg-right">
+                <div class="bg-inner"></div>
+            </div>
+            <div class="bg">
+                <div class="bg-inner"></div>
+            </div>
+        </div>
+
+        <div class="control block-cube block-input">
+            <input for="password" class="form-control" placeholder='Mật khẩu' type='password' aria-required="true">
+
+            <div class="bg-top">
+                <div class="bg-inner"></div>
+            </div>
+            <div class="bg-right">
+                <div class="bg-inner"></div>
+            </div>
+            <div class="bg">
+                <div class="bg-inner"></div>
+            </div>
+        </div>
+
+        <div class="control block-cube block-input">
+            <input for="confirmPassword" class="form-control" placeholder="Xác nhận mật khẩu" type="password" aria-required="true" />
+
+            <div class="bg-top">
+                <div class="bg-inner"></div>
+            </div>
+            <div class="bg-right">
+                <div class="bg-inner"></div>
+            </div>
+            <div class="bg">
+                <div class="bg-inner"></div>
+            </div>
+        </div>
+
+        <button id="registerSubmit" class='btn block-cube block-cube-hover' type='submit'>
+            <div class='bg-top'>
+                <div class='bg-inner'></div>
+            </div>
+            <div class='bg-right'>
+                <div class='bg-inner'></div>
+            </div>
+            <div class='bg'>
+                <div class='bg-inner'></div>
+            </div>
+            <div class='text'> Đăng ký </div>
+        </button>
+    </form>
+
+    <span class="text-danger" style="padding-bottom:20px"></span>
+</div>
+  <%- include('../components/footer.ejs') %>

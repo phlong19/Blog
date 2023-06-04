@@ -1,0 +1,86 @@
+<%- include('../components/header.ejs') %>
+  <link rel="stylesheet" href="/css/auth.css">
+
+</head>
+
+  <%- include('../components/nav.ejs') %>
+
+  <form id="account" class="formlogin" action="/auth/login" method="post">
+    <div class="control"> <h1> <%= pageTitle %> </h1> </div>
+
+    <div class="control block-cube block-input">
+        <input for="email" class="form-control" placeholder="Email" autocomplete="username" aria-required="true" />
+
+        <div class="bg-top">
+            <div class="bg-inner"></div>
+        </div>
+        <div class="bg-right">
+            <div class="bg-inner"></div>
+        </div>
+        <div class="bg">
+            <div class="bg-inner"></div>
+        </div>
+    </div>
+
+    <div class='control block-cube block-input'>
+        <input for="password" class="form-control" placeholder="Mật khẩu" autocomplete="current-password" aria-required="true" />
+
+        <div class="bg-top">
+            <div class="bg-inner"></div>
+        </div>
+        <div class="bg-right">
+            <div class="bg-inner"></div>
+        </div>
+        <div class="bg">
+            <div class="bg-inner"></div>
+        </div>
+    </div>
+
+    <div class='control block-cube block-input'>
+        <input type="checkbox" for="rememberme" id="remember" autofocus>
+        <label class="remember-label" for="rememberme" for="remember">Remember Me?<strong id="dots">&nbsp; · · · </strong></label>
+
+        <div class="modify-box">
+            <div class='bg-top'>
+                <div class='bg-inner'></div>
+            </div>
+            <div class='bg-right'>
+                <div class='bg-inner'></div>
+            </div>
+            <div class='bg'>
+                <div class='bg-inner'></div>
+            </div>
+        </div>
+    </div>
+
+    <button id="login-submit" class='btn block-cube block-cube-hover'>
+        <div class='bg-top'>
+            <div class='bg-inner'></div>
+        </div>
+        <div class='bg-right'>
+            <div class='bg-inner'></div>
+        </div>
+        <div class='bg'>
+            <div class='bg-inner'></div>
+        </div>
+        <div class='text'> Đăng nhập </div>
+    </button>
+
+    <div style="margin-top:30px;margin-bottom:25px">
+        <p>
+             <a id="forgot-password" href="/auth/reset-password">Gặp khó khăn?</a>
+        </p>
+        <p style ="margin-top:7px">
+            <a href="auth/signup" >Đăng ký tài khoản mới.</a>
+        </p>
+        <p style ="margin-top:7px">
+            <a id="resend-confirmation" href="/auth/resend-confirmation">Gửi lại xác nhận Email.</a>
+        </p>
+    </div>
+</form>
+
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+    <span asp-validation-for="Input.UserNameOrEmail" class="text-danger"></span>
+    <span asp-validation-for="Input.Password" class="text-danger"></span>
+
+<%- include('../components/footer.ejs') %>

@@ -1,0 +1,26 @@
+<%- include('../components/header.ejs') %>
+<link rel="stylesheet" href="/css/auth.css">
+</head>
+<%- include('../components/nav.ejs') %>
+
+<div class="onepage container formlogin">
+    <h1><%= pageTitle %></h1>
+    <h2>Nhập Email của bạn.</h2>
+    <hr />
+    <div class="row">
+        <div class="col-md-4">
+            <form method="post">
+                <div class="form-floating">
+                    <label for="email" class="form-label">Email</label>
+                    <input id="email" class="form-control" aria-required="true" />
+                    <span class="text-danger"></span>
+                </div>
+                <span class="btn-lm-middle">
+                    <button type="submit" class="learn-more">Resend confirmation.</button>
+                </span>
+            </form>
+        </div>
+    </div>
+</div>
+
+<%- include('../components/footer.ejs') %>
