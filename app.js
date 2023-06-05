@@ -31,8 +31,14 @@ app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, 'public')));
 
 // error pages
+
 app.use(errorController.get404);
 
-app.use(errorController.get500);
+app.use((error,req, res, next) => {
+  res.status(500).render('errors/500', {
+    pageTitle: '500',
+    errorMessage: 'error',
+  });
+});
 
 app.listen(3000);

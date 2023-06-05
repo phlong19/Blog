@@ -71,7 +71,7 @@
              <a id="forgot-password" href="/auth/reset-password">Gặp khó khăn?</a>
         </p>
         <p style ="margin-top:7px">
-            <a href="auth/signup" >Đăng ký tài khoản mới.</a>
+            <a href="/auth/signup" >Đăng ký tài khoản mới.</a>
         </p>
         <p style ="margin-top:7px">
             <a id="resend-confirmation" href="/auth/resend-confirmation">Gửi lại xác nhận Email.</a>
@@ -79,8 +79,6 @@
     </div>
 </form>
 
-    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-    <span asp-validation-for="Input.UserNameOrEmail" class="text-danger"></span>
-    <span asp-validation-for="Input.Password" class="text-danger"></span>
+    <div class="text-danger"></div>
 
 <%- include('../components/footer.ejs') %>
