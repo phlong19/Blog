@@ -1,0 +1,110 @@
+
+.table-responsive {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+table {
+  border-collapse: collapse;
+}
+.table {
+  width: 100%;
+  margin-bottom: 1rem;
+  color: #212529;
+}
+.table {
+  border-collapse: collapse !important;
+}
+.table thead th {
+  vertical-align: bottom;
+  border-bottom: 2px solid #dee2e6;
+}
+.table th,
+.table td {
+  padding: 0.75rem;
+  vertical-align: top;
+  border-top: 1px solid #dee2e6;
+}
+thead {
+  display: table-header-group;
+}
+.custom-table {
+  min-width: 900px;
+}
+.custom-table thead tr,
+.custom-table thead th {
+  border-top: none;
+  border-bottom: none !important;
+  color: var(--light-color); /* thead color */
+}
+.custom-table tbody th,
+.custom-table tbody td {
+  color: var(--light-color);
+  font-weight: 400;
+  padding-bottom: 20px;
+  padding-top: 20px;
+  font-weight: 300;
+}
+.custom-table tbody th small,
+.custom-table tbody td small {
+  color: var(--light-color-alt);
+  font-weight: 300;
+}
+.custom-table tbody tr:not(.spacer) {
+  border-radius: 7px;
+  overflow: hidden;
+  -webkit-transition: 0.3s all ease;
+  -o-transition: 0.3s all ease;
+  transition: 0.3s all ease;
+}
+.custom-table tbody tr:not(.spacer):hover {
+  -webkit-box-shadow: 0 2px 10px -5px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 10px -5px rgba(0, 0, 0, 0.1);
+}
+.custom-table tbody tr th,
+.custom-table tbody tr td {
+  background: var(--secondary-background-color); /* table's row background color */
+  border: none;
+  -webkit-transition: 0.3s all ease;
+  -o-transition: 0.3s all ease;
+  transition: 0.3s all ease;
+}
+.custom-table tbody tr th a,
+.custom-table tbody tr td a {
+  color: var(--light-color-alt) /* link color */
+}
+.custom-table tbody tr th:first-child,
+.custom-table tbody tr td:first-child {
+  border-top-left-radius: 0px;
+  border-bottom-left-radius: 0px;
+}
+.custom-table tbody tr th:last-child,
+.custom-table tbody tr td:last-child {
+  border-top-right-radius: 0px;
+  border-bottom-right-radius: 0px;
+}
+.custom-table tbody tr.spacer td {
+  padding: 0 !important;
+  height: 3px;
+  border-radius: 0 !important;
+  background: transparent !important;
+}
+.custom-table tbody tr.active th,
+.custom-table tbody tr.active td,
+.custom-table tbody tr:hover th,
+.custom-table tbody tr:hover td {
+  background: transparent;
+}
+.row {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -ms-flex-wrap: wrap;
+  flex-wrap: wrap;
+  margin-right: -15px;
+  margin-left: -15px;
+}
+.d-block {
+  display: block !important;
+}
