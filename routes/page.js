@@ -12,11 +12,11 @@ router.get('/search', pageController.getSearch);
 
 router.get('/categories', pageController.getCategories);
 
-router.get('/categories/:catId', pageController.getCategory);
+router.get('/categories/:slug', pageController.getCategory);
+
+router.get('/archive', pageController.getArchive);
 
 router.get('/contact', pageController.getContact);
-
-router.get('/account', pageController.getAccount);
 
 router.get('/about', pageController.getAbout);
 
