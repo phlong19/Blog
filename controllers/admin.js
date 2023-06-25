@@ -5,7 +5,7 @@ const User = require('../models/user');
 const { validationResult } = require('express-validator');
 const { deleteImage } = require('../middlewares/cloud');
 const slugify = require('slugify');
-const { default: mongoose, model } = require('mongoose');
+const mongoose = require('mongoose');
 
 const items_per_table = 10;
 
