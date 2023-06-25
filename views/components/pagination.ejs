@@ -1,0 +1,21 @@
+<div class="pagination-container">
+    <p>
+      <% if(sum>10) { %>
+        Viewing 10 of <span><%= sum %></span> entries.
+      <% } else{ %>
+        Viewing <%= sum %> of <span><%= sum %></span> entries.
+        <% } %>
+    </p>
+
+    <section class="pagination">
+      <% %>
+      <a href="">< previous</a>
+      <a href="?page=1">1</a>
+      <!-- <a href="?page=2">2</a> -->
+      ...
+      <a href="">23</a>
+      <a href="?page=4" class="active">24</a>
+      <a href="?page=25">25</a>
+      <a href="">next ></a>
+    </section>
+</div>

@@ -1,0 +1,49 @@
+<%- include('../components/header.ejs') %>
+
+</head>
+
+<%- include('../components/nav.ejs') %>
+<div class="section-header-offset custom-header">
+  <h2 class="title section-title" data-name="Archive">Archive</h2>
+  <h3>All posts sorted by date.</h3>
+</div>
+
+<section class="older-posts section">
+  <div class="container">
+    <div class="older-posts-grid-wrapper d-grid">
+      <% for (const post of posts) { %>
+      <a href="#" class="article d-grid">
+        <div class="older-posts-article-image-wrapper">
+          <img
+            src="<%= post.imageUrl %>"
+            alt="<%= post.slug %>"
+            class="article-image"
+          />
+        </div>
+
+        <div class="article-data-container">
+          <div class="article-data">
+            <span>
+              <%= post.updatedAt.toLocaleDateString('en-us',{
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric' }) %>
+            </span>
+            <span class="article-data-spacer"></span>
+            <span><%= post.like %> like.</span>
+          </div>
+
+          <h3 class="title article-title"><%= post.title %></h3>
+          <p class="article-description"><%= post.description%></p>
+        </div>
+      </a>
+      <% } %>
+    </div>
+    <%- include('../components/pagination.ejs') %>
+  </div>
+</section>
+
+<%- include('../components/footer.ejs') %>
+
+</body>
+</html>

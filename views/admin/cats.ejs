@@ -1,0 +1,137 @@
+<%- include('../components/header.ejs') %>
+    <link rel="stylesheet" href="/css/form.css">
+
+    <link rel="stylesheet" href="/css/table.css">
+
+    <link rel="stylesheet" href="/css/noti.css">
+</head>
+
+<%- include('../components/nav.ejs') %>
+    
+<%- include('../components/admin-header.ejs') %>
+    
+    <% if(error) {%>
+      <%- include('../components/notification.ejs', {
+        error: error,
+        errorType: errorType,
+        errorHeader: errorHeader }) %>
+    <% } %>
+
+    <%- include('../components/admin-nav.ejs') %>
+
+  <div class="tab-panels">
+
+    <section id="cats" class="tab-panel">
+      <div class="content">
+        <div class="container"><button class="open-modal">&plus; Create category</button>
+          <h2 class="mb-5">All categories</h2>
+          
+          <div class="table-responsive custom-table-responsive">
+                <div class="modal-content hidden-modal">
+                    <div class="modal-header">
+                        <h3>Create a new category.</h3>
+                        <button class="close-modal" title="Close">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                      <div class="formbold-main-wrapper">
+                        <div class="formbold-form-wrapper">
+                          <form id="form-category" action="/admin/manage/create-category" method="POST" enctype="multipart/form-data">
+                            <div class="formbold-mb-3">
+                              <div>
+                                <label for="name" class="formbold-form-label"> Name </label>
+                                <input
+                                  type="text"
+                                  name="name"
+                                  id="name"
+                                  placeholder="Category's name"
+                                  class="formbold-form-input"
+                                  required
+                                />
+                              </div>
+                            </div>
+                      
+                            <div class="formbold-mb-3">
+                              <label for="description" class="formbold-form-label">
+                                Description
+                              </label>
+                              <textarea
+                                rows="6"
+                                name="description"
+                                id="description"
+                                class="formbold-form-input"
+                                required
+                              ></textarea>
+                            </div>
+                      
+                            <div class="formbold-form-file-flex">
+                              <label for="image" class="formbold-form-label">
+                                Upload Category Thumbnail
+                              </label>
+                              <input
+                                type="file"
+                                name="image"
+                                id="image"
+                                class="formbold-form-file"
+                                required
+                              />
+                            </div>
+                      
+                            <button type="submit" class="formbold-btn">Create</button>
+                          </form>
+                        </div>
+                      </div>
+                    </div>
+                </div> 
+            <div class="blur-bg hidden-blur"></div>
+
+            <table class="table custom-table">
+              <thead>
+                <tr>  
+                    <th scope="col">#</th>
+                    <th scope="col">Name</th>
+                    <th scope="col" class="shorten">Image Url</th>
+                    <th scope="col">Description</th>
+                    <th scope="col">Create at</th>
+                    <th scope="col"></th>
+                </tr>
+              </thead>
+              <tbody>
+
+                <% for (let i = 0;i<categories.length;i++) { %>
+                  <tr>
+                    <th scope="row"><%= i+1 %></th>
+                    <td><%= categories[i].name %></td>
+                    <td class="shorten">
+                      <%= categories[i].imageUrl %>
+                    </td>
+                    <td><%= categories[i].description%></td>
+                    <td>
+                      <%= new Date(categories[i].createdAt.toString()).toLocaleDateString() %>
+                    </td>
+                    <td><a href="/admin/manage/details/<%= categories[i]._id %>?edit=category" class="list-link">Details</a></td>
+                    <tr class="spacer"><td colspan="100"></td></tr>
+                  </tr>
+                <% } %>
+
+              </tbody>
+            </table>
+            
+          </div>
+
+          <%- include('../components/pagination.ejs') %>
+
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+    
+<%- include('../components/footer.ejs') %>
+
+<script src="/js/form.js"></script>
+<script src="/js/noti.js"></script>
+
+</body>
+</html>

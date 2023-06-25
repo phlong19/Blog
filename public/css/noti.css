@@ -1,0 +1,128 @@
+:root {
+  --success-color: #18ee6a;
+  --info-color: #3b82f6;
+  --warning-color: #f59e0b;
+  --alert-color: #ef4444;
+}
+
+.toast {
+  position: absolute;
+  top: 25px;
+  right: 30px;
+  border-radius: 12px;
+  background: var(--light-color);
+  padding: 20px 35px 20px 25px;
+  box-shadow: 0 6px 20px -5px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  transform: translateX(calc(100% + 30px));
+  transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.35);
+}
+
+.toast.active {
+  transform: translateX(0%);
+}
+
+.toast .toast-content {
+  display: flex;
+  align-items: center;
+}
+
+.toast-content .check {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 35px;
+  min-width: 35px;
+  background-color: var(--success-color);
+  color: var(--light-color);
+  font-size: 20px;
+  border-radius: 50%;
+}
+
+.toast-content .check.info {
+  background-color: var(--info-color);
+}
+.toast .progress.info::before {
+  background-color: var(--info-color);
+}
+.toast-content .check.warning {
+  background-color: var(--warning-color);
+}
+.toast .progress.warning::before {
+  background-color: var(--warning-color);
+}
+.toast-content .check.alert {
+  background-color: var(--alert-color);
+}
+.toast .progress.alert::before {
+  background-color: var(--alert-color);
+}
+
+.toast-content .message {
+  display: flex;
+  flex-direction: column;
+  margin: 0 20px;
+}
+
+.message .text {
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--secondary-background-color);
+}
+
+.message .text.text-1 {
+  font-weight: 600;
+  color: var(--primary-background-color);
+}
+
+.toast .close {
+  position: absolute;
+  top: 10px;
+  right: 15px;
+  padding: 5px;
+  cursor: pointer;
+  opacity: 0.7;
+  color: var(--primary-background-color);
+}
+
+.toast .close:hover {
+  opacity: 1;
+}
+
+.toast .progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  width: 100%;
+}
+
+.toast .progress:before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  height: 100%;
+  width: 100%;
+  background-color: var(--success-color);
+}
+
+.progress.active:before {
+  animation: progress 5s linear forwards;
+}
+
+.progress.info.active:before {
+  animation: progress 5s linear forwards;
+}
+.progress.warning.active:before {
+  animation: progress 5s linear forwards;
+}
+.progress.alert.active:before {
+  animation: progress 5s linear forwards;
+}
+
+@keyframes progress {
+  100% {
+    right: 100%;
+  }
+}

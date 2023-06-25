@@ -4,7 +4,9 @@ const postSchema = new Schema(
   {
     title: { type: String, required: true },
     imageUrl: { type: String, required: true },
+    imageId: { type: String, required: true },
     content: { type: String, required: true },
+    description: { type: String, required: true },
     author: {
       type: Schema.Types.ObjectId,
       ref: 'User',
@@ -15,16 +17,17 @@ const postSchema = new Schema(
       {
         type: Schema.Types.ObjectId,
         ref: 'Category',
-        required: false,
+        required: true,
       },
     ],
-    // slug
+    slug: { type: String, required: true },
     // views
-    like: { type: Number, required: false },
+    like: { type: Number, required: true },
     comments: [
       {
         type: Schema.Types.ObjectId,
         ref: 'Comment',
+        required:false,
       },
     ],
   },

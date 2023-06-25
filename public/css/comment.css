@@ -1,0 +1,230 @@
+:root {
+  --reply-hover-color: #393939;
+  --comment-background-color:#ddd;
+  --text-input-color:#000;
+  --btn-54-color:#d5d5d5;
+  --btn-54-hover:#fff;
+}
+
+.comment-section {
+  padding: 20px;
+  border-radius: 5px;
+}
+
+.comment-section h3 {
+  color: var(--light-color);
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+.comment-form {
+  margin-bottom: 30px;
+}
+
+.comment-form div {
+  margin-bottom: 20px;
+}
+
+.comment-form label {
+  display: block;
+  margin-bottom: 5px;
+  font-size: 16px;
+  color: var(--light-color);
+}
+
+.comment-form label.write-comment {
+  font-size: var(--font-size-md);
+}
+
+.comment-form input[type='text'],
+.comment-form input[type='email'],
+.comment-form textarea {
+  display: block;
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 20px;
+  border-radius: 12px;
+  border: 1px solid #e5e5e5;
+  font-size: 16px;
+  color: var(--text-input-color);
+  background-color: var(--comment-background-color);
+  border: 0.5px solid black;
+}
+
+.comment-form textarea {
+  font-family: var(--font-family);
+  min-height: 120px;
+  line-height: 2.2rem;
+}
+
+.comment-list {
+  list-style: none;
+  padding-left: 0;
+}
+
+.comment {
+  display: flex;
+  margin-bottom: 5px;
+  position: relative;
+}
+
+.comment-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  margin-right: 20px;
+}
+
+.comment-content {
+  flex: 1;
+}
+
+.comment-author-name {
+  margin: 0 0 5px;
+  font-size: 18px;
+  font-weight: bold;
+  color: var(--light-color);
+}
+
+.comment-time-posted {
+  font-size: 14px;
+  color: var(--light-color-alt);
+  margin-bottom: 5px;
+  display: block;
+}
+
+.comment-text {
+  margin: 0 0 10px;
+  font-size: 16px;
+  color: var(--light-color);
+}
+
+.comment-reply-list:before {
+  content: '';
+  position: absolute;
+  top: 10px;
+  left: -20px;
+  width: 0;
+  height: 0;
+  border-top: 10px solid transparent;
+  border-bottom: 10px solid transparent;
+  border-right: 10px solid #e5e5e5;
+}
+
+.comment-reply-list {
+  margin-left: 70px;
+  padding-left: 15px;
+  border-left: 1px solid var(--light-color-alt);
+  position: relative;
+}
+
+.reply-button {
+  padding: 10px 20px;
+  background-color: var(--secondary-background-color);
+  color: var(--light-color);
+  border-radius: 5px;
+  font-size: 16px;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+
+.reply-button:hover {
+  background-color: var(--reply-hover-color);
+}
+
+.reply-form {
+  position: relative;
+  z-index: 1;
+  padding: 10px 20px 0;
+  background-color: var(--primary-background-color);
+  border: 1px solid var(--light-color-alt);
+  border-radius: 5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  display: none;
+}
+
+.reply-form-inputs {
+  display: flex;
+}
+
+.reply-form-inputs div {
+  flex: 1;
+  margin-right: 10px;
+}
+
+.reply-form-buttons {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+  font-size: 16px;
+  color: var(--light-color);
+}
+
+.post-reply-button {
+  background-color: var(--secondary-background-color);
+  cursor: pointer;
+  margin-right: 10px;
+  padding: 10px 11px;
+  border-radius: 8px;
+}
+
+.post-reply-button:hover {
+  background-color: var(--reply-hover-color);
+}
+
+.cancel-reply-button {
+  padding: 10px 20px;
+  cursor: pointer;
+  background-color: var(--secondary-background-color);
+  border-radius: 8px;
+}
+
+.cancel-reply-button:hover {
+  background-color: var(--reply-hover-color);
+}
+
+.total-comment {
+  color: var(--light-color-alt);
+  font-size: var(--font-size-sm);
+}
+
+@media screen and (min-width: 1024px) {
+  .reply-form {
+    max-width: 67%;
+  }
+}
+/* BUTTON POST */
+
+.button-54 {
+  font-size: 16px;
+  letter-spacing: 2px;
+  text-decoration: none;
+  color: var(--btn-54-color);
+  cursor: pointer;
+  border: 3px solid;
+  padding: 0.25em 0.5em;
+  box-shadow: 1px 1px 0px 0px, 2px 2px 0px 0px, 3px 3px 0px 0px, 4px 4px 0px 0px,
+    5px 5px 0px 0px;
+  position: relative;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: manipulation;
+}
+
+.button-54:hover {
+  color: var(--btn-54-hover);
+}
+
+.button-54:active {
+  box-shadow: 0px 0px 0px 0px;
+  top: 5px;
+  left: 5px;
+}
+
+@media (min-width: 768px) {
+  .button-54 {
+    padding: 0.25em 0.75em;
+    float: right;
+    margin-right: 10px;
+  }
+}

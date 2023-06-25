@@ -1,0 +1,161 @@
+<%- include('../components/header.ejs') %>
+
+<link rel="stylesheet" href="/css/form.css">
+
+</head>
+
+<%- include('../components/nav.ejs') %>
+
+<div class="section-header-offset container">
+
+    <h1>Edit <%= edit %> </h1>
+    <br>
+    <% if (edit==='post') {%>
+        <form action="/admin/manage/update-post/<%= post._id %>" method="POST" enctype="multipart/form-data">
+
+        <div class="formbold-mb-3">
+          <div>
+            <label for="title" class="formbold-form-label"> Title </label>
+            <input
+              type="text"
+              name="title"
+              id="title"
+              placeholder="Your post's title"
+              class="formbold-form-input"
+              autofocus
+              value="<%= post.title %>"
+            />
+          </div>
+        </div>
+  
+        <div class="formbold-mb-3">
+          <label for="des" class="formbold-form-label"> Description: </label>
+          <input
+            type="text"
+            name="description"
+            id="description"
+            class="formbold-form-input" 
+            value="<%= post.description %>"
+          />
+        </div>
+  
+        <div class="formbold-mb-3">
+          <label for="cats" class="formbold-form-label"> Categories </label>
+
+          <% for (const cat of categories) { %>
+            <input type="checkbox" class="larger"
+              name="catIds" 
+              id="<%= cat.name %>" 
+              value="<%= cat._id %>" 
+              <%= postCatIds.includes(cat._id.toString()) ? 'checked' : '' %> > 
+            <label for="<%= cat.name %>"><%= cat.name %></label>
+          <% } %>
+
+        </div>
+        
+        <div class="formbold-mb-3">
+          <label for="content" class="formbold-form-label">
+            Content
+          </label>
+          <textarea
+            rows="6"
+            name="content"
+            id="content"
+            class="formbold-form-input"> <%= post.content %></textarea>
+        </div>
+        
+        <div class="formbold-mb-3">
+          <div>
+              <label class="formbold-form-label">Publish</label>
+  
+              <select class="formbold-form-input" name="published" id="published">
+                <option value="1">Yes!</option>
+                <option value="0">Nah, not yet.</option>
+              </select>
+          </div>
+        </div>
+
+        <div style="max-width: 750px;" class="formbold-mb-3">
+          <label class="formbold-form-label">Current Thumbnail Image </label>
+          <img  src="<%= post.imageUrl %>" alt="">
+        </div>
+
+        <div class="formbold-form-file-flex">
+          <label for="image" class="formbold-form-label">
+            Upload New Thumbnail Image (Optional)
+          </label>
+          <input
+            type="file"
+            name="image"
+            id="image"
+            class="formbold-form-file"
+          />
+        </div>
+
+        <button type="submit" class="formbold-btn">Update post</button>
+        </form>
+        <form action="/admin/manage/delete/<%= post._id %>?delete=post" method="post">
+          <input type="hidden" name="id" value="<%= post._id %>">
+          <button type="submit" class="formbold-btn-delete">Delete</button>
+        </form>
+    <% } %>
+
+    <% if (edit==='category') {%>
+        <form action="/admin/manage/update-category/<%= category._id%>" method="POST" enctype="multipart/form-data">
+            <div class="formbold-mb-3">
+              <div>
+                <label for="name" class="formbold-form-label"> Name </label>
+                <input
+                  type="text"
+                  name="name"
+                  id="name"
+                  placeholder="Category's name"
+                  class="formbold-form-input"
+                  value="<%= category.name %>"
+                />
+              </div>
+            </div>
+      
+            <div class="formbold-mb-3">
+              <label for="description" class="formbold-form-label">
+                Description
+              </label>
+              <textarea
+                rows="6"
+                name="description"
+                id="description"
+                class="formbold-form-input"
+              ><%= category.description%></textarea>
+            </div>
+
+            <div style="max-width: 750px;" class="formbold-mb-3">
+              <label class="formbold-form-label">Current Thumbnail Image </label>
+              <img  src="<%= category.imageUrl %>" alt="">
+            </div>
+
+            <div class="formbold-form-file-flex">
+              <label for="image" class="formbold-form-label">
+                Upload New Category Thumbnail (Optional)
+              </label>
+              <input
+                type="file"
+                name="image"
+                id="image"
+                class="formbold-form-file"
+              />
+            </div>
+      
+            <button type="submit" class="formbold-btn">Update</button>
+        </form>
+        <form action="/admin/manage/delete/<%= category._id %>?delete=category" method="post">
+          <input type="hidden" name="id" value="<%= category._id %>">
+          <button type="submit" class="formbold-btn-delete">Delete</button>
+        </form>
+    <% } %>
+    
+    <% if (edit==='user') {%>
+        <!-- user form -->
+    <% } %>
+</div>
+<br><br>
+

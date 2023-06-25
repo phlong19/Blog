@@ -1,11 +1,34 @@
 <%- include('../components/header.ejs') %>
-
+    <link rel="stylesheet" href="/css/pages.css">
 </head>
 
 <%- include('../components/nav.ejs') %>
-    <div class="section-header-offset">
-        Views all categories page.
+    <div class="section-header-offset custom-header">
+        <h2 class="title section-title" data-name="Views all categories">Categories.</h2>
     </div>
+    <div class="wrapper">
+        <div class="cols">
+            <% for (const cat of categories) { %>
+                <div class="col" ontouchstart="this.classList.toggle('hover');">
+                    <div class="container">
+                        <div class="front" style="background-image: url(<%= cat.imageUrl %>)">
+                            <div class="inner">
+                                <p><%= cat.name %></p>
+                            </div>
+                        </div>
+                        <div class="back">
+                            <div class="inner">
+                            <p><%= cat.description %> </p>
+                            <br>
+                            <a class="button-54" href="/categories/<%= cat.slug %>" role="button">Views all -></a>
+                        </div>
+                        </div>
+                    </div>
+                </div>
+            <% } %>
+        </div>
+    </div>
+       
 <%- include('../components/footer.ejs') %>
     
 </body>

@@ -1,7 +1,14 @@
+/* table */
+.content {
+  padding: 1.5rem 0;
+}
 
 .table-responsive {
-  display: block;
   width: 100%;
+  margin-top: 30px;
+  display: flex;
+  justify-content: center;
+  /* align-items: center; */
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
@@ -64,7 +71,9 @@ thead {
 }
 .custom-table tbody tr th,
 .custom-table tbody tr td {
-  background: var(--secondary-background-color); /* table's row background color */
+  background: var(
+    --secondary-background-color
+  ); /* table's row background color */
   border: none;
   -webkit-transition: 0.3s all ease;
   -o-transition: 0.3s all ease;
@@ -72,7 +81,7 @@ thead {
 }
 .custom-table tbody tr th a,
 .custom-table tbody tr td a {
-  color: var(--light-color-alt) /* link color */
+  color: var(--light-color-alt); /* link color */
 }
 .custom-table tbody tr th:first-child,
 .custom-table tbody tr td:first-child {
@@ -107,4 +116,63 @@ thead {
 }
 .d-block {
   display: block !important;
+}
+
+/*
+ Styling
+*/
+.tabset {
+  padding: 0 0 1.5rem 1.5rem;
+}
+
+.tabset a {
+  position: relative;
+  display: inline-block;
+  padding: 15px 25px 25px;
+  border: 1px solid transparent;
+  border-bottom: 0;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.tabset a::after {
+  content: '';
+  position: absolute;
+  left: 15px;
+  bottom: 10px;
+  width: 22px;
+  height: 4px;
+  background: #8d8d8d;
+  padding-left: 10px;
+  margin-left: 10px;
+}
+
+.tabset a:hover,
+.tabset a.active {
+  /* color: #06c; */
+  color: var(--light-color);
+}
+
+.tabset a:hover::after,
+.tabset a.active::after {
+  /* background: #06c; */
+  background: var(--gradient-color);
+}
+
+.tabset a.active {
+  border-color: #ccc;
+  border-bottom: 1px solid #fff;
+  margin-bottom: -1px;
+}
+
+.shorten {
+  max-width: 400px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.shorten-250 {
+  max-width: 250px;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }

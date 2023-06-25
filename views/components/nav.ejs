@@ -10,13 +10,20 @@
     <div class="menu" id="menu">
       <ul class="list">
         <li class="list-item screen-lg-hidden">
-          <a href="/auth/login" class="list-link" > Login </a>
+          <% if(!isAuthenticated) { %>
+            <a href="/auth/login" class="list-link" > Login </a>
+          <% } else { %>
+            <a href="/auth/manage" class="list-link">username</a>
+          <% } %>
         </li>
         <li class="list-item">
-          <a href="/admin/manage" class="list-link">Manage</a>
+          <a href="/admin/manage/posts" class="list-link">Manage</a>
         </li>
         <li class="list-item">
           <a href="/categories" class="list-link">Categories</a>
+        </li>
+        <li class="list-item">
+          <a href="/archive" class="list-link">Archive</a>
         </li>
         <li class="list-item">
           <a href="/about" class="list-link">About</a>
@@ -24,6 +31,11 @@
         <li class="list-item">
           <a href="/contact" class="list-link">Contact</a>
         </li>
+        <% if(isAuthenticated) { %>
+          <li class="list-item screen-lg-hidden">
+            <a href="/auth/logout" class="list-link">Logout</a>
+          </li>
+        <% } %>
       </ul>
     </div>
 
@@ -46,10 +58,15 @@
       </button>
 
       <!-- Authenticate -->
-      <a href="/auth/login" class="list-link screen-sm-hidden">Login</a>
-      <a href="/auth/signup"
-        class="btn sign-up-btn fancy-border screen-sm-hidden"> <span>Sign up</span>
-      </a>
+      <% if(!isAuthenticated) { %>
+        <a href="/auth/login" class="list-link screen-sm-hidden">Login</a>
+        <a href="/auth/signup"
+          class="btn sign-up-btn fancy-border screen-sm-hidden"> <span>Sign up</span>
+        </a>
+      <% } else { %>
+        <a href="/auth/manage" class="list-link screen-sm-hidden">username</a>
+        <a href="/auth/logout" class="list-link screen-sm-hidden">Logout</a>
+      <% } %>
     </div>
   </nav>
 </header>
@@ -57,7 +74,7 @@
 <!-- Search box -->
 <div class="search-form-container container" id="search-form-container">
   <div class="form-container-inner">
-    <form action="" class="form">
+    <form  action="post" class="form">
       <input
         class="form-input"
         type="text"
