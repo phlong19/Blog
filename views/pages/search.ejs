@@ -1,167 +1,64 @@
 <%- include('../components/header.ejs') %>
+
+<link rel="stylesheet" href="/css/noti.css">
+
 </head>
 
 <%- include('../components/nav.ejs') %>
 
+  <% if(error) {%>
+    <%- include('../components/notification.ejs') %>
+  <% } %>
+
+  <div class="section-header-offset custom-header">
+      <small style="font-size: var(--font-size-xsm);">If sometimes it's not working properly. Please be sympathetic to me!</small>
+      <h2 class="title section-title" data-name="<%= pageTitle %> "><%= pageTitle %></h2>
+       <br>
+      <h3>There is <%= sumResult %> result related to "<%= keyword %>" . . .<h3>
+  </div>
+
 <section class="older-posts section">
     <div class="container">
-      <h2 class="title section-title" data-name="Searching result">Searching result</h2>
-        <h3>There is 6 result related to "keyword" . . .</h3>
       <div class="older-posts-grid-wrapper d-grid">
-        <a href="#" class="article d-grid">
-          <div class="older-posts-article-image-wrapper">
-            <img
-              src="/images/older_posts/older_posts_1.jpg"
-              alt=""
-              class="article-image"
-            />
-          </div>
-  
-          <div class="article-data-container">
-            <div class="article-data">
-              <span>23 Dec 2021</span>
-              <span class="article-data-spacer"></span>
-              <span>3 Min read</span>
-            </div>
-  
-            <h3 class="title article-title">Sample article title</h3>
-            <p class="article-description">
-              Lorem, ipsum dolor sit amet consectetur adipisicing elit. Similique
-              a tempore sapiente corporis, eaque fuga placeat odit voluptatibus.
-            </p>
-          </div>
-        </a>
-  
-        <a href="#" class="article d-grid">
-          <div class="older-posts-article-image-wrapper">
-            <img
-              src="/images/older_posts/older_posts_2.jpg"
-              alt=""
-              class="article-image"
-            />
-          </div>
-  
-          <div class="article-data-container">
-            <div class="article-data">
-              <span>23 Dec 2021</span>
-              <span class="article-data-spacer"></span>
-              <span>3 Min read</span>
-            </div>
-  
-            <h3 class="title article-title">Sample article title</h3>
-            <p class="article-description">
-              Lorem, ipsum dolor sit amet consectetur adipisicing elit. Similique
-              a tempore sapiente corporis, eaque fuga placeat odit voluptatibus.
-            </p>
-          </div>
-        </a>
-  
-        <a href="#" class="article d-grid">
-          <div class="older-posts-article-image-wrapper">
-            <img
-              src="/images/older_posts/older_posts_3.jpg"
-              alt=""
-              class="article-image"
-            />
-          </div>
-  
-          <div class="article-data-container">
-            <div class="article-data">
-              <span>23 Dec 2021</span>
-              <span class="article-data-spacer"></span>
-              <span>3 Min read</span>
-            </div>
-  
-            <h3 class="title article-title">Sample article title</h3>
-            <p class="article-description">
-              Lorem, ipsum dolor sit amet consectetur adipisicing elit. Similique
-              a tempore sapiente corporis, eaque fuga placeat odit voluptatibus.
-            </p>
-          </div>
-        </a>
-  
-        <a href="#" class="article d-grid">
-          <div class="older-posts-article-image-wrapper">
-            <img
-              src="/images/older_posts/older_posts_4.jpg"
-              alt=""
-              class="article-image"
-            />
-          </div>
-  
-          <div class="article-data-container">
-            <div class="article-data">
-              <span>23 Dec 2021</span>
-              <span class="article-data-spacer"></span>
-              <span>3 Min read</span>
-            </div>
-  
-            <h3 class="title article-title">Sample article title</h3>
-            <p class="article-description">
-              Lorem, ipsum dolor sit amet consectetur adipisicing elit. Similique
-              a tempore sapiente corporis, eaque fuga placeat odit voluptatibus.
-            </p>
-          </div>
-        </a>
-  
-        <a href="#" class="article d-grid">
-          <div class="older-posts-article-image-wrapper">
-            <img
-              src="/images/older_posts/older_posts_5.jpg"
-              alt=""
-              class="article-image"
-            />
-          </div>
-  
-          <div class="article-data-container">
-            <div class="article-data">
-              <span>23 Dec 2021</span>
-              <span class="article-data-spacer"></span>
-              <span>3 Min read</span>
-            </div>
-  
-            <h3 class="title article-title">Sample article title</h3>
-            <p class="article-description">
-              Lorem, ipsum dolor sit amet consectetur adipisicing elit. Similique
-              a tempore sapiente corporis, eaque fuga placeat odit voluptatibus.
-            </p>
-          </div>
-        </a>
-  
-        <a href="#" class="article d-grid">
-          <div class="older-posts-article-image-wrapper">
-            <img
-              src="/images/older_posts/older_posts_6.jpg"
-              alt=""
-              class="article-image"
-            />
-          </div>
-  
-          <div class="article-data-container">
-            <div class="article-data">
-              <span>23 Dec 2021</span>
-              <span class="article-data-spacer"></span>
-              <span>3 Min read</span>
-            </div>
-  
-            <h3 class="title article-title">Sample article title</h3>
-            <p class="article-description">
-              Lorem, ipsum dolor sit amet consectetur adipisicing elit. Similique
-              a tempore sapiente corporis, eaque fuga placeat odit voluptatibus.
-            </p>
-          </div>
-        </a>
-      </div>
-  
-      <div class="see-more-container">
-        <a href="/archive" class="btn see-more-btn place-items-center"
-          >See more <i class="ri-arrow-right-s-line"></i
-        ></a>
+        <% if(Array.isArray(posts) && posts.length>0) { %>
+          <% for(let i=0;i<posts.length;i++) { %>
+            <% const post = posts[i]; %>
+            <a href="/post/<%= post.slug %>" class="article d-grid">
+              <div class="older-posts-article-image-wrapper">
+                <img
+                  src="<%= post.imageUrl %>"
+                  alt=""
+                  class="article-image"
+                />
+              </div>
+      
+              <div class="article-data-container">
+                <div class="article-data">
+                  <span>
+                    <%= post.updatedAt.toLocaleDateString('en-us',{
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric', }) %>
+                  </span>
+                  <span class="article-data-spacer"></span>
+                  <span><%= post.like %> likes.</span>
+                </div>
+      
+                <h3 class="title article-title"><%= post.title %></h3>
+                <p class="article-description">
+                  <%= post.description %>
+                </p>
+              </div>
+            </a>
+          <% } %>
+        <% } %>
       </div>
     </div>
   </section>
 
 <%- include('../components/footer.ejs') %>
-    
+
+<script src="/js/noti.js"></script>
+
 </body>
 </html>

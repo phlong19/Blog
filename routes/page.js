@@ -1,12 +1,22 @@
 const express = require('express');
 
 const pageController = require('../controllers/page');
+const { body } = require('express-validator');
 
 const router = express.Router();
 
 router.get('/', pageController.getIndex);
 
-router.get('/post', pageController.getPostDetails);
+router.get('/post/:slug', pageController.getPostDetails);
+
+router.post(
+  '/search',
+  body('keyword')
+    .trim()
+    .isLength({ min: 7 })
+    .withMessage('Please type the keyword be more specific.'),
+  pageController.postSearch
+);
 
 router.get('/search', pageController.getSearch);
 

@@ -1,0 +1,107 @@
+<%- include('../components/header.ejs') %>
+  <link rel="stylesheet" href="/css/auth.css">
+
+  <link rel="stylesheet" href="/css/noti.css">
+
+</head>
+
+  <%- include('../components/nav.ejs') %>
+
+    <% if(error) { %>
+        <%- include('../components/notification.ejs') %>
+    <% } %>
+    
+    <form class="formlogin" id="formlogin" method="post" action="/auth/register">
+        <div class="control"> <h1><%= pageTitle %> <i class="ri-information-line" title="Hover in those boxes to learn about its requirements."></i></h1> </div>
+
+        <div class="control block-cube block-input" title="Username length is 5-15 characters and only can contain text and numbers.">
+            <input type="text" name="name" class="form-control" placeholder="Username" required>
+
+            <div class="bg-top">
+                <div class="bg-inner"></div>
+            </div>
+            <div class="bg-right">
+                <div class="bg-inner"></div>
+            </div>
+            <div class="bg">
+                <div class="bg-inner"></div>
+            </div>
+        </div>
+
+        <div class="control block-cube block-input form-floating" title="Valid email address to verify your account.">
+            <input type="email" name="email" class="form-control" placeholder="Email" required />
+
+            <div class="bg-top">
+                <div class="bg-inner"></div>
+            </div>
+            <div class="bg-right">
+                <div class="bg-inner"></div>
+            </div>
+            <div class="bg">
+                <div class="bg-inner"></div>
+            </div>
+        </div>
+
+        <div class="control block-cube block-input" title="Password length is 8-20 characters and must contain 1 Uppercase, 1 Number, 1 Symbol.">
+            <input name="password" class="form-control" placeholder="Password" type="password" id="password" required>
+
+            <div class="bg-top">
+                <div class="bg-inner"></div>
+            </div>
+            <div class="bg-right">
+                <div class="bg-inner"></div>
+            </div>
+            <div class="bg">
+                <div class="bg-inner"></div>
+            </div>
+        </div>
+
+        <div class="control block-cube block-input">
+            <input name="confirmPassword" class="form-control" placeholder="Confirm password" id="confirmPassword" type="password" required />
+
+            <div class="bg-top">
+                <div class="bg-inner"></div>
+            </div>
+            <div class="bg-right">
+                <div class="bg-inner"></div>
+            </div>
+            <div class="bg">
+                <div class="bg-inner"></div>
+            </div>
+        </div>        
+
+        <button class="btn block-cube block-cube-hover" type="submit">
+            <div class="bg-top">
+                <div class="bg-inner"></div>
+            </div>
+            <div class="bg-right">
+                <div class="bg-inner"></div>
+            </div>
+            <div class="bg">
+                <div class="bg-inner"></div>
+            </div>
+            <div class="text"> Register </div>
+        </button>
+    </form>
+    
+    <div id="checkPass" style="display: none;text-align: center;padding-bottom: 20px;">
+        <h3 style="color: rgba(255, 35, 35, 0.877);font-weight: 300;">Password does not match.</h3>
+    </div>
+
+<%- include('../components/footer.ejs') %>
+  <script src="/js/noti.js"></script>
+    <script>
+        const password = document.getElementById('password');
+        const confirmPassword = document.getElementById('confirmPassword');
+        const check = document.getElementById('checkPass');
+        
+        confirmPassword.addEventListener('change', function() {
+            if(password.value !== confirmPassword.value) {
+                check.style.display = "block";
+            } else {
+                check.style.display = "none";
+            }
+        });
+    </script>
+</body>
+</html>

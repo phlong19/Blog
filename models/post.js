@@ -20,14 +20,14 @@ const postSchema = new Schema(
         required: true,
       },
     ],
-    slug: { type: String, required: true },
+    slug: { type: String, required: true, unique: true },
     // views
     like: { type: Number, required: true },
     comments: [
       {
         type: Schema.Types.ObjectId,
         ref: 'Comment',
-        required:false,
+        required: false,
       },
     ],
   },

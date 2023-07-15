@@ -10,10 +10,7 @@
 <%- include('../components/admin-header.ejs') %>
     
     <% if(error) {%>
-      <%- include('../components/notification.ejs', {
-        error: error,
-        errorType: errorType,
-        errorHeader: errorHeader }) %>
+      <%- include('../components/notification.ejs')%>
     <% } %>
 
     <%- include('../components/admin-nav.ejs') %>

@@ -60,8 +60,8 @@
       <!-- Authenticate -->
       <% if(!isAuthenticated) { %>
         <a href="/auth/login" class="list-link screen-sm-hidden">Login</a>
-        <a href="/auth/signup"
-          class="btn sign-up-btn fancy-border screen-sm-hidden"> <span>Sign up</span>
+        <a href="/auth/register"
+          class="btn sign-up-btn fancy-border screen-sm-hidden"> <span>Register</span>
         </a>
       <% } else { %>
         <a href="/auth/manage" class="list-link screen-sm-hidden">username</a>
@@ -74,12 +74,16 @@
 <!-- Search box -->
 <div class="search-form-container container" id="search-form-container">
   <div class="form-container-inner">
-    <form  action="post" class="form">
+    <form action="/search" method="post" class="form">
       <input
         class="form-input"
         type="text"
+        name="keyword"
         placeholder="What are you looking for?"
+        required
+        autofocus
       />
+      
       <button class="btn form-btn" type="submit">
         <i class="ri-search-line"></i>
       </button>

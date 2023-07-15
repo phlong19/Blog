@@ -24,3 +24,5 @@ closeIcon.addEventListener('click', () => {
   clearTimeout(timer1);
   clearTimeout(timer2);
 });
+
+
