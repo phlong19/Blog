@@ -16,16 +16,16 @@ router.post(
   [
     body('title')
       .trim()
-      .isLength({ min: 5, max: 25 })
+      .isLength({ min: 30, max: 70 })
       .withMessage('Title must have at least 5-25 characters.'),
     body('description')
       .trim()
-      .isLength({ min: 8, max: 175 })
-      .withMessage('Description must have at least 50-175 characters.'),
+      .isLength({ min: 100, max: 175 })
+      .withMessage('Description must have at least 100-175 characters.'),
     body('content')
       .trim()
-      .isLength({ min: 10 })
-      .withMessage("Post's content must have at least 500 characters."), //min 500
+      .isLength({ min: 1000 })
+      .withMessage("Post's content must have at least 1000 characters."),
     body('catIds')
       .notEmpty()
       .isArray({ min: 2 })
@@ -47,7 +47,7 @@ router.post(
       .withMessage('length 4-20.'),
     body('description')
       .trim()
-      .isLength({ min: 30, max: 255 })
+      .isLength({ min: 150, max: 255 })
       .withMessage('Length 30-255'),
   ],
   adminController.createCategory
@@ -60,13 +60,35 @@ router.get('/users', adminController.getUsersManage);
 router.get('/comments', adminController.getCommentsManage);
 
 // Details
-router.get('/details/:id', adminController.getDetails);
+router.get('/details/:slug', adminController.getDetails);
 
 // Update routes
-// router.post('/update-post/:id', uploadPosts.single('image'), []);
+router.post(
+  '/update-post/',
+  uploadPosts.single('image'),
+  [
+    body('title')
+      .trim()
+      .isLength({ min: 5, max: 40 })
+      .withMessage('Title must have at least 5-25 characters.'),
+    body('description')
+      .trim()
+      .isLength({ min: 8, max: 175 })
+      .withMessage('Description must have at least 50-175 characters.'),
+    body('content')
+      .trim()
+      .isLength({ min: 10 })
+      .withMessage("Post's content must have at least 500 characters."),
+    body('catIds')
+      .notEmpty()
+      .isArray({ min: 2 })
+      .withMessage('At least 2 categories must be selected.'),
+  ],
+  adminController.updatePost
+);
 
 router.post(
-  '/update-category/:id',
+  '/update-category/',
   uploadCategories.single('image'),
   [
     check('name')

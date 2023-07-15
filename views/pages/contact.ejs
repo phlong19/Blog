@@ -1,12 +1,61 @@
 <%- include('../components/header.ejs') %>
-
+    <link rel="stylesheet" href="/css/about.css">
 </head>
 
 <%- include('../components/nav.ejs') %>
-    <div class="section-header-offset">
-        Contact me page.
+    <div class="section-header-offset custom-header" style="padding-bottom: 35px;">
+        <h2 class="title section-title" data-name="Contact me">Contact me</h2>   
     </div>
-<%- include('../components/footer.ejs') %>
+
+    <div class="background">
+        <div class="container-contact">
+          <div class="screen">
+            <div class="screen-header">
+              <div class="screen-header-left">
+                <div class="screen-header-button close"></div>
+                <div class="screen-header-button maximize"></div>
+                <div class="screen-header-button minimize"></div>
+              </div>
+              
+            </div>
+            <div class="screen-body">
+              <div class="screen-body-item left">
+                <div class="app-contact">Contact info : +8498 726 3031</div>
+              </div>
+              <div class="screen-body-item" style="flex: 1.63;">
+                <div class="app-form">
+                    <form action="" method="post">
+                        <div class="app-form-group">
+                            <label for="name" class="formbold-form-label">Name</label>
+                            <input class="app-form-control" name="name" id="name" placeholder="What shout I call you?" type="text" required>
+                        </div>
+                        <div class="app-form-group">
+                            <label for="email" class="formbold-form-label">Email address</label>
+                            <input class="app-form-control" type="email" name="email" id="email" placeholder="Your email" required type="email">
+                        </div>
+                        <div class="app-form-group">
+                            <label for="subject" class="formbold-form-label">Subject</label>
+                            <input class="app-form-control" name="subject" id="subject" placeholder="Email's subject / header" type="text" required>
+                        </div>
+                        <div class="app-form-group message">
+                            <label for="message" class="formbold-form-label">Message <i class="ri-information-line" title="You can drag this box bigger at the right corner if the message goes too long"></i></label>
+                            <textarea class="app-form-control" name="message" id="message" placeholder="What do you want to tell me?" required></textarea>
+                        </div>
+                        <!-- <input type="hidden" name="_csrf" value=""> -->
+                        <div class="app-form-group buttons">
+                            <button class="button-54" type="submit">Send</button>
+                        </div>
+                    </form>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+        </div>
+      </div>
+      
     
+<%- include('../components/footer.ejs') %>
+
 </body>
 </html>

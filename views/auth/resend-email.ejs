@@ -1,26 +1,31 @@
 <%- include('../components/header.ejs') %>
-<link rel="stylesheet" href="/css/auth.css">
+    <link rel="stylesheet" href="/css/auth.css">
+
+    <link rel="stylesheet" href="/css/form.css">
 </head>
 <%- include('../components/nav.ejs') %>
 
+    <% if(error) { %>
+        <%- include('../components/notification.ejs') %>
+    <% } %>
 <div class="onepage container formlogin">
     <h1><%= pageTitle %></h1>
-    <h2>Nhập Email của bạn.</h2>
     <hr />
-    <div class="row">
-        <div class="col-md-4">
-            <form method="post">
-                <div class="form-floating">
-                    <label for="email" class="form-label">Email</label>
-                    <input id="email" class="form-control" aria-required="true" />
-                    <span class="text-danger"></span>
+    <div class="formbold-main-wrapper">
+        <div class="formbold-form-wrapper">
+            <form action="" method="post">
+                <div class="formbold-mb-3">
+                    <label class="formbold-form-label" for="email" class="formbold-form-label">Email</label>
+                    <input class="formbold-form-input" id="email" name="email" type="email" required />
                 </div>
-                <span class="btn-lm-middle">
-                    <button type="submit" class="learn-more">Resend confirmation.</button>
-                </span>
+                
+                <button class="button-54" type="submit">Resend confirmation</button>
             </form>
         </div>
-    </div>
+    </div>  
 </div>
 
 <%- include('../components/footer.ejs') %>
+
+</body>
+</html>

@@ -118,14 +118,122 @@ thead {
   display: block !important;
 }
 
-/*
- Styling
+
+/* 
+  manage page
 */
-.tabset {
+
+.m-container {
+  display: flex;
+  width: 100%;
+}
+
+.left-sidebar {
+  flex: 1.5;
+}
+
+.profile-card {
+  text-align: center;
+  margin-top: 30px;
+}
+
+.profile-card img {
+  border-radius: 50%;
+  width: 200px;
+  height: 200px;
+  object-fit: cover;
+  border: 3px solid var(--light-color);
+}
+
+.main-content {
+  flex: 4;
+  padding: 30px;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.title:not(.footer-title) {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+/*
+ Tabs
+*/
+
+.tabset > input[type="radio"] {
+  position: absolute;
+  left: -200vw;
+}
+
+.tabset .tab-panel {
+  display: none;
+}
+
+.tabset > input:first-child:checked ~ .tab-panels > .tab-panel:first-child,
+.tabset > input:nth-child(3):checked ~ .tab-panels > .tab-panel:nth-child(2),
+.tabset > input:nth-child(5):checked ~ .tab-panels > .tab-panel:nth-child(3),
+.tabset > input:nth-child(7):checked ~ .tab-panels > .tab-panel:nth-child(4),
+.tabset > input:nth-child(9):checked ~ .tab-panels > .tab-panel:nth-child(5),
+.tabset > input:nth-child(11):checked ~ .tab-panels > .tab-panel:nth-child(6) {
+  display: block;
+}
+
+.tabset > label {
+  position: relative;
+  display: inline-block;
+  padding: 15px 15px 25px;
+  border: 1px solid transparent;
+  border-bottom: 0;
+  cursor: pointer;
+  font-weight: 600;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+}
+
+.tabset > label::after {
+  content: "";
+  position: absolute;
+  left: 15px;
+  bottom: 10px;
+  width: 22px;
+  height: 4px;
+  background: #8d8d8d;
+}
+
+input:focus-visible + label {
+  outline: 2px solid rgba(0,102,204,1);
+  border-radius: 3px;
+}
+
+.tabset > label:hover,
+.tabset > input:focus + label,
+.tabset > input:checked + label {
+  color: var(--light-color);
+}
+
+.tabset > label:hover::after,
+.tabset > input:focus + label::after,
+.tabset > input:checked + label::after {
+  background: var(--gradient-color);
+}
+
+.tabset > input:checked + label {
+  border-color: #ccc;
+  border-bottom: 1px solid #fff;
+  margin-bottom: -1px;
+}
+
+.tab-panel {
+  padding: 30px 0;
+  border-top: 1px solid #ccc;
+}
+
+/* OTHERS */
+
+.admin-nav {
   padding: 0 0 1.5rem 1.5rem;
 }
 
-.tabset a {
+.admin-nav a {
   position: relative;
   display: inline-block;
   padding: 15px 25px 25px;
@@ -135,7 +243,7 @@ thead {
   font-weight: 600;
 }
 
-.tabset a::after {
+.admin-nav a::after {
   content: '';
   position: absolute;
   left: 15px;
@@ -147,19 +255,19 @@ thead {
   margin-left: 10px;
 }
 
-.tabset a:hover,
-.tabset a.active {
+.admin-nav a:hover,
+.admin-nav a.active {
   /* color: #06c; */
   color: var(--light-color);
 }
 
-.tabset a:hover::after,
-.tabset a.active::after {
+.admin-nav a:hover::after,
+.admin-nav a.active::after {
   /* background: #06c; */
   background: var(--gradient-color);
 }
 
-.tabset a.active {
+.admin-nav a.active {
   border-color: #ccc;
   border-bottom: 1px solid #fff;
   margin-bottom: -1px;

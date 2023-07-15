@@ -10,23 +10,21 @@ const mongoose = require('mongoose');
 const session = require('express-session');
 const MongoStore = require('connect-mongo');
 const flash = require('connect-flash');
+const csrf = require('csurf');
 
-// models
-const User = require('./models/user');
-
-// error controller
 const errorController = require('./controllers/error');
+const User = require('./models/user');
 
 // routes
 const authRoutes = require('./routes/auth');
 const pageRoutes = require('./routes/page');
 const adminRoutes = require('./routes/admin');
 
-// Config app middlewares
-const app = express();
-
 // database things
 const uri = process.env.URI;
+
+// Config app middlewares
+const app = express();
 
 // view engine
 app.set('view engine', 'ejs');
@@ -37,7 +35,6 @@ app.use(bodyParser.urlencoded({ extended: false }));
 
 // serve file stactically
 app.use(express.static(path.join(__dirname, 'public')));
-app.use('/images', express.static(path.join(__dirname, 'images')));
 
 // session
 app.use(
@@ -48,13 +45,14 @@ app.use(
     store: MongoStore.create({
       mongoUrl: uri,
       autoRemove: 'native',
-      ttl: 600, //43200, //12 hours
+      ttl: 1200, //43200, //12 hours
       collectionName: 'sessions',
     }),
   })
 );
 
 // others middlewares
+// app.use(csrf());
 app.use(flash());
 
 // local res
@@ -69,7 +67,7 @@ app.use((req, res, next) => {
   // if (!req.session.user) {
   //   return next();
   // }
-  User.findById('64807cb5cf8f826e41eebeaf')
+  User.findById('649beffbf522971d7e97dfcb')
     .then(user => {
       if (!user) {
         return next();
@@ -77,9 +75,7 @@ app.use((req, res, next) => {
       req.user = user;
       next();
     })
-    .catch(error => {
-      next(new Error(error));
-    });
+    .catch(error => next(new Error(error)));
 });
 
 // routes
@@ -101,19 +97,7 @@ app.use((error, req, res, next) => {
 
 mongoose
   .connect(uri)
-  .then(find => {
-    return User.findOne();
-  })
-  .then(userData => {
-    if (!userData) {
-      const user = new User({
-        email: 'test@gmail.com',
-        name: 'Long',
-        password: '1',
-      });
-      user.save();
-    }
-    console.log('test user exist.');
+  .then(result => {
     app.listen(3000);
   })
   .catch(error => console.log(error));

@@ -1,12 +1,171 @@
 <%- include('../components/header.ejs') %>
 
+<link rel="stylesheet" href="/css/table.css" />
+
+<link rel="stylesheet" href="/css/form.css" />
+
+<style> 
+  #div-social {
+    display: none;
+  }
+</style>
 </head>
 
 <%- include('../components/nav.ejs') %>
-    <div class="section-header-offset">
-        Every one's manage account page, require auth.
+<div class="section-header-offset custom-header">
+  <h2 class="title section-title" data-name="Account Management">
+    Account Management
+  </h2>
+</div>
+
+<div class="content">
+  <div class="container">
+    <div class="m-container">
+      <div class="left-sidebar">
+        <div class="profile-card">
+          <img id="avatar"
+            src="https://i.ytimg.com/vi/oscnmPsiEqE/hqdefault.jpg?sqp=-oaymwEiCKgBEF5IWvKriqkDFQgBFQAAAAAYASUAAMhCPQCAokN4AQ==&rs=AOn4CLCQzovMCSR4eA3rboZEXADeQucnzQ"
+            alt="Profile Image"
+          />
+          <br /><br />
+          <h2><%= user.name %></h2>
+          <br>
+          <p><%= user.shortDes %></p>
+          
+        </div>
+        <br>
+      </div>
+
+      <div class="main-content">
+        <div class="tabset">
+          <!-- Tab 1 -->
+          <input type="radio" name="tabset" id="tab1" required aria-controls="personal" checked />
+          <label for="tab1">Personal Data</label>
+          <!-- Tab 2 -->
+          <input type="radio" name="tabset" id="tab2" required aria-controls="email" />
+          <label for="tab2">Email</label>
+          <!-- Tab 3 -->
+          <input type="radio" name="tabset" id="tab3" aria-controls="password" />
+          <label for="tab3">Password</label>
+          <!-- Tab 4 -->
+          <input type="radio" name="tabset" id="tab4" aria-controls="avatar" />
+          <label for="tab4">Avatar</label>
+          <!-- Tab 5 -->
+          <input type="radio" name="tabset" id="tab5" aria-controls="social" />
+          <label for="tab5">Social</label>
+
+          <div class="tab-panels">
+            <section id="personal" class="tab-panel">
+              <h1 class="title">Personal Data</h1>
+
+              <form action="download" method="post">
+                <input class="form-control" required />
+                <label for="" class="form-label"></label>
+
+                <button type="submit" class="formbold-btn">aosnoubou</button>
+              </form> 
+            </section>
+
+            <section id="email" class="tab-panel">
+              <h1 class="title">Change email</h1>
+              <br>
+              <form action="" >
+                <label for="new-email" class="formbold-form-label">New email</label>
+                <input type="text" class="formbold-form-input" name="new-email" id="new-email" required>
+
+                <button type="submit" class="formbold-btn">Send email change confirmation</button>
+              </form>
+            </section>
+
+            <section id="password" class="tab-panel">
+              <h1 class="title">Change password</h1>
+              <br>
+              <form action="" method="post">
+                <div class="formbold-mb-3">
+                  <label for="old-password" class="formbold-form-label">Old password</label>
+                  <input type="text" name="old-password" id="old-password" class="formbold-form-input" required>
+                </div>
+                <div class="formbold-mb-3">
+                  <label for="new-password" class="formbold-form-label">New password</label>
+                  <input type="text" name="new-password" id="new-password" class="formbold-form-input" required>
+                </div>
+                <div class="formbold-mb-3">
+                  <label for="confirm-password" class="formbold-form-label">Confirm password</label>
+                  <input type="text" name="confirm-password" id="confirm-password" class="formbold-form-input" required>
+                </div>
+                <button type="submit" class="formbold-btn">Update password</button>
+              </form>
+            </section>
+
+            <section id="avatar" class="tab-panel">
+              <h1 class="title">Avatar image</h1>
+              <br>
+              <label for="avatar" class="formbold-form-label">Choose new avatar</label>
+              <form action="" method="post" enctype="multipart/form-data">
+                <label for="avatar" class="formbold-form-label"></label>
+                <input type="file" name="avatar" id="avatar" class="formbold-form-input" required>
+                <input type="hidden" name="userId">
+                <button type="submit" class="formbold-btn">Update avatar</button>
+              </form>
+            </section>
+
+            <section id="social" class="tab-panel">
+              <h1 class="title">Social media links</h1>
+              <br>
+              <h3>Current links</h3><br>
+              <ul class="social-media ">
+                <% for (const link of user.social) { %>
+                  <div class="list">
+                    <li class="list-item"><a target="_blank" href="<%= link.link.includes('https://') ? '' : 'https://' %><%= link.link %>" class="list-link"><i class="<%= link.icon %>"></i></a></li> - <p><%= link.link %></p>
+                  </div>
+                <% } %>
+                  <br>
+              </ul>
+              <select name="select-list" id="select-list" class="formbold-form-input">
+                <option value="close" selected>Choose a platform to update link.</option>
+                <option value="ri-facebook-circle-line">Facebook</option>
+                <option value="ri-instagram-line">Instagram</option>
+                <option value="ri-twitter-line">Twitter</option>
+                <option value="ri-youtube-line">Youtube</option>
+                <option value="ri-linkedin-box-line">Linkedin</option>
+              </select>
+              <div id="div-social">
+                <br>
+                <label for="avatar" class="formbold-form-label">Update your link</label>
+                <form action="/auth/manage/update-link" method="post" id="form-social">
+                  <label for="link" class="formbold-form-label"></label>
+                  <input type="text" name="link" class="formbold-form-input" required>
+                  <input type="hidden" name="icon" id="icon" value="">
+                  <input type="hidden" name="userId" value="<%= user._id %>">
+
+                  <button type="submit" class="formbold-btn">Update link</button>
+                </form>
+              </div>
+            </section>
+          </div>
+        </div>
+      </div>
     </div>
+  </div>
+</div>
+
 <%- include('../components/footer.ejs') %>
-    
+
+<script>
+  let select = document.getElementById('select-list');
+  let icon;
+  select.addEventListener('change', e => {
+  if (e.target.value=='close') {
+    document.getElementById('div-social').style.display = 'none';
+  } else {
+    // get id of option = e.target[e.target.selectedIndex].id;
+    icon=e.target.value;
+    document.getElementById('div-social').style.display = 'block';
+    document.getElementById('icon').setAttribute('value',icon);
+  }
+});
+
+</script>
+
 </body>
 </html>
