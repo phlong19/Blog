@@ -90,28 +90,41 @@ exports.getReset = (req, res, next) => {
 };
 
 exports.getNewPassword = (req, res, next) => {
-  let error = req.flash('error');
-  let errorType = req.flash('errorType');
-  let errorHeader = req.flash('errorHeader');
-  if (error.length > 0) {
-    error = error[0];
-    errorType = errorType[0];
-    errorHeader = errorHeader[0];
-  } else {
-    error = errorType = errorHeader = null;
-  }
-  res.render('auth/new-password', {
-    pageTitle: 'Setup new password',
-    error: error,
-    errorType: errorType,
-    errorHeader: errorHeader,
-  });
+  const userId = req.query.id;
+  const code = req.query.code;
+  User.findOne({ _id: userId, reset_code: code })
+    .select('email')
+    .then(user => {
+      if (!user) {
+        req.flash('error', 'Please check your email to update your password.');
+        req.flash('errorType', 'warning');
+        req.flash('errorHeader', 'Error');
+        return res.redirect('/auth/reset-password');
+      }
+      let error = req.flash('error');
+      let errorType = req.flash('errorType');
+      let errorHeader = req.flash('errorHeader');
+      if (error.length > 0) {
+        error = error[0];
+        errorType = errorType[0];
+        errorHeader = errorHeader[0];
+      } else {
+        error = errorType = errorHeader = null;
+      }
+      res.render('auth/new-password', {
+        pageTitle: 'Setup new password',
+        error: error,
+        errorType: errorType,
+        errorHeader: errorHeader,
+        id: userId,
+        code: code,
+      });
+    });
 };
 
 exports.getManageAccount = (req, res, next) => {
   User.findById(req.user._id)
     .then(user => {
-      // console.log(user);
       res.render('auth/manage', {
         pageTitle: 'Manage Account',
         user: user,
@@ -245,6 +258,7 @@ exports.postVerify = (req, res, next) => {
       }
       user.active = true;
       user.activation_code = 'actived';
+      user.activation_expiration = undefined;
       return user.save().then(result => {
         req.flash('error', 'Account verified successfully.');
         res.flash('errorType', '');
@@ -318,7 +332,7 @@ exports.postReset = (req, res, next) => {
       user.reset_expiration = Date.now() + 3600000;
       return user.save();
     })
-    .then(saved => {
+    .then(result => {
       // send email
       const mailOptions = {
         from: {
@@ -326,7 +340,7 @@ exports.postReset = (req, res, next) => {
           address: 'synthwave-web-no-reply@outlook.com',
         },
         to: result.email,
-        subject: 'Reset Email Confirmation',
+        subject: 'Reset Password Email Confirmation',
         html: `
         <style>
           .button-1 {
@@ -365,8 +379,7 @@ exports.postReset = (req, res, next) => {
           <h1 style="color:green;">You've requested to reset your password at our site.</h1>
           <h3>If it was not you, ignore this email. Or else please click the button below to reset your password.</h3>
           <h4 style="color:rgba(255,35,35,0.87)">This verification email is valid within 1 hours.</h4>
-          <form action="http://localhost:3000/auth/new-password" method="get">
-            <input type="hidden" name="code" value="${saved.reset_code}">
+          <form action="http://localhost:3000/auth/new-password?id=${result._id}&code=${result.reset_code}" method="get">
             <button type="submit" class="button-1" style="cursor: pointer;">Click here.</button>
           </form>
         </body>
@@ -389,12 +402,51 @@ exports.postReset = (req, res, next) => {
 };
 
 exports.postNewPassword = (req, res, next) => {
-  const { password, confirmPassword } = req.body;
+  const { id, code, password, confirmPassword } = req.body;
+  let user;
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    req.flash();
-    return res.redirect('/auth/new-password');
+    req.flash('error', errors.array()[0].msg);
+    req.flash('errorType', 'alert');
+    req.flash('errorHeader', 'Validation Error');
+    return res.redirect('/auth/new-password?id=' + id + '&code=' + code);
   }
+  if (password !== confirmPassword) {
+    req.flash('error', 'Password does not match');
+    req.flash('errorType', 'alert');
+    req.flash('errorHeader', 'Validation Error');
+    return res.redirect('/auth/new-password?id=' + id + '&code=' + code);
+  }
+  User.findOne({
+    _id: id,
+    reset_code: code,
+    reset_expiration: { $gt: Date.now() },
+  })
+    .then(userDoc => {
+      if (!userDoc) {
+        req.flash(
+          'error',
+          'Invalid code or code expired. Please resend reset password email confirmation!'
+        );
+        res.flash('errorType', 'warning');
+        req.flash('errorHeader', 'Confirmation Code Error');
+        return res.redirect('/auth/reset-password');
+      }
+      user = userDoc;
+      return brcypt.hash(password, 12);
+    })
+    .then(hashedPassword => {
+      user.password = hashedPassword;
+      user.reset_code = '';
+      user.reset_expiration = undefined;
+      return user.save().then(result => {
+        req.flash('error', 'Your password has been updated successfully!');
+        res.flash('errorType', '');
+        req.flash('errorHeader', 'Success');
+        res.redirect('/auth/login');
+      });
+    })
+    .catch(err => next(new Error(err)));
 };
 
 exports.postResendEmail = (req, res, next) => {
@@ -416,7 +468,7 @@ exports.postResendEmail = (req, res, next) => {
       user.activation_expiration = Date.now() + 7200000;
       return user.save();
     })
-    .then(saved => {
+    .then(result => {
       const mailOptions = {
         from: {
           name: 'Synthwave Mail Service',
@@ -463,7 +515,7 @@ exports.postResendEmail = (req, res, next) => {
           <h3>Please click the button below to verify your account.</h3>
           <h4 style="color:rgba(255,35,35,0.87)">This verification email is valid within 2 hours.</h4>
           <form action="http://localhost:3000/auth/active" method="post">
-            <input type="hidden" name="code" value="${saved.activation_code}">
+            <input type="hidden" name="code" value="${result.activation_code}">
             <button type="submit" class="button-1" style="cursor: pointer;">Click here.</button>
           </form>
         </body>
