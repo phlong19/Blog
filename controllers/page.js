@@ -26,7 +26,6 @@ exports.getIndex = (req, res, next) => {
     .populate('category', 'name slug')
     .then(featuredArticles => {
       threePosts = featuredArticles;
-      console.log(threePosts);
       return Post.find({ status: true }).sort({ like: -1 }).limit(5).select("title like slug updatedAt imageUrl");
     })
     .then(mostLikesPosts => {
