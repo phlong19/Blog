@@ -102,6 +102,13 @@
                 check.style.display = "none";
             }
         });
+        password.addEventListener('change', function() {
+            if(password.value !== confirmPassword.value) {
+                check.style.display = "block";
+            } else {
+                check.style.display = "none";
+            }
+        });
     </script>
 </body>
 </html>

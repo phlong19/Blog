@@ -1,6 +1,7 @@
 const express = require('express');
 const { body } = require('express-validator');
 const User = require('../models/user');
+const isAuth = require('../middlewares/isAuth');
 const authController = require('../controllers/auth');
 const { uploadUsers } = require('../middlewares/cloud');
 
@@ -120,7 +121,7 @@ router.post(
 );
 
 // manage account
-router.get('/manage', authController.getManageAccount);
+router.get('/manage', isAuth, authController.getManageAccount);
 
 //manage update things
 
@@ -128,6 +129,7 @@ router.get('/manage', authController.getManageAccount);
 
 router.post(
   '/manage/update-link',
+  isAuth,
   [
     body('link')
       .notEmpty()
