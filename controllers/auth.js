@@ -3,15 +3,11 @@ require('dotenv').config();
 const brcypt = require('bcryptjs');
 const uuid = require('uuid');
 const nodemailer = require('nodemailer');
+const sendGrid = require('@sendgrid/mail');
 const User = require('../models/user');
 const { validationResult } = require('express-validator');
 
-const transport = nodemailer.createTransport({
-  host: 'smtp.office365.com',
-  port: 587,
-  secure: false,
-  auth: { user: process.env.OL_USER, pass: process.env.OL_PASS },
-});
+sendGrid.setApiKey(process.env.SG_API_KEY);
 
 exports.getLogin = (req, res, next) => {
   let error = req.flash('error');
@@ -150,30 +146,12 @@ exports.postRegister = (req, res, next) => {
     req.flash('errorHeader', 'Validation Error');
     return res.redirect('/auth/register');
   }
-
   const code = uuid.v4();
-  brcypt
-    .hash(password, 12)
-    .then(hashedPassword => {
-      const user = new User({
-        name: name,
-        email: email,
-        password: hashedPassword,
-        activation_code: code,
-        activation_expiration: Date.now() + 7200000, // miliseconds
-      });
-      return user.save();
-    })
-    .then(result => {
-      // send email
-      const mailOptions = {
-        from: {
-          name: 'Synthwave Mail Service',
-          address: 'synthwave-web-no-reply@outlook.com',
-        },
-        to: result.email,
-        subject: 'Your Account Verification',
-        html: `
+  const msg = {
+    from: 'doquangkhoi54@outlook.com',
+    to: email,
+    subject: 'Your Account Verification',
+    html: `
         <style>
           .button-1 {
             background-color: #EA4C89;
@@ -212,17 +190,36 @@ exports.postRegister = (req, res, next) => {
           <h3>Please click the button below to verify your account.</h3>
           <h4 style="color:rgba(255,35,35,0.87)">This verification email is valid within 2 hours.</h4>
           <form action="http://localhost:3000/auth/active" method="post">
-            <input type="hidden" name="code" value="${result.activation_code}">
+            <input type="hidden" name="code" value="${code}">
             <button type="submit" class="button-1" style="cursor: pointer;">Click here.</button>
           </form>
         </body>
         `,
-      };
-      transport.sendMail(mailOptions, (err, info) => {
-        if (err) {
-          throw new Error(err);
-        }
+  };
+  sendGrid
+    .send(msg)
+    .then(sent => {
+      if (sent[0].statusCode !== 202) {
+        req.flash(
+          'error',
+          'Sending email confirmation failed! Please try again.'
+        );
+        req.flash('errorType', 'warning');
+        req.flash('errorHeader', 'Email Error');
+        return res.redirect('/auth/register');
+      }
+      brcypt.hash(password, 12).then(hashedPassword => {
+        const user = new User({
+          name: name,
+          email: email,
+          password: hashedPassword,
+          activation_code: code,
+          activation_expiration: Date.now() + 7200000, // miliseconds
+        });
+        return user.save();
       });
+    })
+    .then(result => {
       req.flash(
         'error',
         'A new account was created! Please check your email to verify your account.'
@@ -320,26 +317,23 @@ exports.postLogin = (req, res, next) => {
 
 exports.postReset = (req, res, next) => {
   const email = req.body.email;
+  let code;
+  let user;
   User.findOne({ email: email })
-    .then(user => {
-      if (!user) {
+    .then(userDoc => {
+      if (!userDoc) {
         req.flash('error', "Can't find any account with this email address.");
         req.flash('errorType', 'warning');
         req.flash('errorHeader', 'Account not exist');
         return res.redirect('/auth/reset-password');
       }
-      user.reset_code = uuid.v4();
-      user.reset_expiration = Date.now() + 3600000;
-      return user.save();
-    })
-    .then(result => {
+
+      code = uuid.v4();
+      user = userDoc;
       // send email
-      const mailOptions = {
-        from: {
-          name: 'Synthwave Mail Service',
-          address: 'synthwave-web-no-reply@outlook.com',
-        },
-        to: result.email,
+      const msg = {
+        from: 'doquangkhoi54@outlook.com',
+        to: email,
         subject: 'Reset Password Email Confirmation',
         html: `
         <style>
@@ -379,24 +373,36 @@ exports.postReset = (req, res, next) => {
           <h1 style="color:green;">You've requested to reset your password at our site.</h1>
           <h3>If it was not you, ignore this email. Or else please click the button below to reset your password.</h3>
           <h4 style="color:rgba(255,35,35,0.87)">This verification email is valid within 1 hours.</h4>
-          <form action="http://localhost:3000/auth/new-password?id=${result._id}&code=${result.reset_code}" method="get">
+          <form action="http://localhost:3000/auth/new-password?id=${user._id}&code=${code}" method="get">
             <button type="submit" class="button-1" style="cursor: pointer;">Click here.</button>
           </form>
         </body>
         `,
       };
-      transport.sendMail(mailOptions, (err, info) => {
-        if (err) {
-          throw new Error(err);
-        }
+      return sendGrid.send(msg);
+    })
+    .then(sent => {
+      if (sent[0].statusCode !== 202) {
         req.flash(
           'error',
-          'A reset password email has been sent! Please check your email.'
+          'Sending email confirmation failed! Please try again.'
         );
-        req.flash('errorType', 'info');
-        req.flash('errorHeader', 'Reset Your Password');
-        res.redirect('/login');
-      });
+        req.flash('errorType', 'warning');
+        req.flash('errorHeader', 'Email Error');
+        return res.redirect('/auth/register');
+      }
+      user.reset_code = code;
+      user.reset_expiration = Date.now() + 3600000;
+      return user.save();
+    })
+    .then(result => {
+      req.flash(
+        'error',
+        'A reset password email has been sent! Please check your email.'
+      );
+      req.flash('errorType', 'info');
+      req.flash('errorHeader', 'Reset Your Password');
+      res.redirect('/login');
     })
     .catch(err => next(new Error(err)));
 };
@@ -451,6 +457,7 @@ exports.postNewPassword = (req, res, next) => {
 
 exports.postResendEmail = (req, res, next) => {
   const email = req.body.email;
+  let code;
   User.findOne({ email: email })
     .then(user => {
       if (!user) {
@@ -465,15 +472,9 @@ exports.postResendEmail = (req, res, next) => {
         req.flash('errorHeader', 'Verified');
         return res.redirect('/auth/login');
       }
-      user.activation_expiration = Date.now() + 7200000;
-      return user.save();
-    })
-    .then(result => {
-      const mailOptions = {
-        from: {
-          name: 'Synthwave Mail Service',
-          address: 'synthwave-web-no-reply@outlook.com',
-        },
+      code = uuid.v4();
+      const msg = {
+        from: 'doquangkhoi54@outlook.com',
         to: email,
         subject: 'Your Account Verification',
         html: `
@@ -515,17 +516,28 @@ exports.postResendEmail = (req, res, next) => {
           <h3>Please click the button below to verify your account.</h3>
           <h4 style="color:rgba(255,35,35,0.87)">This verification email is valid within 2 hours.</h4>
           <form action="http://localhost:3000/auth/active" method="post">
-            <input type="hidden" name="code" value="${result.activation_code}">
+            <input type="hidden" name="code" value="${code}">
             <button type="submit" class="button-1" style="cursor: pointer;">Click here.</button>
           </form>
         </body>
         `,
       };
-      transport.sendMail(mailOptions, (err, info) => {
-        if (err) {
-          throw new Error(err);
-        }
-      });
+      return sendGrid.send(msg);
+    })
+    .then(sent => {
+      if (sent[0].statusCode !== 202) {
+        req.flash(
+          'error',
+          'Sending email confirmation failed! Please try again.'
+        );
+        req.flash('errorType', 'warning');
+        req.flash('errorHeader', 'Email Error');
+        return res.redirect('/auth/resend-email');
+      }
+      user.activation_expiration = Date.now() + 7200000;
+      return user.save();
+    })
+    .then(result => {
       req.flash(
         'error',
         'A new email sent! Please check your email to verify your account.'
@@ -537,6 +549,7 @@ exports.postResendEmail = (req, res, next) => {
     .catch(err => next(new Error(err)));
 };
 
+// MANAGE
 exports.postUpdateLink = (req, res, next) => {
   const { userId, link, icon } = req.body;
 

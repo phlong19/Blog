@@ -1,4 +1,4 @@
-exports.isAuth = (req, res, next) => {
+module.exports = (req, res, next) => {
   if (!req.user.isLoggedIn) {
     res.redirect('/auth/login');
   }

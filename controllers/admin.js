@@ -25,8 +25,12 @@ exports.getPostsManage = (req, res, next) => {
   let error = req.flash('error');
   let errorType = req.flash('errorType');
   let errorHeader = req.flash('errorHeader');
-
-  if (error.length > 0) {
+  if (req.user.level < 2) {
+    error = "You don't have premission to view this page.";
+    errorType = 'warning';
+    errorHeader = 'Warning';
+    return res.redirect('/');
+  } else if (error.length > 0) {
     error = error[0];
     errorType = errorType[0];
     errorHeader = errorHeader[0];
@@ -335,7 +339,7 @@ exports.updateCategory = (req, res, next) => {
         req.flash('errorType', '');
         req.flash('errorHeader', 'Success');
         res.redirect('/admin/manage/categories');
-      })
+      });
     })
     .catch(err => next(new Error(err)));
 };

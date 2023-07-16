@@ -57,17 +57,17 @@ app.use(flash());
 
 // local res
 app.use((req, res, next) => {
-  res.locals.isAuthenticated = false; //req.session.isLoggedIn;
+  res.locals.isAuthenticated = req.session.isLoggedIn;
   // res.locals.csrfToken = req.csrfToken();
   next();
 });
 
 // save user object in session
 app.use((req, res, next) => {
-  // if (!req.session.user) {
-  //   return next();
-  // }
-  User.findById('649beffbf522971d7e97dfcb')
+  if (!req.session.user) {
+    return next();
+  }
+  User.findById(req.session.user._id)
     .then(user => {
       if (!user) {
         return next();
