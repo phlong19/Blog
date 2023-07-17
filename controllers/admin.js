@@ -20,17 +20,14 @@ const window = new JSDOM('').window;
 const DOMPurify = createDOMPurify(window);
 
 const items_per_table = 10;
+let option = {};
 
 exports.getPostsManage = (req, res, next) => {
   let error = req.flash('error');
   let errorType = req.flash('errorType');
   let errorHeader = req.flash('errorHeader');
-  if (req.user.level < 2) {
-    error = "You don't have premission to view this page.";
-    errorType = 'warning';
-    errorHeader = 'Warning';
-    return res.redirect('/');
-  } else if (error.length > 0) {
+
+  if (error.length > 0) {
     error = error[0];
     errorType = errorType[0];
     errorHeader = errorHeader[0];
@@ -40,21 +37,23 @@ exports.getPostsManage = (req, res, next) => {
 
   let sum;
   let categories;
+  if (req.user.level === 2) {
+    option = { author: req.user._id };
+  }
 
-  Post.countDocuments()
+  Post.countDocuments(option)
     .then(counted => {
       sum = counted;
       return Category.find();
     })
     .then(cats => {
       categories = cats;
-      return Post.find()
+      return Post.find(option)
         .select('-content')
         .populate('author', 'name')
         .populate('category', 'name slug');
     })
     .then(posts => {
-      // console.log(posts);
       res.render('admin/posts', {
         pageTitle: 'Posts Manage',
         path: '/manage/posts',
@@ -141,14 +140,23 @@ exports.getDetails = (req, res, next) => {
   const edit = req.query.edit;
   let categories;
 
+  if (req.session.user.level === 2) {
+    option = { slug: slug, author: req.session.user._id };
+  } else {
+    option = { slug: slug };
+  }
+
   if (edit === 'post') {
     Category.find()
       .then(cats => {
         categories = cats;
-        return Post.findOne({ slug: slug }).populate('category', 'name slug');
+        return Post.findOne(option).populate('category', 'name slug');
       })
       .then(post => {
         if (!post) {
+          req.flash('error', "Can't find any post with this title");
+          req.flash('errorType', 'alert');
+          req.flash('errorHeader', 'Image Error');
           return res.redirect('/admin/manage/posts');
         }
         const postCatIds = post.category.map(category =>
@@ -170,7 +178,7 @@ exports.getDetails = (req, res, next) => {
       .catch(err => next(new Error(err)));
   }
   if (edit === 'category') {
-    Category.findOne({ slug: slug })
+    Category.findOne(option)
       .then(cat => {
         if (!cat) {
           return res.redirect('/admin/manage/categories');
@@ -184,14 +192,38 @@ exports.getDetails = (req, res, next) => {
           errorHeader: errorHeader,
         });
       })
-      .catch(err => next(new Error(err)));
+      .catch(err =>
+        next(new Error("You don't have permission to view this page."))
+      );
   }
-  if (edit === 'user') {
-    // find by id user
-    /* error: error,
-    errorType: errorType,
-    errorHeader: errorHeader,*/
+};
+
+exports.getDetailUser = (req, res, next) => {
+  let error = req.flash('error');
+  let errorType = req.flash('errorType');
+  let errorHeader = req.flash('errorHeader');
+
+  if (error.length > 0) {
+    error = error[0];
+    errorType = errorType[0];
+    errorHeader = errorHeader[0];
+  } else {
+    error = errorType = errorHeader = null;
   }
+
+  const id = req.params.id;
+  User.findById({ _id: id })
+    .then(user => {
+      res.render('admin/details', {
+        pageTitle: 'User details',
+        edit: 'user',
+        error: error,
+        errorType: errorType,
+        errorHeader: errorHeader,
+        user: user,
+      });
+    })
+    .catch(err => next(new Error(err)));
 };
 
 exports.createPost = (req, res, next) => {
@@ -404,46 +436,63 @@ exports.updatePost = (req, res, next) => {
     });
 };
 
-exports.deleteAction = async (req, res, next) => {
-  const id = req.params.id;
-  const name = req.query.delete;
+exports.deletePost = (req, res, next) => {
+  const id = req.body.id;
 
-  if (name === 'post') {
-    Post.findOne({ _id: id })
-      .then(post => {
-        deleteImage(post.imageId);
-        return post.deleteOne();
-      })
-      .then(result => {
-        req.flash('error', 'Delete post successfully.');
-        req.flash('errorType', '');
-        req.flash('errorHeader', 'Success');
+  Post.findOne({ _id: id })
+    .then(post => {
+      if (!post) {
+        req.flash('error', "Can't find any post.");
+        req.flash('errorType', 'alert');
+        req.flash('errorHeader', 'Error');
         return res.redirect('/admin/manage/posts');
-      })
-      .catch(err => next(new Error(err)));
-  }
+      }
+      deleteImage(post.imageId);
+      return post.deleteOne();
+    })
+    .then(result => {
+      req.flash('error', 'Delete post successfully.');
+      req.flash('errorType', '');
+      req.flash('errorHeader', 'Success');
+      res.redirect('/admin/manage/posts');
+    })
+    .catch(err => next(new Error(err)));
+};
 
-  if (name === 'category') {
-    Category.findOne({ _id: id })
-      .then(cat => {
-        deleteImage(cat.imageId);
-        return cat.deleteOne();
-      })
-      .then(result => {
-        console.log(result);
-        req.flash('error', 'Delete category successful.');
-        req.flash('errorType', '');
-        req.flash('errorHeader', 'Success');
-        res.redirect('/admin/manage/categories');
-      })
-      .catch(err => next(new Error(err)));
-  }
+exports.deleteCategory = (req, res, next) => {
+  const id = req.body.id;
+  Category.findOne({ _id: id })
+    .then(cat => {
+      deleteImage(cat.imageId);
+      return cat.deleteOne();
+    })
+    .then(result => {
+      req.flash('error', 'Delete category successful.');
+      req.flash('errorType', '');
+      req.flash('errorHeader', 'Success');
+      res.redirect('/admin/manage/categories');
+    })
+    .catch(err => next(new Error(err)));
+};
 
-  if (name === 'user') {
-    // user find by id
-  }
+exports.deleteUser = (req, res, next) => {
+  const id = req.body.id;
+  User.findById({ _id: id })
+    .then(user => {
+      if (user.avatarId) {
+        deleteImage(user.avatarId);
+      }
+      return user.deleteOne();
+    })
+    .then(result => {
+      req.flash('error', 'Delete user successfully.');
+      req.flash('errorType', '');
+      req.flash('errorHeader', 'Success');
+      res.redirect('/admin/manage/users');
+    })
+    .catch(err => next(new Error(err)));
+};
 
-  if (name === 'comment') {
-    // comment find by id
-  }
+exports.deleteComment = (req, res, next) => {
+  const id = req.body.id;
 };

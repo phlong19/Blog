@@ -13,12 +13,14 @@
           <% if(!isAuthenticated) { %>
             <a href="/auth/login" class="list-link" > Login </a>
           <% } else { %>
-            <a href="/auth/manage" class="list-link">username</a>
+            <a href="/auth/manage" class="list-link"><%= name %></a>
           <% } %>
         </li>
-        <li class="list-item">
-          <a href="/admin/manage/posts" class="list-link">Manage</a>
-        </li>
+        <% if(isAuthenticated && level>=2) {%>
+          <li class="list-item">
+            <a href="/admin/manage/posts" class="list-link">Manage</a>
+          </li>
+        <% } %>
         <li class="list-item">
           <a href="/categories" class="list-link">Categories</a>
         </li>
@@ -33,7 +35,10 @@
         </li>
         <% if(isAuthenticated) { %>
           <li class="list-item screen-lg-hidden">
-            <a href="/auth/logout" class="list-link">Logout</a>
+            <form action="/auth/logout" method="post" class="list-link">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <button type="submit">Logout</button>
+            </form>
           </li>
         <% } %>
       </ul>
@@ -64,8 +69,11 @@
           class="btn sign-up-btn fancy-border screen-sm-hidden"> <span>Register</span>
         </a>
       <% } else { %>
-        <a href="/auth/manage" class="list-link screen-sm-hidden">username</a>
-        <a href="/auth/logout" class="list-link screen-sm-hidden">Logout</a>
+        <a href="/auth/manage" class="list-link screen-sm-hidden"><%= name %></a>
+        <form action="/auth/logout" method="post" class="list-link screen-sm-hidden">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <button type="submit" style="cursor: pointer;">Logout</button>
+        </form>
       <% } %>
     </div>
   </nav>
@@ -83,7 +91,7 @@
         required
         autofocus
       />
-      
+      <input type="hidden" name="_csrf" value="<%= csrfToken%>">
       <button class="btn form-btn" type="submit">
         <i class="ri-search-line"></i>
       </button>
