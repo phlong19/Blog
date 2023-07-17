@@ -52,13 +52,19 @@ app.use(
 );
 
 // others middlewares
-// app.use(csrf());
+app.use(csrf());
 app.use(flash());
 
 // local res
 app.use((req, res, next) => {
   res.locals.isAuthenticated = req.session.isLoggedIn;
-  // res.locals.csrfToken = req.csrfToken();
+  res.locals.name = undefined;
+  res.locals.level = 0;
+  if (req.session.user) {
+    res.locals.name = req.session.user.name;
+    res.locals.level = req.session.user.level;
+  }
+  res.locals.csrfToken = req.csrfToken();
   next();
 });
 
@@ -90,7 +96,6 @@ app.use((error, req, res, next) => {
   console.log(error);
   res.status(500).render('errors/500', {
     pageTitle: '500',
-    isAuthenticated: req.session.isLoggedIn,
     error: error,
   });
 });

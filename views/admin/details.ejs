@@ -109,14 +109,14 @@
 
           <input type="hidden" value="<%= post._id %>" name="postId">
           <input type="hidden" name="oldSlug" value="<%= post.slug %>">
-          <!-- <input type="hidden" name="_csrf"> -->
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
 
           <button type="submit" class="formbold-btn">Update post</button>
         </form>
 
-        <form action="/admin/manage/delete/<%= post._id %>?delete=post" method="post">
+        <form action="/admin/manage/delete-post" method="post">
           <input type="hidden" name="id" value="<%= post._id %>">
-          <!-- <input type="hidden" name="_csrf" > -->
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <button type="submit" class="formbold-btn-delete">Delete</button>
         </form>
     <% } %>
@@ -175,13 +175,13 @@
 
             <input type="hidden" name="catId" value="<%= category._id %>">
             <input type="hidden" name="oldSlug" value="<%= category.slug %>">
-            <!-- <input type="hidden" name="_csrf" > -->
+            <input type="hidden" name="_csrf" value="<%= csrfToken%>">
 
             <button type="submit" class="formbold-btn">Update</button>
         </form>
-        <form action="/admin/manage/delete/<%= category._id %>?delete=category" method="post">
+        <form action="/admin/manage/delete-category" method="post">
           <input type="hidden" name="id" value="<%= category._id %>">
-          <!-- <input type="hidden" name="_csrf"> -->
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <button type="submit" class="formbold-btn-delete">Delete</button>
         </form>
     <% } %>

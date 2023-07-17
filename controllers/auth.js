@@ -152,46 +152,13 @@ exports.postRegister = (req, res, next) => {
     to: email,
     subject: 'Your Account Verification',
     html: `
-        <style>
-          .button-1 {
-            background-color: #EA4C89;
-            border-radius: 8px;
-            border-style: none;
-            box-sizing: border-box;
-            color: #FFFFFF;
-            cursor: pointer;
-            display: inline-block;
-            font-family: "Haas Grot Text R Web", "Helvetica Neue", Helvetica, Arial, sans-serif;
-            font-size: 14px;
-            font-weight: 500;
-            height: 40px;
-            line-height: 20px;
-            list-style: none;
-            margin: 0;
-            outline: none;
-            padding: 10px 16px;
-            position: relative;
-            text-align: center;
-            text-decoration: none;
-            transition: color 100ms;
-            vertical-align: baseline;
-            user-select: none;
-            -webkit-user-select: none;
-            touch-action: manipulation;
-          }
-          
-          .button-1:hover,
-          .button-1:focus {
-            background-color: #F082AC;
-          }
-        </style>
-        <body style="font-family:'Cascadia Code';color:white;background:rgba(0,0,0,0.9)">
+        <body style="font-family:'Cascadia Code';color:white;background:rgba(0,0,0,0.8)">
           <h1 style="color:green;">Congratulations! You've created your new account successful.</h1>
           <h3>Please click the button below to verify your account.</h3>
           <h4 style="color:rgba(255,35,35,0.87)">This verification email is valid within 2 hours.</h4>
           <form action="http://localhost:3000/auth/active" method="post">
             <input type="hidden" name="code" value="${code}">
-            <button type="submit" class="button-1" style="cursor: pointer;">Click here.</button>
+            <button type="submit" style="cursor: pointer;">Click here.</button>
           </form>
         </body>
         `,
@@ -258,7 +225,7 @@ exports.postVerify = (req, res, next) => {
       user.activation_expiration = undefined;
       return user.save().then(result => {
         req.flash('error', 'Account verified successfully.');
-        res.flash('errorType', '');
+        req.flash('errorType', '');
         req.flash('errorHeader', 'Congratulations!');
         res.redirect('/auth/login');
       });
@@ -336,45 +303,12 @@ exports.postReset = (req, res, next) => {
         to: email,
         subject: 'Reset Password Email Confirmation',
         html: `
-        <style>
-          .button-1 {
-            background-color: #EA4C89;
-            border-radius: 8px;
-            border-style: none;
-            box-sizing: border-box;
-            color: #FFFFFF;
-            cursor: pointer;
-            display: inline-block;
-            font-family: "Haas Grot Text R Web", "Helvetica Neue", Helvetica, Arial, sans-serif;
-            font-size: 14px;
-            font-weight: 500;
-            height: 40px;
-            line-height: 20px;
-            list-style: none;
-            margin: 0;
-            outline: none;
-            padding: 10px 16px;
-            position: relative;
-            text-align: center;
-            text-decoration: none;
-            transition: color 100ms;
-            vertical-align: baseline;
-            user-select: none;
-            -webkit-user-select: none;
-            touch-action: manipulation;
-          }
-          
-          .button-1:hover,
-          .button-1:focus {
-            background-color: #F082AC;
-          }
-        </style>
-        <body style="font-family:'Cascadia Code';color:white;background:rgba(0,0,0,0.9)">
+        <body style="font-family:'Cascadia Code';color:white;background:rgba(0,0,0,0.82)">
           <h1 style="color:green;">You've requested to reset your password at our site.</h1>
           <h3>If it was not you, ignore this email. Or else please click the button below to reset your password.</h3>
           <h4 style="color:rgba(255,35,35,0.87)">This verification email is valid within 1 hours.</h4>
           <form action="http://localhost:3000/auth/new-password?id=${user._id}&code=${code}" method="get">
-            <button type="submit" class="button-1" style="cursor: pointer;">Click here.</button>
+            <button type="submit" style="cursor: pointer;">Click here.</button>
           </form>
         </body>
         `,
@@ -478,46 +412,13 @@ exports.postResendEmail = (req, res, next) => {
         to: email,
         subject: 'Your Account Verification',
         html: `
-        <style>
-          .button-1 {
-            background-color: #EA4C89;
-            border-radius: 8px;
-            border-style: none;
-            box-sizing: border-box;
-            color: #FFFFFF;
-            cursor: pointer;
-            display: inline-block;
-            font-family: "Haas Grot Text R Web", "Helvetica Neue", Helvetica, Arial, sans-serif;
-            font-size: 14px;
-            font-weight: 500;
-            height: 40px;
-            line-height: 20px;
-            list-style: none;
-            margin: 0;
-            outline: none;
-            padding: 10px 16px;
-            position: relative;
-            text-align: center;
-            text-decoration: none;
-            transition: color 100ms;
-            vertical-align: baseline;
-            user-select: none;
-            -webkit-user-select: none;
-            touch-action: manipulation;
-          }
-          
-          .button-1:hover,
-          .button-1:focus {
-            background-color: #F082AC;
-          }
-        </style>
-        <body style="font-family:'Cascadia Code';color:white;background:rgba(0,0,0,0.9)">
+        <body style="font-family:'Cascadia Code';color:white;background:rgba(0,0,0,0.8)">
           <h1 style="color:green;">Congratulations! You've created your new account successful.</h1>
           <h3>Please click the button below to verify your account.</h3>
           <h4 style="color:rgba(255,35,35,0.87)">This verification email is valid within 2 hours.</h4>
           <form action="http://localhost:3000/auth/active" method="post">
             <input type="hidden" name="code" value="${code}">
-            <button type="submit" class="button-1" style="cursor: pointer;">Click here.</button>
+            <button type="submit" style="cursor: pointer;">Click here.</button>
           </form>
         </body>
         `,
@@ -547,6 +448,15 @@ exports.postResendEmail = (req, res, next) => {
       res.redirect('/');
     })
     .catch(err => next(new Error(err)));
+};
+
+exports.postLogout = (req, res, next) => {
+  req.session.destroy(err => {
+    if (err) {
+      return next(new Error(err));
+    }
+    res.redirect('/');
+  });
 };
 
 // MANAGE

@@ -1,18 +1,20 @@
 const express = require('express');
-const { check, body } = require('express-validator');
+const { body } = require('express-validator');
 
 const adminController = require('../controllers/admin');
 const { uploadCategories, uploadPosts } = require('../middlewares/cloud');
+const isPermitted = require('../middlewares/isPermitted');
+const isAdmin = require('../middlewares/isAdmin');
 
 const router = express.Router();
 
 // POSTS
-router.get('/posts', adminController.getPostsManage);
+router.get('/posts', isPermitted, adminController.getPostsManage);
 
 router.post(
   '/create-post',
+  isPermitted,
   uploadPosts.single('image'),
-  // upload.array('content-images'),
   [
     body('title')
       .trim()
@@ -35,13 +37,14 @@ router.post(
 );
 
 // CATEGORIES
-router.get('/categories', adminController.getCategoriesManage);
+router.get('/categories', isAdmin, adminController.getCategoriesManage);
 
 router.post(
   '/create-category',
+  isAdmin,
   uploadCategories.single('image'),
   [
-    check('name')
+    body('name')
       .trim()
       .isLength({ min: 4, max: 20 })
       .withMessage('length 4-20.'),
@@ -54,17 +57,20 @@ router.post(
 );
 
 // USERS
-router.get('/users', adminController.getUsersManage);
+router.get('/users', isAdmin, adminController.getUsersManage);
 
 // COMMENTS
-router.get('/comments', adminController.getCommentsManage);
+router.get('/comments', isPermitted, adminController.getCommentsManage);
 
 // Details
-router.get('/details/:slug', adminController.getDetails);
+router.get('/details/:slug', isPermitted, adminController.getDetails);
+
+router.get('/detail-user/:id', isAdmin, adminController.getDetailUser);
 
 // Update routes
 router.post(
-  '/update-post/',
+  '/update-post',
+  isPermitted,
   uploadPosts.single('image'),
   [
     body('title')
@@ -88,10 +94,11 @@ router.post(
 );
 
 router.post(
-  '/update-category/',
+  '/update-category',
+  isAdmin,
   uploadCategories.single('image'),
   [
-    check('name')
+    body('name')
       .trim()
       .isLength({ min: 4, max: 20 })
       .withMessage('length 4-20.'),
@@ -103,9 +110,15 @@ router.post(
   adminController.updateCategory
 );
 
-router.post('/update-user/:id'); //not allow update user's image, maybe just edit level and banned
+router.post('/update-user'); //not allow update user's image, maybe just edit level and banned
 
-// delete route
-router.post('/delete/:id', adminController.deleteAction);
+// delete routes
+router.post('/delete-post', isPermitted, adminController.deletePost);
+
+router.post('/delete-category', isAdmin, adminController.deleteCategory);
+
+router.post('/delete-user', isAdmin, adminController.deleteUser);
+
+router.post('/delete-comment');
 
 module.exports = router;

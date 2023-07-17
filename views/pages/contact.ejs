@@ -41,7 +41,7 @@
                             <label for="message" class="formbold-form-label">Message <i class="ri-information-line" title="You can drag this box bigger at the right corner if the message goes too long"></i></label>
                             <textarea class="app-form-control" name="message" id="message" placeholder="What do you want to tell me?" required></textarea>
                         </div>
-                        <!-- <input type="hidden" name="_csrf" value=""> -->
+                        <input type="hidden" name="_csrf" value="<%= csrfToken%>">
                         <div class="app-form-group buttons">
                             <button class="button-54" type="submit">Send</button>
                         </div>

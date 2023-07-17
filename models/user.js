@@ -1,18 +1,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const socialSchema = new Schema({
-  name: {
-    type: String,
-    required: true,
-  },
-  link: {
-    type: String,
-    required: false,
-  },
-  icon: String,
-});
-
 const userSchema = new Schema(
   {
     email: { type: String, required: true },

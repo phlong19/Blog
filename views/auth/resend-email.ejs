@@ -18,7 +18,7 @@
                     <label class="formbold-form-label" for="email" class="formbold-form-label">Email</label>
                     <input class="formbold-form-input" id="email" name="email" type="email" required />
                 </div>
-                
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                 <button class="button-54" type="submit">Resend confirmation</button>
             </form>
         </div>

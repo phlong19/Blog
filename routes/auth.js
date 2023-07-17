@@ -120,6 +120,8 @@ router.post(
   authController.postResendEmail
 );
 
+router.post('/logout',isAuth, authController.postLogout);
+
 // manage account
 router.get('/manage', isAuth, authController.getManageAccount);
 
