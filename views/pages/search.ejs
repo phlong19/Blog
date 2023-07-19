@@ -35,10 +35,10 @@
               <div class="article-data-container">
                 <div class="article-data">
                   <span>
-                    <%= post.updatedAt.toLocaleDateString('en-us',{
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric', }) %>
+                    <%= new Date(post.updatedAt).toLocaleDateString('en-us',{
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric' }) %>
                   </span>
                   <span class="article-data-spacer"></span>
                   <span><%= post.like %> likes.</span>

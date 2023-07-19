@@ -92,7 +92,7 @@ exports.getNewPassword = (req, res, next) => {
     .select('email')
     .then(user => {
       if (!user) {
-        req.flash('error', 'Please check your email to update your password.');
+        req.flash('error', 'Please check your email to set your new password.');
         req.flash('errorType', 'warning');
         req.flash('errorHeader', 'Error');
         return res.redirect('/auth/reset-password');
@@ -119,7 +119,7 @@ exports.getNewPassword = (req, res, next) => {
 };
 
 exports.getManageAccount = (req, res, next) => {
-  User.findById(req.user._id)
+  User.findById(req.session.user._id)
     .then(user => {
       res.render('auth/manage', {
         pageTitle: 'Manage Account',
@@ -181,7 +181,7 @@ exports.postRegister = (req, res, next) => {
           email: email,
           password: hashedPassword,
           activation_code: code,
-          activation_expiration: Date.now() + 7200000, // miliseconds
+          activation_expiration: Date.now() + 7200000, // miliseconds - 2 hours
         });
         return user.save();
       });
@@ -198,11 +198,11 @@ exports.postRegister = (req, res, next) => {
     .catch(err => next(new Error(err)));
 };
 
-exports.postVerify = (req, res, next) => {
+exports.postActive = (req, res, next) => {
   const { code } = req.body;
   if (code === 'actived') {
     req.flash('error', 'Your account has been verified before.');
-    res.flash('errorType', 'info');
+    req.flash('errorType', 'info');
     req.flash('errorHeader', 'Verified');
     return res.redirect('/auth/login');
   }
@@ -216,9 +216,9 @@ exports.postVerify = (req, res, next) => {
           'error',
           'Invalid code or code expired. Please resend email confirmation!'
         );
-        res.flash('errorType', 'warning');
+        req.flash('errorType', 'warning');
         req.flash('errorHeader', 'Activation Code Error');
-        return res.redirect('/');
+        return res.redirect('/auth/login');
       }
       user.active = true;
       user.activation_code = 'actived';
@@ -243,41 +243,33 @@ exports.postLogin = (req, res, next) => {
     req.flash('errorHeader', 'Validation Error');
     return res.redirect('/auth/login');
   }
-  User.findOne({ email: email })
+  User.findOne({ email: email, active: true })
     .then(user => {
-      if (!user) {
-        req.flash('error', "Can't find any account with this email.");
+      if (user.banned === true) {
+        req.flash('error', 'Your account has been suspended.');
         req.flash('errorType', 'alert');
-        req.flash('errorHeader', 'Account does not exist');
+        req.flash('errorHeader', 'Banned');
         return res.redirect('/auth/login');
       }
-      brcypt
-        .compare(password, user.password)
-        .then(matched => {
-          if (matched) {
-            req.session.isLoggedIn = true;
-            req.session.user = user;
-            return req.session.save(err => {
-              if (err) {
-                throw new Error(err);
-              }
-              res.redirect('/');
-            });
-          }
-          req.flash(
-            'error',
-            'Wrong password! Please try again, or click Reset Password below.'
-          );
-          req.flash('errorType', 'alert');
-          req.flash('errorHeader', 'Wrong password');
-          return res.redirect('/auth/login');
-        })
-        .catch(err => {
-          req.flash('error', err);
-          req.flash('errorType', 'alert');
-          req.flash('errorHeader', 'Error');
-          return res.redirect('/auth/login');
-        });
+      brcypt.compare(password, user.password).then(matched => {
+        if (matched) {
+          req.session.isLoggedIn = true;
+          req.session.user = user;
+          return req.session.save(err => {
+            if (err) {
+              throw new Error(err);
+            }
+            res.redirect('/');
+          });
+        }
+        req.flash(
+          'error',
+          'Wrong password! Please try again, or click Reset Password below.'
+        );
+        req.flash('errorType', 'alert');
+        req.flash('errorHeader', 'Wrong password');
+        return res.redirect('/auth/login');
+      });
     })
     .catch(err => next(new Error(err)));
 };
@@ -286,15 +278,16 @@ exports.postReset = (req, res, next) => {
   const email = req.body.email;
   let code;
   let user;
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    req.flash('error', errors.array()[0].msg);
+    req.flash('errorType', 'alert');
+    req.flash('errorHeader', 'Account not exist');
+    return res.redirect('/auth/reset-password');
+  }
   User.findOne({ email: email })
     .then(userDoc => {
-      if (!userDoc) {
-        req.flash('error', "Can't find any account with this email address.");
-        req.flash('errorType', 'warning');
-        req.flash('errorHeader', 'Account not exist');
-        return res.redirect('/auth/reset-password');
-      }
-
       code = uuid.v4();
       user = userDoc;
       // send email
@@ -307,9 +300,7 @@ exports.postReset = (req, res, next) => {
           <h1 style="color:green;">You've requested to reset your password at our site.</h1>
           <h3>If it was not you, ignore this email. Or else please click the button below to reset your password.</h3>
           <h4 style="color:rgba(255,35,35,0.87)">This verification email is valid within 1 hours.</h4>
-          <form action="http://localhost:3000/auth/new-password?id=${user._id}&code=${code}" method="get">
-            <button type="submit" style="cursor: pointer;">Click here.</button>
-          </form>
+          <a href="http://localhost:3000/auth/new-password?id=${user._id}&code=${code}">Click here.</a>
         </body>
         `,
       };
@@ -324,10 +315,11 @@ exports.postReset = (req, res, next) => {
         req.flash('errorType', 'warning');
         req.flash('errorHeader', 'Email Error');
         return res.redirect('/auth/register');
+      } else {
+        user.reset_code = code;
+        user.reset_expiration = Date.now() + 3600000;
+        return user.save();
       }
-      user.reset_code = code;
-      user.reset_expiration = Date.now() + 3600000;
-      return user.save();
     })
     .then(result => {
       req.flash(
@@ -336,7 +328,7 @@ exports.postReset = (req, res, next) => {
       );
       req.flash('errorType', 'info');
       req.flash('errorHeader', 'Reset Your Password');
-      res.redirect('/login');
+      res.redirect('/auth/login');
     })
     .catch(err => next(new Error(err)));
 };
@@ -368,7 +360,7 @@ exports.postNewPassword = (req, res, next) => {
           'error',
           'Invalid code or code expired. Please resend reset password email confirmation!'
         );
-        res.flash('errorType', 'warning');
+        req.flash('errorType', 'warning');
         req.flash('errorHeader', 'Confirmation Code Error');
         return res.redirect('/auth/reset-password');
       }
@@ -381,7 +373,7 @@ exports.postNewPassword = (req, res, next) => {
       user.reset_expiration = undefined;
       return user.save().then(result => {
         req.flash('error', 'Your password has been updated successfully!');
-        res.flash('errorType', '');
+        req.flash('errorType', '');
         req.flash('errorHeader', 'Success');
         res.redirect('/auth/login');
       });
@@ -392,26 +384,29 @@ exports.postNewPassword = (req, res, next) => {
 exports.postResendEmail = (req, res, next) => {
   const email = req.body.email;
   let code;
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    req.flash('error', errors.array()[0].msg);
+    req.flash('errorType', 'alert');
+    req.flash('errorHeader', 'Validation Error');
+    return res.redirect('/auth/resend-email');
+  }
+
   User.findOne({ email: email })
     .then(user => {
-      if (!user) {
-        req.flash('error', "Can't find any account with this email address.");
-        req.flash('errorType', 'warning');
-        req.flash('errorHeader', 'Account not exist');
-        return res.redirect('/');
-      }
       if (user.activation_code === 'actived') {
         req.flash('error', 'Your account has been verified before.');
         req.flash('errorType', 'info');
         req.flash('errorHeader', 'Verified');
         return res.redirect('/auth/login');
-      }
-      code = uuid.v4();
-      const msg = {
-        from: 'doquangkhoi54@outlook.com',
-        to: email,
-        subject: 'Your Account Verification',
-        html: `
+      } else {
+        code = uuid.v4();
+        const msg = {
+          from: 'doquangkhoi54@outlook.com',
+          to: email,
+          subject: 'Your Account Verification',
+          html: `
         <body style="font-family:'Cascadia Code';color:white;background:rgba(0,0,0,0.8)">
           <h1 style="color:green;">Congratulations! You've created your new account successful.</h1>
           <h3>Please click the button below to verify your account.</h3>
@@ -422,8 +417,9 @@ exports.postResendEmail = (req, res, next) => {
           </form>
         </body>
         `,
-      };
-      return sendGrid.send(msg);
+        };
+        return sendGrid.send(msg);
+      }
     })
     .then(sent => {
       if (sent[0].statusCode !== 202) {
@@ -434,9 +430,10 @@ exports.postResendEmail = (req, res, next) => {
         req.flash('errorType', 'warning');
         req.flash('errorHeader', 'Email Error');
         return res.redirect('/auth/resend-email');
+      } else {
+        user.activation_expiration = Date.now() + 7200000;
+        return user.save();
       }
-      user.activation_expiration = Date.now() + 7200000;
-      return user.save();
     })
     .then(result => {
       req.flash(
@@ -460,12 +457,207 @@ exports.postLogout = (req, res, next) => {
 };
 
 // MANAGE
-exports.postUpdateLink = (req, res, next) => {
-  const { userId, link, icon } = req.body;
+exports.postUpdateEmail = (req, res, next) => {
+  const email = req.body.email;
+  let user;
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    req.flash('error', errors.array()[0].msg);
+    req.flash('errorType', 'alert');
+    req.flash('errorHeader', 'Validation Error');
+    return res.redirect('/auth/manage');
+  }
+  const code = uuid.v4();
+  User.findOne({ email: email })
+    .then(userDoc => {
+      user = userDoc;
+      const msg = {
+        from: 'doquangkhoi54@gmail.com',
+        to: email,
+        subject: 'Changing email confirmation',
+        html: `
+        <body style="font-family:'Cascadia Code';color:white;background:rgba(0,0,0,0.8)">
+          <h1 style="color:green;">You've requested your new email change.</h1>
+          <h3>Please click the button below to verify your account.</h3>
+          <h4 style="color:rgba(255,35,35,0.87)">This verification email is valid within 1 hours.</h4>
+          <form action="http://localhost:3000/auth/active" method="post">
+            <input type="hidden" name="code" value="${code}">
+            <button type="submit" style="cursor: pointer;">Click here.</button>
+          </form>
+        </body>
+        `,
+      };
+      return sendGrid.send(msg);
+    })
+    .then(sent => {
+      if (sent[0].statusCode !== 202) {
+        req.flash(
+          'error',
+          'Sending email confirmation failed! Please try again.'
+        );
+        req.flash('errorType', 'warning');
+        req.flash('errorHeader', 'Email Error');
+        return res.redirect('/auth/manage');
+      }
+      user.email = email;
+      user.active = false;
+      user.activation_code = code;
+      user.activation_expiration = Date.now() + 3600000;
+      return user.save();
+    })
+    .then(result => {
+      req.session.destroy();
+      req.flash('error', 'Please confirm your new email and re-login');
+      req.flash('errorType', 'info');
+      req.flash('errorHeader', 'Check Your Email');
+      res.redirect('/auth/login');
+    })
+    .catch(err => next(new Error(err)));
+};
 
+exports.postUpdatePassword = (req, res, next) => {
+  const { userId, oldPassword, newPassword, confirmPassword } = req.body;
+  let user;
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    req.flash('error', errors.array()[0].msg);
+    req.flash('errorType', 'alert');
+    req.flash('errorHeader', 'Validation Error');
+    return res.redirect('/auth/manage');
+  }
+  if (newPassword !== confirmPassword) {
+    req.flash('error', 'New password does not match');
+    req.flash('errorType', 'alert');
+    req.flash('errorHeader', 'Validation Error');
+    return res.redirect('/auth/manage');
+  }
+  if (userId !== req.session.user._id) {
+    req.flash('error', "You're trying violate other account");
+    req.flash('errorType', 'alert');
+    req.flash('errorHeader', 'Caution');
+    return res.redirect('/auth/manage');
+  }
+
+  User.findById(userId)
+    .then(userDoc => {
+      if (!userDoc) {
+        req.flash('error', "We can't find your account.");
+        req.flash('errorType', 'alert');
+        req.flash('errorHeader', 'Error');
+        return res.redirect('/auth/manage');
+      }
+      user = userDoc;
+      return brcypt.compare(oldPassword, userDoc.password);
+    })
+    .then(matched => {
+      if (matched) {
+        brcypt
+          .hash(newPassword, 12)
+          .then(hashedPassword => {
+            user.password = hashedPassword;
+            return user.save();
+          })
+          .then(result => {
+            req.session.destroy();
+            req.flash('error', 'Update password successfully.');
+            req.flash('errorType', '');
+            req.flash('errorHeader', 'Please re-login');
+            return res.redirect('/auth/login');
+          });
+      } else {
+        req.flash('error', 'Password does not match');
+        req.flash('errorType', 'alert');
+        req.flash('errorHeader', 'Validation Error');
+        return res.redirect('/auth/manage');
+      }
+    })
+    .catch(err => next(new Error(err)));
+};
+
+exports.postUpdateAvatar = (req, res, next) => {
+  const image = req.file;
+  const userId = req.body.userId;
+  if (!image) {
+    req.flash('error', 'The attached file was not an image.');
+    req.flash('errorType', 'alert');
+    req.flash('errorHeader', 'Wrong format');
+    return res.redirect('/auth/manage');
+  }
+  if (userId !== req.session.user._id) {
+    req.flash('error', "You're trying violate other account");
+    req.flash('errorType', 'alert');
+    req.flash('errorHeader', 'Caution');
+    return res.redirect('/auth/manage');
+  }
   User.findById(userId)
     .then(user => {
       if (!user) {
+        req.flash('error', 'Update password successfully.');
+        req.flash('errorType', '');
+        req.flash('errorHeader', 'Please re-login');
+        return res.redirect('/auth/manage');
+      }
+      user.avatarUrl = image.path;
+      user.avatarId = image.filename;
+      return user.save().then(result => {
+        req.flash('error', 'Update new avatar successfully.');
+        req.flash('errorType', '');
+        req.flash('errorHeader', 'Success');
+        return res.redirect('/auth/manage');
+      });
+    })
+    .catch(err => next(new Error(err)));
+};
+
+exports.postUpdateBio = (req, res, next) => {
+  const { bio, userId } = req.body;
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    req.flash('error', errors.array()[0].msg);
+    req.flash('errorType', 'alert');
+    req.flash('errorHeader', 'Validation Error');
+    return res.redirect('/auth/manage');
+  }
+  if (userId !== req.session.user._id) {
+    req.flash('error', "You're trying violate other account");
+    req.flash('errorType', 'alert');
+    req.flash('errorHeader', 'Caution');
+    return res.redirect('/auth/manage');
+  }
+  User.findById(userId)
+    .then(user => {
+      if (!user) {
+        req.flash('error', "We can't find any account.");
+        req.flash('errorType', 'alert');
+        req.flash('errorHeader', 'Error');
+        return res.redirect('/auth/manage');
+      }
+      user.shortDes = bio;
+      return user.save().then(result => {
+        req.flash('error', 'Update your bio successfully.');
+        req.flash('errorType', '');
+        req.flash('errorHeader', 'Success');
+        return res.redirect('/auth/manage');
+      });
+    })
+    .catch(err => next(new Error(err)));
+};
+
+exports.postUpdateLink = (req, res, next) => {
+  const { userId, link, icon } = req.body;
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    req.flash('error', errors.array()[0].msg);
+    req.flash('errorType', 'alert');
+    req.flash('errorHeader', 'Validation Error');
+    return res.redirect('/auth/manage');
+  }
+  User.findById(userId)
+    .then(user => {
+      if (!user) {
+        req.flash('error', "We can't find your account to update.");
+        req.flash('errorType', 'alert');
+        req.flash('errorHeader', 'Validation Error');
         res.redirect('/auth/manage');
       }
       const userSocialLinks = [...user.social];
