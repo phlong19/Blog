@@ -14,9 +14,18 @@ router.post(
   [
     body('email')
       .notEmpty()
-      .normalizeEmail()
       .isEmail()
-      .withMessage('Invalid email address'),
+      .withMessage('Invalid email address')
+      .custom((value, { req }) => {
+        return User.findOne({ email: value, active: true }).then(userDoc => {
+          if (!userDoc) {
+            return Promise.reject(
+              'Wrong email or you have not active your account by email.'
+            );
+          }
+        });
+      })
+      .normalizeEmail(),
     body('password').isLength({ min: 8, max: 20 }).withMessage('Please'),
   ],
   authController.postLogin
@@ -68,17 +77,28 @@ router.post(
   authController.postRegister
 );
 
-router.post('/active', authController.postVerify);
+router.post('/active', authController.postActive);
 
 router.get('/reset-password', authController.getReset);
 
 router.post(
   '/reset-password',
-  body('email')
-    .notEmpty()
-    .normalizeEmail()
-    .isEmail()
-    .withMessage('Invalid email address'),
+  [
+    body('email')
+      .notEmpty()
+      .isEmail()
+      .withMessage('Invalid email address')
+      .custom((value, { req }) => {
+        return User.findOne({ email: value }).then(userDoc => {
+          if (!userDoc) {
+            return Promise.reject(
+              "We can't find any account with this email address!"
+            );
+          }
+        });
+      })
+      .normalizeEmail(),
+  ],
   authController.postReset
 );
 
@@ -112,22 +132,107 @@ router.get('/resend-email', authController.getResendEmail);
 
 router.post(
   '/resend-email',
-  body('email')
-    .notEmpty()
-    .normalizeEmail()
-    .isEmail()
-    .withMessage('Invalid email address'),
+  [
+    body('email')
+      .notEmpty()
+      .isEmail()
+      .withMessage('Invalid email address')
+      .custom((value, { req }) => {
+        return User.findOne({ email: value }).then(userDoc => {
+          if (!userDoc) {
+            return Promise.reject(
+              "We can't find any account with this email address!"
+            );
+          }
+        });
+      })
+      .normalizeEmail(),
+  ],
   authController.postResendEmail
 );
 
-router.post('/logout',isAuth, authController.postLogout);
+router.post('/logout', isAuth, authController.postLogout);
 
 // manage account
 router.get('/manage', isAuth, authController.getManageAccount);
 
 //manage update things
+router.post(
+  '/manage/update-email',
+  isAuth,
+  [
+    body('email')
+      .notEmpty()
+      .isEmail()
+      .withMessage('Invalid email address')
+      .custom((value, { req }) => {
+        return User.findOne({ email: value }).then(userDoc => {
+          if (userDoc) {
+            return Promise.reject(
+              'This email has already existed, please choose another one!'
+            );
+          }
+        });
+      })
+      .normalizeEmail(),
+  ],
+  authController.postUpdateEmail
+);
 
-// router.post('/manage/update-avatar',uploadUsers)
+router.post(
+  '/manage/update-password',
+  isAuth,
+  [
+    body('oldPassword')
+      .trim()
+      .isLength({ min: 8, max: 20 })
+      .isStrongPassword({
+        minLength: 8,
+        minUppercase: 1,
+        minNumbers: 1,
+        minSymbols: 1,
+        minLowercase: 2,
+      })
+      .withMessage('Old Password not correct.'),
+    body('newPassword')
+      .trim()
+      .isLength({ min: 8, max: 20 })
+      .isStrongPassword({
+        minLength: 8,
+        minUppercase: 1,
+        minNumbers: 1,
+        minSymbols: 1,
+        minLowercase: 2,
+      })
+      .withMessage(
+        'Password length is 8-20 chars, must contain 1 Uppercase, 1 Number and 1 Symbol'
+      ),
+    body('confirmPassword')
+      .trim()
+      .isLength({ min: 8, max: 20 })
+      .withMessage("Password does't match"),
+  ],
+  authController.postUpdatePassword
+);
+
+router.post(
+  '/manage/update-avatar',
+  isAuth,
+  uploadUsers.single('image'),
+  authController.postUpdateAvatar
+);
+
+router.post(
+  '/manage/update-bio',
+  isAuth,
+  [
+    body('bio')
+      .notEmpty()
+      .isLength({ max: 500 })
+      .withMessage('Maximum bio length is 500 characters'),
+  ],
+  authController.postUpdateBio
+);
 
 router.post(
   '/manage/update-link',

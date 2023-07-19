@@ -30,7 +30,7 @@
           <br /><br />
           <h2><%= user.name %></h2>
           <br>
-          <p><%= user.shortDes %></p>
+          <p><%= user.shortDes ? user.shortDes : 'None description' %></p>
           
         </div>
         <br>
@@ -39,8 +39,8 @@
       <div class="main-content">
         <div class="tabset">
           <!-- Tab 1 -->
-          <input type="radio" name="tabset" id="tab1" required aria-controls="personal" checked />
-          <label for="tab1">Personal Data</label>
+          <input type="radio" name="tabset" id="tab1" required aria-controls="data" checked />
+          <label for="tab1">Account Data</label>
           <!-- Tab 2 -->
           <input type="radio" name="tabset" id="tab2" required aria-controls="email" />
           <label for="tab2">Email</label>
@@ -51,25 +51,45 @@
           <input type="radio" name="tabset" id="tab4" aria-controls="avatar" />
           <label for="tab4">Avatar</label>
           <!-- Tab 5 -->
-          <input type="radio" name="tabset" id="tab5" aria-controls="social" />
-          <label for="tab5">Social</label>
+          <input type="radio" name="tabset" id="tab5" aria-controls="bio" />
+          <label for="tab5">Bio</label>
+          <!-- Tab 6 -->
+          <input type="radio" name="tabset" id="tab6" aria-controls="social" />
+          <label for="tab6">Social</label>
 
           <div class="tab-panels">
-            <section id="personal" class="tab-panel">
-              <h1 class="title">Personal Data</h1>
-
-              <form action="download" method="post">
-                <input class="form-control" required />
-                <label for="" class="form-label"></label>
-
-                <button type="submit" class="formbold-btn">aosnoubou</button>
+            <section id="data" class="tab-panel">
+              <h1 class="title">Personal Account Data</h1>
+              <div class="table-responsive custom-table-responsive">
+                <table class="table custom-table" style="text-align: center;">
+                  <tr>
+                    <th>Account Level</th>
+                    <td>
+                      <%= user.level %>
+                    </td>
+                  </tr>
+                  <tr>
+                    <th>Email</th>
+                    <td><%= user.email %></td>
+                  </tr>
+                  <tr>
+                    <th>Social Media Links</th>
+                    <td>
+                      <%= user.social.length %>
+                    </td>
+                  </tr>   
+                </table>
+              </div>
+              <form action="/auth/manage/delete" method="post">
+                <input type="hidden" name="userId" value="<%= user._id %>" />
+                <button type="submit" class="formbold-btn-delete">Delete account</button>
               </form> 
             </section>
 
             <section id="email" class="tab-panel">
               <h1 class="title">Change email</h1>
               <br>
-              <form action="" >
+              <form action="/auth/manage/update-email" method="post">
                 <label for="new-email" class="formbold-form-label">New email</label>
                 <input type="text" class="formbold-form-input" name="new-email" id="new-email" required>
 
@@ -80,19 +100,20 @@
             <section id="password" class="tab-panel">
               <h1 class="title">Change password</h1>
               <br>
-              <form action="" method="post">
+              <form action="/auth/manage/update-password" method="post">
                 <div class="formbold-mb-3">
                   <label for="old-password" class="formbold-form-label">Old password</label>
-                  <input type="text" name="old-password" id="old-password" class="formbold-form-input" required>
+                  <input type="text" name="oldPassword" id="old-password" class="formbold-form-input" required>
                 </div>
                 <div class="formbold-mb-3">
                   <label for="new-password" class="formbold-form-label">New password</label>
-                  <input type="text" name="new-password" id="new-password" class="formbold-form-input" required>
+                  <input type="text" name="newPassword" id="new-password" class="formbold-form-input" required>
                 </div>
                 <div class="formbold-mb-3">
                   <label for="confirm-password" class="formbold-form-label">Confirm password</label>
-                  <input type="text" name="confirm-password" id="confirm-password" class="formbold-form-input" required>
+                  <input type="text" name="confirmPassword" id="confirm-password" class="formbold-form-input" required>
                 </div>
+                <input type="hidden" name="userId" value="<%= user._id %>">
                 <button type="submit" class="formbold-btn">Update password</button>
               </form>
             </section>
@@ -101,11 +122,21 @@
               <h1 class="title">Avatar image</h1>
               <br>
               <label for="avatar" class="formbold-form-label">Choose new avatar</label>
-              <form action="" method="post" enctype="multipart/form-data">
-                <label for="avatar" class="formbold-form-label"></label>
+              <form action="/auth/manage/update-avatar" method="post" enctype="multipart/form-data">
                 <input type="file" name="avatar" id="avatar" class="formbold-form-input" required>
-                <input type="hidden" name="userId">
+                <input type="hidden" name="userId" value="<%= user._id %>">
                 <button type="submit" class="formbold-btn">Update avatar</button>
+              </form>
+            </section>
+
+            <section id="bio" class="tab-panel">
+              <h1 class="title">Biography</h1>
+              <br>
+              <form action="/auth/manage/update-bio" method="post">
+                <label for="bio" class="formbold-form-label">Describe your self</label>
+                <input type="text" name="bio" id="bio" class="formbold-form-input" required>
+                <input type="hidden" name="userId" value="<%= user._id %>">
+                <button type="submit" class="formbold-btn">Update bio</button>
               </form>
             </section>
 
