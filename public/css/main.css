@@ -137,8 +137,7 @@ body {
   }
 }
 
-img:not(#img404) +
-img:not(#avatar) {
+img:not(#img404) + img:not(#avatar) {
   max-width: 100%;
 }
 
@@ -184,7 +183,7 @@ body.light-theme {
     #12bcfe,
     #44ce7b
   );
-  
+
   /* ADD-ON AUTHENTICATE PROPERTY */
   --background-color-inner: #fae9e9;
   --border-color-inner: #ff9999;
@@ -1073,7 +1072,7 @@ span span#synthwave {
 }
 
 .htmlContent a:hover {
-  color: var(--light-color) ;
+  color: var(--light-color);
 }
 
 .htmlContent p {
@@ -1082,4 +1081,8 @@ span span#synthwave {
 
 i.ri-information-line {
   font-size: 1.5rem;
+}
+
+h4.sortHeader a.active {
+  color: var(--light-color);
 }

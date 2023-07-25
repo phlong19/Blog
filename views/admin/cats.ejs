@@ -29,7 +29,7 @@
                     <div class="modal-body">
                       <div class="formbold-main-wrapper">
                         <div class="formbold-form-wrapper">
-                          <form id="form-category" action="/admin/manage/create-category" method="POST" enctype="multipart/form-data">
+                          <form id="form-category" action="/admin/create-category?_csrf=<%= csrfToken %>" method="POST" enctype="multipart/form-data">
                             <div class="formbold-mb-3">
                                 <label for="name" class="formbold-form-label"> Name <i class="ri-information-line" title="Length: 4-20 characters"></i> </label>
                                 <input
@@ -74,8 +74,6 @@
                               <label class="formbold-form-label">Preview Image</label>
                             </div>
 
-                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-
                             <button type="submit" class="formbold-btn">Create</button>
                           </form>
                         </div>
@@ -108,7 +106,7 @@
                     <td>
                       <%= new Date(cat.createdAt.toString()).toLocaleDateString() %>
                     </td>
-                    <td><a href="/admin/manage/details/<%= cat.slug %>?edit=category" class="list-link">Details</a></td>
+                    <td><a href="/admin/details/<%= cat.slug %>?edit=category" class="list-link">Details</a></td>
                     <tr class="spacer"><td colspan="100"></td></tr>
                   </tr>
                 <% } %>

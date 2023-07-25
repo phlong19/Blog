@@ -14,7 +14,7 @@
             <br>
             <div class="article-data">
                 <span>
-                    <%= post.updatedAt.toLocaleDateString('en-us',{
+                    <%= post.createdAt.toLocaleDateString('en-us',{
                         year: 'numeric',
                         month: 'long',
                         day: 'numeric',
@@ -40,11 +40,11 @@
 
             <div class="author d-grid">
                 <div class="author-image-box">
-                    <img src="<%= author.avatarUrl %>" alt="" class="article-image">
+                    <img src="<%= author.avatarUrl ? author.avatarUrl : 'https://i.stack.imgur.com/oBJxw.png' %>" alt="" class="article-image">
                 </div>
                 <div class="author-about">
                     <h3 class="author-name"><%= author.name %></h3>
-                    <p><%= author.shortDes %></p>
+                    <p><%= author.shortDes ? author.shortDes : 'None description.' %></p>
                     <ul class="list social-media">
                         <% if(author.social.length > 0) { %>
                             <% for (const media of author.social) { %>

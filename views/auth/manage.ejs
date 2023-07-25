@@ -4,6 +4,8 @@
 
 <link rel="stylesheet" href="/css/form.css" />
 
+<link rel="stylesheet" href="/css/noti.css">
+
 <style> 
   #div-social {
     display: none;
@@ -12,6 +14,10 @@
 </head>
 
 <%- include('../components/nav.ejs') %>
+
+  <% if(error) { %>
+    <%- include('../components/notification.ejs') %>
+  <% } %>
 <div class="section-header-offset custom-header">
   <h2 class="title section-title" data-name="Account Management">
     Account Management
@@ -60,7 +66,28 @@
           <div class="tab-panels">
             <section id="data" class="tab-panel">
               <h1 class="title">Personal Account Data</h1>
+              <button class="open-modal" style="background: red; margin-top: -34px;">Delete account</button>
               <div class="table-responsive custom-table-responsive">
+                <div class="modal-content hidden-modal">
+                  <div class="modal-header">
+                    <h3>Confirm delete your account</h3>
+                    <button class="close-modal" title="Close">&times;</button>
+                  </div>
+                  <div class="modal-body">
+                    <h4>You're going to delete your account permanently, are you sure?</h4>
+                    <br>
+                    <h4>After delete, there's no way to recover your account.</h4> <br>
+                    <form action="/auth/manage/delete" method="post">
+                      <input type="hidden" name="userId" value="<%= user._id %>" />
+                      <input type="hidden" name="_csrf" value="<%= csrfToken %>"/>
+                      <label for="confirm-delete" class="formbold-form-label" style="text-align: center;">Type <span style="color: red;">"CONFIRMED"</span> to verify.</label>
+                      <input type="text" id="confirm-delete" class="formbold-form-input" style="text-align: center;" oninput="confirmed()">
+                      <button type="submit" id="btn-delete" style="display: none;" class="formbold-btn-delete">I know what I'm doing and I understand.</button>
+                    </form> 
+                  </div>
+                </div>
+                <div class="blur-bg hidden-blur"></div>
+              
                 <table class="table custom-table" style="text-align: center;">
                   <tr>
                     <th>Account Level</th>
@@ -80,40 +107,54 @@
                   </tr>   
                 </table>
               </div>
-              <form action="/auth/manage/delete" method="post">
-                <input type="hidden" name="userId" value="<%= user._id %>" />
-                <button type="submit" class="formbold-btn-delete">Delete account</button>
-              </form> 
             </section>
 
             <section id="email" class="tab-panel">
               <h1 class="title">Change email</h1>
               <br>
+              <h4>Please re-active your account with the new email address after updating email successfully!</h4>
+              <br>
               <form action="/auth/manage/update-email" method="post">
-                <label for="new-email" class="formbold-form-label">New email</label>
-                <input type="text" class="formbold-form-input" name="new-email" id="new-email" required>
+                <label for="email" class="formbold-form-label">New email</label>
+                <input type="email" class="formbold-form-input" name="email" id="email" required>
+                <label for="type" class="formbold-form-label">Choose activation type you can use.</label>
+                <select name="type" id="type">
+                  <option value="oldEmail" selected>Confirming email address transfer with current email.</option>
+                  <option value="newEmail">I lost my email or no longer have access to that email.</option>
+                </select>
+                <input type="hidden" name="oldEMail" value="<%= user.email %>">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
 
                 <button type="submit" class="formbold-btn">Send email change confirmation</button>
               </form>
             </section>
 
             <section id="password" class="tab-panel">
-              <h1 class="title">Change password</h1>
+              <h1 class="title">Change password 
+                <i class="ri-information-line" title="Please re-login after updating password successfully!"></i>
+              </h1>
               <br>
               <form action="/auth/manage/update-password" method="post">
                 <div class="formbold-mb-3">
                   <label for="old-password" class="formbold-form-label">Old password</label>
-                  <input type="text" name="oldPassword" id="old-password" class="formbold-form-input" required>
+                  <input type="password" name="oldPassword" id="old-password" class="formbold-form-input" required>
                 </div>
                 <div class="formbold-mb-3">
-                  <label for="new-password" class="formbold-form-label">New password</label>
-                  <input type="text" name="newPassword" id="new-password" class="formbold-form-input" required>
+                    <label for="new-password" class="formbold-form-label">
+                      New password
+                    <i class="ri-information-line" title="Password length is 8-20 characters and must contain 1 Uppercase, 1 Number, 1 Symbol."></i>
+                  </label>
+                  <input type="password" name="newPassword" id="new-password" class="formbold-form-input" required>
                 </div>
                 <div class="formbold-mb-3">
-                  <label for="confirm-password" class="formbold-form-label">Confirm password</label>
-                  <input type="text" name="confirmPassword" id="confirm-password" class="formbold-form-input" required>
+                  <label for="confirm-password" class="formbold-form-label">
+                    Confirm password
+                    <i class="ri-information-line" title="Must match the new password above."></i>
+                  </label>
+                  <input type="password" name="confirmPassword" id="confirm-password" class="formbold-form-input" required>
                 </div>
                 <input type="hidden" name="userId" value="<%= user._id %>">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                 <button type="submit" class="formbold-btn">Update password</button>
               </form>
             </section>
@@ -121,8 +162,10 @@
             <section id="avatar" class="tab-panel">
               <h1 class="title">Avatar image</h1>
               <br>
-              <label for="avatar" class="formbold-form-label">Choose new avatar</label>
-              <form action="/auth/manage/update-avatar" method="post" enctype="multipart/form-data">
+              <label for="avatar" class="formbold-form-label">Choose new avatar 
+                <i class="ri-information-line" title="Max size image is 1MB"></i>
+              </label>
+              <form action="/auth/manage/update-avatar?_csrf=<%= csrfToken %>" method="post" enctype="multipart/form-data">
                 <input type="file" name="avatar" id="avatar" class="formbold-form-input" required>
                 <input type="hidden" name="userId" value="<%= user._id %>">
                 <button type="submit" class="formbold-btn">Update avatar</button>
@@ -133,9 +176,13 @@
               <h1 class="title">Biography</h1>
               <br>
               <form action="/auth/manage/update-bio" method="post">
-                <label for="bio" class="formbold-form-label">Describe your self</label>
-                <input type="text" name="bio" id="bio" class="formbold-form-input" required>
+                <label for="bio" class="formbold-form-label">
+                  Describe your self
+                  <i class="ri-information-line" title="Maximum biography length is 500 characters."></i>
+                </label>
+                <textarea type="text" name="bio" id="bio" class="formbold-form-input" rows="7" required></textarea>
                 <input type="hidden" name="userId" value="<%= user._id %>">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                 <button type="submit" class="formbold-btn">Update bio</button>
               </form>
             </section>
@@ -144,14 +191,19 @@
               <h1 class="title">Social media links</h1>
               <br>
               <h3>Current links</h3><br>
-              <ul class="social-media ">
-                <% for (const link of user.social) { %>
-                  <div class="list">
-                    <li class="list-item"><a target="_blank" href="<%= link.link.includes('https://') ? '' : 'https://' %><%= link.link %>" class="list-link"><i class="<%= link.icon %>"></i></a></li> - <p><%= link.link %></p>
-                  </div>
-                <% } %>
-                  <br>
-              </ul>
+              <% if(user.social.length>0) { %>
+                <ul class="social-media ">
+                  <% for (const link of user.social) { %>
+                    <div class="list">
+                      <li class="list-item"><a target="_blank" href="<%= link.link.includes('https://') ? '' : 'https://' %><%= link.link %>" class="list-link"><i class="<%= link.icon %>"></i></a></li> - <p><%= link.link %></p>
+                    </div>
+                  <% } %>
+                    <br>
+                </ul>
+              <% } else { %>
+                <h4>None.</h4>
+                <br>
+              <% } %>
               <select name="select-list" id="select-list" class="formbold-form-input">
                 <option value="close" selected>Choose a platform to update link.</option>
                 <option value="ri-facebook-circle-line">Facebook</option>
@@ -168,7 +220,7 @@
                   <input type="text" name="link" class="formbold-form-input" required>
                   <input type="hidden" name="icon" id="icon" value="">
                   <input type="hidden" name="userId" value="<%= user._id %>">
-
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                   <button type="submit" class="formbold-btn">Update link</button>
                 </form>
               </div>
@@ -181,7 +233,8 @@
 </div>
 
 <%- include('../components/footer.ejs') %>
-
+  <script src="/js/form.js"></script>
+  <script src="/js/noti.js"></script>
 <script>
   let select = document.getElementById('select-list');
   let icon;
@@ -195,6 +248,14 @@
     document.getElementById('icon').setAttribute('value',icon);
   }
 });
+  function confirmed(){
+    let confirm = document.getElementById('confirm-delete').value;
+    if (confirm === "CONFIRMED") {
+      document.getElementById('btn-delete').style.display = "block";
+    } else {
+      document.getElementById('btn-delete').style.display = "none";
+    }
+  }
 
 </script>
 

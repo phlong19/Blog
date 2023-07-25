@@ -3,7 +3,6 @@ require('dotenv').config();
 
 // Plugins
 const path = require('path');
-
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
@@ -13,12 +12,6 @@ const flash = require('connect-flash');
 const csrf = require('csurf');
 
 const errorController = require('./controllers/error');
-const User = require('./models/user');
-
-// routes
-const authRoutes = require('./routes/auth');
-const pageRoutes = require('./routes/page');
-const adminRoutes = require('./routes/admin');
 
 // database things
 const uri = process.env.URI;
@@ -26,11 +19,19 @@ const uri = process.env.URI;
 // Config app middlewares
 const app = express();
 
+const store = MongoStore.create({
+  mongoUrl: uri,
+  autoRemove: 'native',
+  ttl: 7200, //2 hours
+  collectionName: 'sessions',
+});
+
+const csrfProtection = csrf();
+
 // view engine
 app.set('view engine', 'ejs');
 
 // config body-parser
-app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 
 // serve file stactically
@@ -40,19 +41,14 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use(
   session({
     secret: 'my secrets',
-    resave: false,
     saveUninitialized: false,
-    store: MongoStore.create({
-      mongoUrl: uri,
-      autoRemove: 'native',
-      ttl: 1200, //43200, //12 hours
-      collectionName: 'sessions',
-    }),
+    resave: false,
+    store: store,
   })
 );
 
 // others middlewares
-app.use(csrf());
+app.use(csrfProtection);
 app.use(flash());
 
 // local res
@@ -68,26 +64,14 @@ app.use((req, res, next) => {
   next();
 });
 
-// save user object in session
-app.use((req, res, next) => {
-  if (!req.session.user) {
-    return next();
-  }
-  User.findById(req.session.user._id)
-    .then(user => {
-      if (!user) {
-        return next();
-      }
-      req.user = user;
-      next();
-    })
-    .catch(error => next(new Error(error)));
-});
-
 // routes
+const authRoutes = require('./routes/auth');
+const pageRoutes = require('./routes/page');
+const adminRoutes = require('./routes/admin');
+
 app.use(pageRoutes);
 app.use('/auth', authRoutes);
-app.use('/admin/manage', adminRoutes);
+app.use('/admin', adminRoutes);
 
 // error pages
 app.use(errorController.get404);
@@ -97,6 +81,10 @@ app.use((error, req, res, next) => {
   res.status(500).render('errors/500', {
     pageTitle: '500',
     error: error,
+    isAuthenticated: req.session.isLoggedIn,
+    name: req.session.user.name,
+    level: req.session.user.level,
+    csrfToken: req.csrfToken(),
   });
 });
 

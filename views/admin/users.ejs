@@ -25,36 +25,38 @@
               <thead>
                 <tr>  
                     <th scope="col">#</th>
-                    <th scope="col">Title</th>
-                    <th scope="col">Image Url</th>
-                    <th scope="col">Content</th>
-                    <th scope="col">Author</th>
-                    <th scope="col">Status</th>
-                    <th scope="col">Categories</th>
+                    <th scope="col">Username</th>
+                    <th scope="col">Email</th>
+                    <th scope="col">Avatar Url</th>
+                    <th scope="col">Active</th>
+                    <th scope="col">Social</th>
+                    <th scope="col">Banned</th>
+                    <th scope="col">Created At</th>
                     <th scope="col"></th>
                 </tr>
               </thead>
               <tbody>
-                
-                <tr>
-                  <th scope="row">
-                    1
-                  </th>
-                  <td>
-                    1392
-                  </td>
-                  <td>James Yates</td>
-                  <td>
-                    Web Designer
-                    <small class="d-block">Far far away, behind the word mountains.</small>
-                  </td>
-                  <td>+63 983 0962 971</td>
-                  <td>NY University</td>
-                  <td>Sports | Girl | Vietnam</td>
-                  <td><a href="/admin/manage/detail-user/<=userid" class="list-link">Details</a></td>
-                </tr>
-                <tr class="spacer"><td colspan="100"></td></tr>
-                
+                <% for(let i=0;i<users.length;i++) { %> 
+                  <% const user=users[i]; %>
+                    <tr>
+                      <th scope="row">
+                        <%= i+1 %>
+                      </th>
+                      <td>
+                        <%= user.name %>
+                      </td>
+                      <td><%= user.email %></td>
+                      <td class="shorten-250">
+                        <%= user.avatarUrl %>
+                        <!-- <small class="d-block">Far far away, behind the word mountains.</small> -->
+                      </td>
+                      <td><%= user.active %></td>
+                      <td><%= user.social.length %></td>
+                      <td><%= user.banned %></td>
+                      <td><%= user.createdAt.toLocaleDateString('en-us') %></td>
+                      <td><a href="/admin/detail-user/<%= user._id %>" class="list-link">Details</a></td>
+                    </tr>
+                <% } %>
               </tbody>
             </table>
             

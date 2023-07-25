@@ -1,17 +1,17 @@
 
 <div class="admin-nav">
-    <a href="/admin/manage/posts" class="<%= path==='/manage/posts' ? 'active' :'' %>">
+    <a href="/admin/posts" class="<%= path==='/posts' ? 'active' :'' %>">
       Posts
     </a>
     <% if(level>2) {%>
-    <a href="/admin/manage/users" class="<%= path==='/manage/users' ? 'active' :'' %>">
+    <a href="/admin/users" class="<%= path==='/users' ? 'active' :'' %>">
       Users
     </a>
-    <a href="/admin/manage/categories" class="<%= path==='/manage/categories' ? 'active' :'' %>">
+    <a href="/admin/categories" class="<%= path==='/categories' ? 'active' :'' %>">
       Categories
     </a>
     <% } %>
-    <a href="/admin/manage/comments" class="<%= path==='/manage/comments' ? 'active' :'' %>">
+    <a href="/admin/comments" class="<%= path==='/comments' ? 'active' :'' %>">
       Comments
     </a>
 </div>

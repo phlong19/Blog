@@ -2,6 +2,8 @@
 
 <link rel="stylesheet" href="/css/form.css">
 
+<link rel="stylesheet" href="/css/table.css">
+
 <link rel="stylesheet" href="/css/quill.css">
 
 <link href="https://cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet">
@@ -19,7 +21,7 @@
     <h1>Edit <%= edit %> </h1>
     <br>
     <% if (edit==='post') {%>
-        <form action="/admin/manage/update-post" method="POST" enctype="multipart/form-data">
+        <form action="/admin/update-post?_csrf=<%= csrfToken %>" method="POST" enctype="multipart/form-data">
 
           <div class="formbold-mb-3">
             <div>
@@ -74,14 +76,12 @@
           </div>
           
           <div class="formbold-mb-3">
-            <div>
-                <label class="formbold-form-label">Publish</label>
-    
-                <select class="formbold-form-input" name="published" id="published">
-                  <option value="1" selected >Yes!</option>
-                  <option value="0">Nah, not yet.</option>
-                </select>
-            </div>
+            <label class="formbold-form-label">Publish</label>
+
+            <select class="formbold-form-input" name="published" id="published">
+              <option value="1" selected >Yes!</option>
+              <option value="0">Nah, not yet.</option>
+            </select>
           </div>
 
           <div class="formbold-mb-3">
@@ -109,12 +109,11 @@
 
           <input type="hidden" value="<%= post._id %>" name="postId">
           <input type="hidden" name="oldSlug" value="<%= post.slug %>">
-          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
 
           <button type="submit" class="formbold-btn">Update post</button>
         </form>
 
-        <form action="/admin/manage/delete-post" method="post">
+        <form action="/admin/delete-post" method="post">
           <input type="hidden" name="id" value="<%= post._id %>">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <button type="submit" class="formbold-btn-delete">Delete</button>
@@ -122,7 +121,7 @@
     <% } %>
 
     <% if (edit==='category') {%>
-        <form action="/admin/manage/update-category/" method="POST" enctype="multipart/form-data">
+        <form action="/admin/update-category?_csrf=<%= csrfToken %>" method="POST" enctype="multipart/form-data">
             <div class="formbold-mb-3">
               <div>
                 <label for="name" class="formbold-form-label"> Name </label>
@@ -175,19 +174,99 @@
 
             <input type="hidden" name="catId" value="<%= category._id %>">
             <input type="hidden" name="oldSlug" value="<%= category.slug %>">
-            <input type="hidden" name="_csrf" value="<%= csrfToken%>">
 
             <button type="submit" class="formbold-btn">Update</button>
         </form>
-        <form action="/admin/manage/delete-category" method="post">
+
+        <form action="/admin/delete-category" method="post">
           <input type="hidden" name="id" value="<%= category._id %>">
           <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <button type="submit" class="formbold-btn-delete">Delete</button>
         </form>
     <% } %>
     
-    <% if (edit==='user') {%>
-        <!-- user form -->
+    <% if (edit==='user') { %>
+      <% if (user.level === 3) { %>
+            <span style="color: red;">Hello admin</span>
+          <% } %>
+        <form style="min-width: 500px;" action="/admin/update-user" method="POST" >
+          
+          <div class="formbold-mb-3">
+            <label class="formbold-form-label">Current Avatar</label>
+            <div class="profile-card">
+              <% if(user.imageUrl) {%>
+                <img src="<%= user.imageUrl %>" alt="">
+              <% } else {%>
+                <p>None</p>
+              <% } %>
+            </div>
+          </div>
+
+          <div class="formbold-mb-3">
+            <label for="email" class="formbold-form-label"> Email </label>
+            <input
+              type="text"
+              name="email"
+              id="email"
+              class="formbold-form-input"
+              required
+              value="<%= user.email %>" />
+          </div>
+
+          <div class="formbold-mb-3">
+              <label for="name" class="formbold-form-label"> Name </label>
+              <input
+                type="text"
+                name="name"
+                id="name"
+                class="formbold-form-input"
+                required
+                value="<%= user.name %>"
+              />
+          </div>
+
+          <div class="formbold-mb-3">
+            <label for="active" class="formbold-form-label">Active</label>
+            <select name="level" id="level" class="formbold-form-input">
+              <option value="0" <%= user.active === false ? 'Selected' : '' %> > Not yet </option>
+              <option value="1" <%= user.active === true ? 'Selected' : '' %> > Actived </option>
+            </select>
+          </div>
+          
+          <div class="formbold-mb-3">
+            <label for="level" class="formbold-form-label">Level</label>
+            <p>Curren Level: <span style="color: green;"><%= user.level %></span></p>
+            <br>
+            <select name="level" id="level" class="formbold-form-input">
+              <option value="1" selected> 1 - Basic User </option>
+              <option value="2"> 2 - Editor </option>
+              <option value="3"> 3 - Admin </option>
+            </select>
+          </div>
+
+          <div class="formbold-mb-3">
+            <label for="shortDes" class="formbold-form-label">
+              Short Description
+            </label>
+            <textarea
+              rows="6"
+              name="shortDes"
+              id="shortDes"
+              class="formbold-form-input"><%= user.shortDes %></textarea>
+          </div>
+
+          <div class="formbold-mb-3">
+            <label for="banned" class="formbold-form-label">Banned</label>
+            <select name="banned" id="banned" class="formbold-form-input">
+              <option value="0" <%= user.banned === false ? 'Selected' : '' %> >Set him free.</option>
+              <option value="1" <%= user.banned === true ? 'Selected' : '' %> >Your freedom end here.</option>
+            </select>
+          </div>
+
+          <input type="hidden" name="userId" value="<%= user._id %>">
+
+          <button type="submit" class="formbold-btn">Update</button>
+        </form>
     <% } %>
 </div>
 <br><br>

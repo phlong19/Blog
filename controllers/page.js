@@ -18,41 +18,33 @@ exports.getIndex = (req, res, next) => {
     error = errorType = errorHeader = null;
   }
 
-  let threePosts;
+  let posts;
   let trendingPosts;
-  let categories;
   Post.find({ status: true })
-    .limit(3)
-    .select('title like slug category updatedAt imageUrl')
+    .sort({ createdAt: 'desc' })
+    .limit(9)
+    .select('title like slug category createdAt imageUrl')
     .populate('category', 'name slug')
-    .then(featuredArticles => {
-      threePosts = featuredArticles;
+    .then(postsDoc => {
+      posts = postsDoc;
       return Post.find({ status: true })
-        .sort({ like: -1 })
+        .sort({ like: 'desc' })
         .limit(5)
-        .select('title like slug updatedAt imageUrl');
+        .select('title like slug createdAt imageUrl');
     })
     .then(mostLikesPosts => {
       trendingPosts = mostLikesPosts;
       return Category.find().limit(6);
     })
     .then(cats => {
-      categories = cats;
-      return Post.find({ status: true })
-        .skip(3)
-        .limit(6)
-        .select('title slug updatedAt like description imageUrl');
-    })
-    .then(olderPosts => {
       res.render('pages/index', {
         pageTitle: 'Synthwave Home Page',
         error: error,
         errorType: errorType,
         errorHeader: errorHeader,
-        threePosts: threePosts,
+        posts: posts,
         trendingPosts: trendingPosts,
-        categories: categories,
-        olderPosts: olderPosts,
+        categories: cats,
       });
     })
     .catch(err => next(new Error(err)));
@@ -82,7 +74,7 @@ exports.postSearch = (req, res, next) => {
   if (!errors.isEmpty()) {
     req.flash('error', errors.array()[0].msg);
     req.flash('errorType', 'alert');
-    req.flash('errorHeader', 'Search Validation Error');
+    req.flash('errorHeader', 'Validation Error');
     return res.redirect('/');
   }
 
@@ -96,65 +88,104 @@ exports.postSearch = (req, res, next) => {
   })
     .then(posts => {
       if (Array.isArray(posts) && posts.length === 0) {
-        req.flash('error', "We can't find any posts with this keyword.");
+        req.flash('error', "We can't find any posts with your keyword.");
         req.flash('errorType', 'info');
         req.flash('errorHeader', 'None posts');
-        req.flash('keyword', keyword);
-        return res.redirect('/search');
+        return res.redirect('/');
+      } else {
+        return res.render('pages/search', {
+          pageTitle: 'Searching result',
+          error: 'Finding posts with your keyword successfully.',
+          errorType: '',
+          errorHeader: 'Success',
+          posts: posts,
+          sumResult: posts.length,
+          keyword: keyword,
+        });
       }
-      req.flash('posts', posts);
-      req.flash('keyword', keyword);
-      return res.redirect('/search');
     })
     .catch(err => next(new Error(err)));
 };
 
-exports.getSearch = (req, res, next) => {
-  let error = req.flash('error');
-  let errorType = req.flash('errorType');
-  let errorHeader = req.flash('errorHeader');
+// exports.postSearch = (req, res, next) => {
+//   const keyword = req.body.keyword;
+//   const errors = validationResult(req);
+//   if (!errors.isEmpty()) {
+//     req.flash('error', errors.array()[0].msg);
+//     req.flash('errorType', 'alert');
+//     req.flash('errorHeader', 'Search Validation Error');
+//     return res.redirect('/');
+//   }
 
-  if (error.length > 0) {
-    error = error[0];
-    errorType = errorType[0];
-    errorHeader = errorHeader[0];
-  } else {
-    error = errorType = errorHeader = null;
-  }
+//   Post.find({
+//     status: true,
+//     $or: [
+//       { title: { $regex: keyword, $options: 'i' } },
+//       { content: { $regex: keyword, $options: 'i' } },
+//       { description: { $regex: keyword, $options: 'i' } },
+//     ],
+//   })
+//     .then(posts => {
+//       if (Array.isArray(posts) && posts.length === 0) {
+//         req.flash('error', "We can't find any posts with this keyword.");
+//         req.flash('errorType', 'info');
+//         req.flash('errorHeader', 'None posts');
+//         req.flash('keyword', keyword);
+//         return res.redirect('/search');
+//       }
+//       req.flash('posts', posts);
+//       req.flash('keyword', keyword);
+//       return res.redirect('/search');
+//     })
+//     .catch(err => next(new Error(err)));
+// };
 
-  let posts = req.flash('posts');
-  let sum;
-  if (posts.length > 0) {
-    posts = posts;
-    sum = posts.length;
-  } else {
-    posts = null;
-    sum = 'none';
-  }
+// exports.getSearch = (req, res, next) => {
+//   let error = req.flash('error');
+//   let errorType = req.flash('errorType');
+//   let errorHeader = req.flash('errorHeader');
 
-  let keyword = req.flash('keyword');
-  keyword = keyword[0];
+//   if (error.length > 0) {
+//     error = error[0];
+//     errorType = errorType[0];
+//     errorHeader = errorHeader[0];
+//   } else {
+//     error = errorType = errorHeader = null;
+//   }
 
-  if (keyword === undefined) {
-    req.flash('error', "Some error occurred here, it's us, not you.");
-    req.flash('errorType', 'warning');
-    req.flash('errorHeader', 'Please try again');
-    req.flash(
-      'keyword',
-      'An error occurred here, idk but this error is out of my control, so please try again'
-    );
-    return res.redirect('/search');
-  }
-  res.render('pages/search', {
-    pageTitle: 'Searching result',
-    error: error,
-    errorType: errorType,
-    errorHeader: errorHeader,
-    posts: posts,
-    sumResult: sum,
-    keyword: keyword,
-  });
-};
+//   let posts = req.flash('posts');
+//   let sum;
+//   if (posts.length > 0) {
+//     posts = posts;
+//     sum = posts.length;
+//   } else {
+//     posts = null;
+//     sum = 'none';
+//   }
+
+//   let keyword = req.flash('keyword');
+//   keyword = keyword[0];
+
+//   if (keyword === undefined) {
+//     req.flash('error', "Some error occurred here, it's us, not you.");
+//     req.flash('errorType', 'warning');
+//     req.flash('errorHeader', 'Please try again');
+//     req.flash(
+//       'keyword',
+//       'An error occurred here, idk but this error is out of my control, so please try again'
+//     );
+//     return res.redirect('/search');
+//   }
+//   res.render('pages/search', {
+//     pageTitle: 'Searching result',
+//     error: error,
+//     errorType: errorType,
+//     errorHeader: errorHeader,
+//     posts: posts,
+//     sumResult: sum,
+//     keyword: keyword,
+//   });
+// };
 
 exports.getCategories = (req, res, next) => {
   Category.find()
@@ -195,7 +226,8 @@ exports.getCategory = (req, res, next) => {
 
 exports.getArchive = (req, res, next) => {
   Post.find({ status: true })
-    .select('title slug imageUrl description like updatedAt')
+    .select('title slug imageUrl description like createdAt')
+    .sort({ createdAt: 'desc' })
     .then(posts => {
       res.render('pages/archive', {
         pageTitle: 'Archive',
