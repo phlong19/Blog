@@ -23,8 +23,14 @@
 
     <div class="content">
       <div class="container"><button class="open-modal"> &plus; Create post</button>
-        <h2 class="mb-5">All posts</h2>
         
+          <h2 class="mb-5">All posts</h2> 
+          <h4 class="sortHeader"> Sort by: 
+            <a class="list-link <%= sortOption==='alphabet' ? 'active' : '' %>" href="?sort=alphabet">A-Z</a> 
+            <a class="list-link <%= sortOption==='like' ? 'active' : '' %>" href="?sort=like">Like</a>
+            <a class="list-link <%= sortOption==='newest' ? 'active' : '' %>" href="?sort=newest">Newest</a>
+            <a class="list-link <%= sortOption==='oldest' ? 'active' : '' %>" href="?sort=oldest">Oldest</a>
+        </h4>
         <div class="table-responsive custom-table-responsive">
               <div class="modal-content hidden-modal">
                   <div class="modal-header">
@@ -34,7 +40,7 @@
                   <div class="modal-body">
                     <div class="formbold-main-wrapper">
                       <div class="formbold-form-wrapper">
-                        <form action="/admin/manage/create-post" method="POST" enctype="multipart/form-data">
+                        <form action="/admin/create-post?_csrf=<%= csrfToken %>" method="POST" enctype="multipart/form-data">
                           
                           <div class="formbold-mb-3">
                             <div>
@@ -68,7 +74,7 @@
                               <input type="checkbox" class="larger" 
                                 name="catIds" 
                                 id="<%= cat.name %>" 
-                                value="<%= cat._id %>" > 
+                                value="<%= cat._id %>" /> 
                               <label for="<%= cat.name %>"><%= cat.name %></label>
                             <% }); %>
 
@@ -83,7 +89,7 @@
                               id="editor"
                               class="formbold-form-input">
                             </div>
-                            <input id="content" name="content" type="hidden">
+                            <input id="content" name="content" type="hidden"/>
                           </div>
                           
                           <div class="formbold-mb-3">
@@ -116,8 +122,6 @@
                             <label class="formbold-form-label">Preview Image</label>
                           </div>
                           
-                          <input type="hidden" name="_csrf" value="<%= csrfToken%>">
-
                           <button type="submit" class="formbold-btn">Create post</button>
                         </form>
                       </div>
@@ -136,7 +140,7 @@
                   <th scope="col">Description</th>
                   <th scope="col">Author</th>
                   <th scope="col">Status</th>
-                  <th scope="col">Categories</th>
+                  <th scope="col">Created At</th>
                   <th scope="col"></th>
               </tr>
             </thead>
@@ -157,17 +161,18 @@
                   </td>
                   <td class="shorten-250"><%= post.description %></td>
                   <td>
-                    <a href="#" class="list-link"">
-                      <%= post.author === null ? 'Deleted' : post.author.name %>
-                    </a>
+                    
+                      <% if(post.author === null) { %> 
+                         Deleted 
+                      <% } else { %>
+                         <a href="#" class="list-link""><%= post.author.name %></a>
+                      <% } %>
                   </td>
                   <td><%= post.status === true ? 'Published' : 'Not publish' %></td>
                   <td>
-                    <% post.category.forEach(cat => { %>
-                      <a href="/categories/<%= cat.slug %>" class="list-link"><%= cat.name %></a> |
-                    <% }); %>
+                    <%= post.createdAt.toLocaleDateString('en-us') %>
                   </td>
-                  <td><a href="/admin/manage/details/<%= post.slug %>?edit=post" class="list-link">Details</a></td>
+                  <td><a href="/admin/details/<%= post.slug %>?edit=post" class="list-link">Details</a></td>
                 </tr>
                 <tr class="spacer"><td colspan="100"></td></tr>
               <% } %>

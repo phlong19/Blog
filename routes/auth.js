@@ -20,13 +20,15 @@ router.post(
         return User.findOne({ email: value, active: true }).then(userDoc => {
           if (!userDoc) {
             return Promise.reject(
-              'Wrong email or you have not active your account by email.'
+              'Wrong email or you have not actived your account by email.'
             );
           }
         });
       })
       .normalizeEmail(),
-    body('password').isLength({ min: 8, max: 20 }).withMessage('Please'),
+    body('password')
+      .isLength({ min: 8, max: 20 })
+      .withMessage('Password length is 8-20 chars.'),
   ],
   authController.postLogin
 );
@@ -175,8 +177,21 @@ router.post(
         });
       })
       .normalizeEmail(),
+    body('oldEmail').notEmpty().isEmail().withMessage('Invalid email address'),
   ],
   authController.postUpdateEmail
+);
+
+router.post(
+  '/transfer',
+  [
+    body('email')
+      .notEmpty()
+      .isEmail()
+      .withMessage('Invalid email address')
+      .normalizeEmail(),
+  ],
+  authController.postTransfer
 );
 
 router.post(
@@ -246,6 +261,6 @@ router.post(
   authController.postUpdateLink
 );
 
-// router.post('/manage/delete/:id');
+router.post('/manage/delete/', isAuth, authController.postDelete);
 
 module.exports = router;

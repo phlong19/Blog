@@ -21,6 +21,7 @@ const DOMPurify = createDOMPurify(window);
 
 const items_per_table = 10;
 let option = {};
+let sort = {};
 
 exports.getPostsManage = (req, res, next) => {
   let error = req.flash('error');
@@ -37,8 +38,27 @@ exports.getPostsManage = (req, res, next) => {
 
   let sum;
   let categories;
-  if (req.user.level === 2) {
-    option = { author: req.user._id };
+  const sortOption = req.query.sort;
+  switch (sortOption) {
+    case 'alphabet':
+      sort = { title: 'desc' };
+      break;
+    case 'like':
+      sort = { like: 'desc' };
+      break;
+    case 'newest':
+      sort = { createdAt: 'desc' };
+      break;
+    case 'oldest':
+      sort = { createdAt: 'asc' };
+      break;
+    default:
+      break;
+  }
+  if (req.session.user.level === 2) {
+    option = { author: req.session.user._id };
+  } else {
+    option = {};
   }
 
   Post.countDocuments(option)
@@ -51,30 +71,58 @@ exports.getPostsManage = (req, res, next) => {
       return Post.find(option)
         .select('-content')
         .populate('author', 'name')
-        .populate('category', 'name slug');
+        .populate('category', 'name slug')
+        .sort(sort);
     })
     .then(posts => {
       res.render('admin/posts', {
         pageTitle: 'Posts Manage',
-        path: '/manage/posts',
+        path: '/posts',
         error: error,
         errorType: errorType,
         errorHeader: errorHeader,
         posts: posts,
         categories: categories,
         sum: sum,
+        sortOption: sortOption,
       });
     })
     .catch(err => next(new Error(err)));
 };
 
 exports.getUsersManage = (req, res, next) => {
-  res.render('admin/users', {
-    pageTitle: 'Users Manage',
-    path: '/manage/users',
-    error: null,
-    sum: 162,
-  });
+  let error = req.flash('error');
+  let errorType = req.flash('errorType');
+  let errorHeader = req.flash('errorHeader');
+
+  if (error.length > 0) {
+    error = error[0];
+    errorType = errorType[0];
+    errorHeader = errorHeader[0];
+  } else {
+    error = errorType = errorHeader = null;
+  }
+
+  let sum;
+  User.countDocuments()
+    .then(counted => {
+      sum = counted;
+      return User.find()
+        .select('name email avatarUrl level banned social active createdAt')
+        .sort({ level: 'desc' });
+    })
+    .then(users => {
+      res.render('admin/users', {
+        pageTitle: 'Users Manage',
+        path: '/users',
+        users: users,
+        error: error,
+        errorType: errorType,
+        errorHeader: errorHeader,
+        sum: sum,
+      });
+    })
+    .catch(err => next(new Error(err)));
 };
 
 exports.getCategoriesManage = (req, res, next) => {
@@ -102,8 +150,7 @@ exports.getCategoriesManage = (req, res, next) => {
       cats = catsDoc;
       res.render('admin/cats', {
         pageTitle: 'Categories Manage',
-        path: '/manage/categories',
-
+        path: '/categories',
         error: error,
         errorType: errorType,
         errorHeader: errorHeader,
@@ -117,7 +164,7 @@ exports.getCategoriesManage = (req, res, next) => {
 exports.getCommentsManage = (req, res, next) => {
   res.render('admin/cmts', {
     pageTitle: 'Comments Manage',
-    path: '/manage/comments',
+    path: '/comments',
     error: null,
     sum: 12,
   });
@@ -154,10 +201,10 @@ exports.getDetails = (req, res, next) => {
       })
       .then(post => {
         if (!post) {
-          req.flash('error', "Can't find any post with this title");
+          req.flash('error', "Can't find your post.");
           req.flash('errorType', 'alert');
-          req.flash('errorHeader', 'Image Error');
-          return res.redirect('/admin/manage/posts');
+          req.flash('errorHeader', 'Error');
+          return res.redirect('/admin/posts');
         }
         const postCatIds = post.category.map(category =>
           category._id.toString()
@@ -181,7 +228,7 @@ exports.getDetails = (req, res, next) => {
     Category.findOne(option)
       .then(cat => {
         if (!cat) {
-          return res.redirect('/admin/manage/categories');
+          return res.redirect('/admin/categories');
         }
         res.render('admin/details', {
           pageTitle: 'Category details',
@@ -212,7 +259,7 @@ exports.getDetailUser = (req, res, next) => {
   }
 
   const id = req.params.id;
-  User.findById({ _id: id })
+  User.findById(id)
     .then(user => {
       res.render('admin/details', {
         pageTitle: 'User details',
@@ -237,7 +284,7 @@ exports.createPost = (req, res, next) => {
     req.flash('error', 'The uploaded file was not an image.');
     req.flash('errorType', 'alert');
     req.flash('errorHeader', 'Image Error');
-    return res.redirect('/admin/manage/posts');
+    return res.redirect('/admin/posts');
   }
 
   const errors = validationResult(req);
@@ -246,42 +293,41 @@ exports.createPost = (req, res, next) => {
     req.flash('error', errors.array()[0].msg);
     req.flash('errorType', 'alert');
     req.flash('errorHeader', 'Validation Error');
-    return res.redirect('/admin/manage/posts');
+    return res.redirect('/admin/posts');
   }
 
-  Post.findOne({ title: title }).then(post => {
-    if (post) {
-      deleteImage(image.filename);
-      req.flash('error', 'There is already a post with this title.');
-      req.flash('errorType', 'alert');
-      req.flash('errorHeader', 'Duplicated');
-      return res.redirect('/admin/manage/posts');
-    }
-  });
+  Post.findOne({ title: title })
+    .then(post => {
+      if (post) {
+        deleteImage(image.filename);
+        req.flash('error', 'There is already a post with this title.');
+        req.flash('errorType', 'warning');
+        req.flash('errorHeader', 'Duplicated');
+        return res.redirect('/admin/posts');
+      } else {
+        const categories = catIds.map(id => new mongoose.Types.ObjectId(id));
+        const cleanContent = DOMPurify.sanitize(content);
+        const markdownContent = marked(cleanContent);
 
-  const categories = catIds.map(id => new mongoose.Types.ObjectId(id));
-  const cleanContent = DOMPurify.sanitize(content);
-  const markdownContent = marked(cleanContent);
-
-  const post = new Post({
-    title: title,
-    imageUrl: image.path,
-    imageId: image.filename,
-    description: des,
-    content: markdownContent,
-    category: categories,
-    author: req.user,
-    status: status,
-    slug: slug,
-    like: 0,
-  });
-  post
-    .save()
-    .then(result => {
-      req.flash('error', 'Create new post successfully.');
-      req.flash('errorType', '');
-      req.flash('errorHeader', 'Success');
-      return res.redirect('/admin/manage/posts');
+        const post = new Post({
+          title: title,
+          imageUrl: image.path,
+          imageId: image.filename,
+          description: des,
+          content: markdownContent,
+          category: categories,
+          author: req.session.user._id,
+          status: status,
+          slug: slug,
+          like: 0,
+        });
+        return post.save().then(result => {
+          req.flash('error', 'Create new post successfully.');
+          req.flash('errorType', '');
+          req.flash('errorHeader', 'Success');
+          res.redirect('/admin/posts');
+        });
+      }
     })
     .catch(err => {
       deleteImage(image.filename);
@@ -299,7 +345,7 @@ exports.createCategory = (req, res, next) => {
     req.flash('error', 'The uploaded file was not an image.');
     req.flash('errorType', 'alert');
     req.flash('errorHeader', 'Alert');
-    return res.redirect('/admin/manage/categories');
+    return res.redirect('/admin/categories');
   }
 
   const errors = validationResult(req);
@@ -308,7 +354,7 @@ exports.createCategory = (req, res, next) => {
     req.flash('error', errors.array()[0].msg);
     req.flash('errorType', 'alert');
     req.flash('errorHeader', 'Validation Error');
-    return res.redirect('/admin/manage/categories');
+    return res.redirect('/admin/categories');
   }
 
   const category = new Category({
@@ -324,7 +370,7 @@ exports.createCategory = (req, res, next) => {
       req.flash('error', 'Create new category successful.');
       req.flash('errorType', '');
       req.flash('errorHeader', 'Success');
-      return res.redirect('/admin/manage/categories');
+      res.redirect('/admin/categories');
     })
     .catch(err => {
       deleteImage(image.filename);
@@ -345,16 +391,16 @@ exports.updateCategory = (req, res, next) => {
     req.flash('error', errors.array()[0].msg);
     req.flash('errorType', 'alert');
     req.flash('errorHeader', 'Validation Error');
-    return res.redirect('/admin/manage/details/' + oldSlug + '?edit=category');
+    return res.redirect('/admin/details/' + oldSlug + '?edit=category');
   }
 
-  Category.findOne({ _id: catId })
+  Category.findById(catId)
     .then(cat => {
       if (!cat) {
         req.flash('error', "We can't find any categories");
         req.flash('errorType', 'warning');
         req.flash('errorHeader', 'Error');
-        return res.redirect('/admin/manage/categories');
+        return res.redirect('/admin/categories');
       }
 
       if (req.file) {
@@ -370,7 +416,7 @@ exports.updateCategory = (req, res, next) => {
         req.flash('error', 'Updated category successfully');
         req.flash('errorType', '');
         req.flash('errorHeader', 'Success');
-        res.redirect('/admin/manage/categories');
+        res.redirect('/admin/categories');
       });
     })
     .catch(err => next(new Error(err)));
@@ -390,9 +436,14 @@ exports.updatePost = (req, res, next) => {
     req.flash('error', errors.array()[0].msg);
     req.flash('errorType', 'alert');
     req.flash('errorHeader', 'Validation Error');
-    return res.redirect('/admin/manage/details/' + oldSlug + '?edit=post');
+    return res.redirect('/admin/details/' + oldSlug + '?edit=post');
   }
-  Post.findOne({ _id: postId })
+  if (req.session.user.level === 2) {
+    option = { _id: postId, author: req.session.user._id };
+  } else {
+    option = { _id: postId };
+  }
+  Post.findOne(option)
     .then(post => {
       if (!post) {
         if (req.file) {
@@ -401,31 +452,31 @@ exports.updatePost = (req, res, next) => {
         req.flash('error', "Can't find any post.");
         req.flash('errorType', 'alert');
         req.flash('errorHeader', 'Error');
-        return res.redirect('/admin/manage/details/' + oldSlug + '?edit=post');
-      }
+        return res.redirect('/admin/details/' + oldSlug + '?edit=post');
+      } else {
+        const categories = catIds.map(id => new mongoose.Types.ObjectId(id));
+        const cleanContent = DOMPurify.sanitize(content);
+        const markdownContent = marked(cleanContent);
 
-      const categories = catIds.map(id => new mongoose.Types.ObjectId(id));
-      const cleanContent = DOMPurify.sanitize(content);
-      const markdownContent = marked(cleanContent);
-
-      if (req.file) {
-        const image = req.file;
-        deleteImage(post.imageId);
-        post.imageUrl = image.path;
-        post.imageId = image.filename;
+        if (req.file) {
+          const image = req.file;
+          deleteImage(post.imageId);
+          post.imageUrl = image.path;
+          post.imageId = image.filename;
+        }
+        post.title = title;
+        post.description = des;
+        post.category = categories;
+        post.content = markdownContent;
+        post.slug = slug;
+        post.status = status;
+        return post.save().then(result => {
+          req.flash('error', 'Updated post successfully.');
+          req.flash('errorType', '');
+          req.flash('errorHeader', 'Success');
+          res.redirect('/admin/posts');
+        });
       }
-      post.title = title;
-      post.description = des;
-      post.category = categories;
-      post.content = markdownContent;
-      post.slug = slug;
-      post.status = status;
-      return post.save().then(result => {
-        req.flash('error', 'Updated post successfully.');
-        req.flash('errorType', '');
-        req.flash('errorHeader', 'Success');
-        return res.redirect('/admin/manage/posts');
-      });
     })
     .catch(err => {
       if (req.file) {
@@ -439,56 +490,61 @@ exports.updatePost = (req, res, next) => {
 exports.deletePost = (req, res, next) => {
   const id = req.body.id;
 
-  Post.findOne({ _id: id })
+  if (req.session.user.level === 2) {
+    option = { _id: id, author: req.session.user._id };
+  } else {
+    option = { _id: id };
+  }
+
+  Post.findOne(option)
     .then(post => {
       if (!post) {
         req.flash('error', "Can't find any post.");
         req.flash('errorType', 'alert');
         req.flash('errorHeader', 'Error');
-        return res.redirect('/admin/manage/posts');
+        return res.redirect('/admin/posts');
       }
       deleteImage(post.imageId);
-      return post.deleteOne();
+      return post.deleteOne().then(result => {
+        req.flash('error', 'Delete post successfully.');
+        req.flash('errorType', '');
+        req.flash('errorHeader', 'Success');
+        res.redirect('/admin/posts');
+      });
     })
-    .then(result => {
-      req.flash('error', 'Delete post successfully.');
-      req.flash('errorType', '');
-      req.flash('errorHeader', 'Success');
-      res.redirect('/admin/manage/posts');
-    })
+
     .catch(err => next(new Error(err)));
 };
 
 exports.deleteCategory = (req, res, next) => {
   const id = req.body.id;
-  Category.findOne({ _id: id })
+  Category.findById(id)
     .then(cat => {
       deleteImage(cat.imageId);
-      return cat.deleteOne();
+      return cat.deleteOne().then(result => {
+        req.flash('error', 'Delete category successfully.');
+        req.flash('errorType', '');
+        req.flash('errorHeader', 'Success');
+        res.redirect('/admin/categories');
+      });
     })
-    .then(result => {
-      req.flash('error', 'Delete category successful.');
-      req.flash('errorType', '');
-      req.flash('errorHeader', 'Success');
-      res.redirect('/admin/manage/categories');
-    })
+
     .catch(err => next(new Error(err)));
 };
 
 exports.deleteUser = (req, res, next) => {
   const id = req.body.id;
-  User.findById({ _id: id })
+  User.findById(id)
     .then(user => {
       if (user.avatarId) {
         deleteImage(user.avatarId);
       }
-      return user.deleteOne();
-    })
-    .then(result => {
-      req.flash('error', 'Delete user successfully.');
-      req.flash('errorType', '');
-      req.flash('errorHeader', 'Success');
-      res.redirect('/admin/manage/users');
+      return user.deleteOne().then(result => {
+        req.flash('error', 'Delete user successfully.');
+        req.flash('errorType', '');
+        req.flash('errorHeader', 'Success');
+        res.redirect('/admin/users');
+      });
     })
     .catch(err => next(new Error(err)));
 };

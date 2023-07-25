@@ -2,7 +2,6 @@ require('dotenv').config();
 
 const brcypt = require('bcryptjs');
 const uuid = require('uuid');
-const nodemailer = require('nodemailer');
 const sendGrid = require('@sendgrid/mail');
 const User = require('../models/user');
 const { validationResult } = require('express-validator');
@@ -115,15 +114,29 @@ exports.getNewPassword = (req, res, next) => {
         id: userId,
         code: code,
       });
-    });
+    })
+    .catch(err => next(new Error(err)));
 };
 
 exports.getManageAccount = (req, res, next) => {
+  let error = req.flash('error');
+  let errorType = req.flash('errorType');
+  let errorHeader = req.flash('errorHeader');
+  if (error.length > 0) {
+    error = error[0];
+    errorType = errorType[0];
+    errorHeader = errorHeader[0];
+  } else {
+    error = errorType = errorHeader = null;
+  }
   User.findById(req.session.user._id)
     .then(user => {
       res.render('auth/manage', {
         pageTitle: 'Manage Account',
         user: user,
+        error: error,
+        errorType: errorType,
+        errorHeader: errorHeader,
       });
     })
     .catch(err => next(new Error(err)));
@@ -158,6 +171,7 @@ exports.postRegister = (req, res, next) => {
           <h4 style="color:rgba(255,35,35,0.87)">This verification email is valid within 2 hours.</h4>
           <form action="http://localhost:3000/auth/active" method="post">
             <input type="hidden" name="code" value="${code}">
+            <input type="hidden" name="email" value=${email}">
             <button type="submit" style="cursor: pointer;">Click here.</button>
           </form>
         </body>
@@ -183,23 +197,22 @@ exports.postRegister = (req, res, next) => {
           activation_code: code,
           activation_expiration: Date.now() + 7200000, // miliseconds - 2 hours
         });
-        return user.save();
+        return user.save().then(result => {
+          req.flash(
+            'error',
+            'A new account was created! Please check your email to verify your account.'
+          );
+          req.flash('errorType', 'info');
+          req.flash('errorHeader', 'Verification your account!');
+          res.redirect('/');
+        });
       });
-    })
-    .then(result => {
-      req.flash(
-        'error',
-        'A new account was created! Please check your email to verify your account.'
-      );
-      req.flash('errorType', 'info');
-      req.flash('errorHeader', 'Verification your account!');
-      res.redirect('/');
     })
     .catch(err => next(new Error(err)));
 };
 
 exports.postActive = (req, res, next) => {
-  const { code } = req.body;
+  const { email, code } = req.body;
   if (code === 'actived') {
     req.flash('error', 'Your account has been verified before.');
     req.flash('errorType', 'info');
@@ -207,6 +220,7 @@ exports.postActive = (req, res, next) => {
     return res.redirect('/auth/login');
   }
   User.findOne({
+    email: email,
     activation_code: code,
     activation_expiration: { $gt: Date.now() },
   })
@@ -233,8 +247,50 @@ exports.postActive = (req, res, next) => {
     .catch(err => next(new Error(err)));
 };
 
+exports.postTransfer = (req, res, next) => {
+  const { oldEmail, email, code } = req.body;
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    req.flash('error', errors.array()[0].msg);
+    req.flash('errorType', 'alert');
+    req.flash('errorHeader', 'Validation Error');
+    return res.redirect('/auth/manage');
+  }
+  User.findOne({
+    email: oldEmail,
+    activation_code: code,
+    activation_expiration: { $gt: Date.now() },
+  })
+    .then(user => {
+      if (!user) {
+        req.flash(
+          'error',
+          'Invalid code or code expired. Please resend email transfer confirmation!'
+        );
+        req.flash('errorType', 'warning');
+        req.flash('errorHeader', 'Confirmation Code Error');
+        return res.redirect('/auth/manage');
+      }
+      user.activation_code = 'actived';
+      user.activation_expiration = undefined;
+      user.email = email;
+      return user.save().then(result => {
+        req.flash(
+          'error',
+          'Congratulations! Now you can use your new email address to login.'
+        );
+        req.flash('errorType', '');
+        req.flash('errorHeader', 'Email transfer successfully');
+        return res.redirect('/auth/login');
+      });
+    })
+    .catch(err => next(new Error(err)));
+};
+
 exports.postLogin = (req, res, next) => {
   const { email, password } = req.body;
+  let user;
 
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -243,25 +299,29 @@ exports.postLogin = (req, res, next) => {
     req.flash('errorHeader', 'Validation Error');
     return res.redirect('/auth/login');
   }
-  User.findOne({ email: email, active: true })
-    .then(user => {
-      if (user.banned === true) {
-        req.flash('error', 'Your account has been suspended.');
+  User.findOne({ email: email, active: true, banned: false })
+    .select('name email active level password')
+    .then(userDoc => {
+      if (!userDoc) {
+        req.flash('error', 'Wrong email or your account has been suspended.');
         req.flash('errorType', 'alert');
-        req.flash('errorHeader', 'Banned');
+        req.flash('errorHeader', 'Login Error');
         return res.redirect('/auth/login');
       }
-      brcypt.compare(password, user.password).then(matched => {
-        if (matched) {
-          req.session.isLoggedIn = true;
-          req.session.user = user;
-          return req.session.save(err => {
-            if (err) {
-              throw new Error(err);
-            }
-            res.redirect('/');
-          });
-        }
+      user = userDoc;
+      return brcypt.compare(password, userDoc.password);
+    })
+    .then(matched => {
+      if (matched) {
+        req.session.isLoggedIn = true;
+        req.session.user = user;
+        return req.session.save(err => {
+          if (err) {
+            throw new Error(err);
+          }
+          res.redirect('/');
+        });
+      } else {
         req.flash(
           'error',
           'Wrong password! Please try again, or click Reset Password below.'
@@ -269,7 +329,7 @@ exports.postLogin = (req, res, next) => {
         req.flash('errorType', 'alert');
         req.flash('errorHeader', 'Wrong password');
         return res.redirect('/auth/login');
-      });
+      }
     })
     .catch(err => next(new Error(err)));
 };
@@ -318,17 +378,16 @@ exports.postReset = (req, res, next) => {
       } else {
         user.reset_code = code;
         user.reset_expiration = Date.now() + 3600000;
-        return user.save();
+        return user.save().then(result => {
+          req.flash(
+            'error',
+            'A reset password email has been sent! Please check your email.'
+          );
+          req.flash('errorType', 'info');
+          req.flash('errorHeader', 'Reset Your Password');
+          res.redirect('/auth/login');
+        });
       }
-    })
-    .then(result => {
-      req.flash(
-        'error',
-        'A reset password email has been sent! Please check your email.'
-      );
-      req.flash('errorType', 'info');
-      req.flash('errorHeader', 'Reset Your Password');
-      res.redirect('/auth/login');
     })
     .catch(err => next(new Error(err)));
 };
@@ -362,14 +421,20 @@ exports.postNewPassword = (req, res, next) => {
         );
         req.flash('errorType', 'warning');
         req.flash('errorHeader', 'Confirmation Code Error');
-        return res.redirect('/auth/reset-password');
+        User.findById(id).then(userDocument => {
+          userDocument.reset_code = undefined;
+          userDocument.reset_expiration = undefined;
+          return userDocument
+            .save()
+            .then(result => res.redirect('/auth/reset-password'));
+        });
       }
       user = userDoc;
       return brcypt.hash(password, 12);
     })
     .then(hashedPassword => {
       user.password = hashedPassword;
-      user.reset_code = '';
+      user.reset_code = undefined;
       user.reset_expiration = undefined;
       return user.save().then(result => {
         req.flash('error', 'Your password has been updated successfully!');
@@ -413,6 +478,7 @@ exports.postResendEmail = (req, res, next) => {
           <h4 style="color:rgba(255,35,35,0.87)">This verification email is valid within 2 hours.</h4>
           <form action="http://localhost:3000/auth/active" method="post">
             <input type="hidden" name="code" value="${code}">
+            <input type="hidden" name="email" value="${email}">
             <button type="submit" style="cursor: pointer;">Click here.</button>
           </form>
         </body>
@@ -432,17 +498,16 @@ exports.postResendEmail = (req, res, next) => {
         return res.redirect('/auth/resend-email');
       } else {
         user.activation_expiration = Date.now() + 7200000;
-        return user.save();
+        return user.save().then(result => {
+          req.flash(
+            'error',
+            'A new email sent! Please check your email to verify your account.'
+          );
+          req.flash('errorType', 'info');
+          req.flash('errorHeader', 'Verification your account!');
+          res.redirect('/');
+        });
       }
-    })
-    .then(result => {
-      req.flash(
-        'error',
-        'A new email sent! Please check your email to verify your account.'
-      );
-      req.flash('errorType', 'info');
-      req.flash('errorHeader', 'Verification your account!');
-      res.redirect('/');
     })
     .catch(err => next(new Error(err)));
 };
@@ -458,8 +523,9 @@ exports.postLogout = (req, res, next) => {
 
 // MANAGE
 exports.postUpdateEmail = (req, res, next) => {
-  const email = req.body.email;
-  let user;
+  const { email, type, oldEmail } = req.body;
+  let user, msg;
+
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     req.flash('error', errors.array()[0].msg);
@@ -467,26 +533,51 @@ exports.postUpdateEmail = (req, res, next) => {
     req.flash('errorHeader', 'Validation Error');
     return res.redirect('/auth/manage');
   }
+
   const code = uuid.v4();
-  User.findOne({ email: email })
+  User.findOne({ email: oldEmail })
     .then(userDoc => {
       user = userDoc;
-      const msg = {
-        from: 'doquangkhoi54@gmail.com',
-        to: email,
-        subject: 'Changing email confirmation',
-        html: `
+      if (type === 'oldEmail') {
+        const msg = {
+          from: 'doquangkhoi54@outlook.com',
+          to: userDoc.email,
+          subject: 'Changing email confirmation',
+          html: `
+        <body style="font-family:'Cascadia Code';color:white;background:rgba(0,0,0,0.8)">
+          <h1 style="color:green;">You've requested your new email transfer.</h1>
+          <h3>New email address: ${email}</h3>
+          <h3>Please click the button below to verify your change.</h3>
+          <h4 style="color:rgba(255,35,35,0.87)">This verification email is valid within 1 hours.</h4>
+          <form action="http://localhost:3000/auth/transfer" method="post">
+            <input type="hidden" name="oldEmail" value="${userDoc.email}">
+            <input type="hidden" name="email" value="${email}">
+            <input type="hidden" name="code" value="${code}">
+            <button type="submit" style="cursor: pointer;">Click here.</button>
+          </form>
+        </body>
+        `,
+        };
+      }
+      if (type === 'newEmail') {
+        const msg = {
+          from: 'doquangkhoi54@outlook.com',
+          to: email,
+          subject: 'Changing email confirmation',
+          html: `
         <body style="font-family:'Cascadia Code';color:white;background:rgba(0,0,0,0.8)">
           <h1 style="color:green;">You've requested your new email change.</h1>
           <h3>Please click the button below to verify your account.</h3>
           <h4 style="color:rgba(255,35,35,0.87)">This verification email is valid within 1 hours.</h4>
           <form action="http://localhost:3000/auth/active" method="post">
             <input type="hidden" name="code" value="${code}">
+            <input type="hidden" name="email" value=${email}">
             <button type="submit" style="cursor: pointer;">Click here.</button>
           </form>
         </body>
         `,
-      };
+        };
+      }
       return sendGrid.send(msg);
     })
     .then(sent => {
@@ -499,18 +590,21 @@ exports.postUpdateEmail = (req, res, next) => {
         req.flash('errorHeader', 'Email Error');
         return res.redirect('/auth/manage');
       }
-      user.email = email;
-      user.active = false;
+      if (type === 'newEmail') {
+        user.email = email;
+        user.active = false;
+      }
       user.activation_code = code;
       user.activation_expiration = Date.now() + 3600000;
-      return user.save();
-    })
-    .then(result => {
-      req.session.destroy();
-      req.flash('error', 'Please confirm your new email and re-login');
-      req.flash('errorType', 'info');
-      req.flash('errorHeader', 'Check Your Email');
-      res.redirect('/auth/login');
+
+      return user.save().then(result => {
+        res.session.destroy(err => {
+          if (err) {
+            throw new Error(err);
+          }
+          res.redirect('/auth/login');
+        });
+      });
     })
     .catch(err => next(new Error(err)));
 };
@@ -551,19 +645,17 @@ exports.postUpdatePassword = (req, res, next) => {
     })
     .then(matched => {
       if (matched) {
-        brcypt
-          .hash(newPassword, 12)
-          .then(hashedPassword => {
-            user.password = hashedPassword;
-            return user.save();
-          })
-          .then(result => {
-            req.session.destroy();
-            req.flash('error', 'Update password successfully.');
-            req.flash('errorType', '');
-            req.flash('errorHeader', 'Please re-login');
-            return res.redirect('/auth/login');
+        brcypt.hash(newPassword, 12).then(hashedPassword => {
+          user.password = hashedPassword;
+          return user.save().then(result => {
+            req.session.destroy(err => {
+              if (err) {
+                throw new Error(err);
+              }
+              res.redirect('/auth/login');
+            });
           });
+        });
       } else {
         req.flash('error', 'Password does not match');
         req.flash('errorType', 'alert');
@@ -645,6 +737,7 @@ exports.postUpdateBio = (req, res, next) => {
 
 exports.postUpdateLink = (req, res, next) => {
   const { userId, link, icon } = req.body;
+
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     req.flash('error', errors.array()[0].msg);
@@ -658,7 +751,7 @@ exports.postUpdateLink = (req, res, next) => {
         req.flash('error', "We can't find your account to update.");
         req.flash('errorType', 'alert');
         req.flash('errorHeader', 'Validation Error');
-        res.redirect('/auth/manage');
+        return res.redirect('/auth/manage');
       }
       const userSocialLinks = [...user.social];
       const index = userSocialLinks.findIndex(i => i.icon === icon);
@@ -671,7 +764,36 @@ exports.postUpdateLink = (req, res, next) => {
       return user.save();
     })
     .then(result => {
+      req.flash('error', 'Update social media link successfully.');
+      req.flash('errorType', '');
+      req.flash('errorHeader', 'Success');
       return res.redirect('/auth/manage');
+    })
+    .catch(err => next(new Error(err)));
+};
+
+exports.postDelete = (req, res, next) => {
+  const userId = req.body.userId;
+  if (userId !== req.session.user._id) {
+    req.flash('error', "You're trying to violate other account.");
+    req.flash('errorType', 'alert');
+    req.flash('errorHeader', 'Error');
+    return res.redirect('/auth/manage');
+  }
+  User.findById(userId)
+    .then(user => {
+      if (!user) {
+        req.flash('error', "We can't find your account.");
+        req.flash('errorType', 'alert');
+        req.flash('errorHeader', 'Error');
+        res.redirect('/auth/manage');
+      }
+      return user.deleteOne().then(result => {
+        req.flash('error', 'Your account has been deleted.');
+        req.flash('errorType', '');
+        req.flash('errorHeader', 'Completed');
+        res.redirect('/');
+      });
     })
     .catch(err => next(new Error(err)));
 };

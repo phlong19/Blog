@@ -14,11 +14,9 @@ router.post(
   body('keyword')
     .trim()
     .isLength({ min: 7 })
-    .withMessage('Please type the keyword be more specific.'),
+    .withMessage('Please be more specific about what you are looking for.'),
   pageController.postSearch
 );
-
-router.get('/search', pageController.getSearch);
 
 router.get('/categories', pageController.getCategories);
 

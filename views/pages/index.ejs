@@ -16,12 +16,11 @@
         <h3 class="headline fancy-border">
           <span class="place-items-center">Breaking news</span>
         </h3>
-        <span class="headline-description"
-          >Apple announces a new partnership...</span>
+        <span class="headline-description">Apple announces a new partnership...</span>
       </div>
 
-      <% for (let i = 0; i < threePosts.length; i++) { %>
-        <% const post=threePosts[i]; %>
+      <% for (let i = 0; i < 3; i++) { %>
+        <% const post=posts[i]; %>
         <a href="/post/<%= post.slug%>" class="article featured-article featured-article-<%= i+1%>">
           <img
             src="<%= post.imageUrl%>"
@@ -32,7 +31,7 @@
 
           <div class="article-data-container">
             <div class="article-data">
-              <span><%= post.updatedAt.toLocaleDateString('en-us',{year: 'numeric', month:'short', day:'numeric'}) %></span>
+              <span><%= post.createdAt.toLocaleDateString('en-us',{year: 'numeric', month:'short', day:'numeric'}) %></span>
               <span class="article-data-spacer"></span>
               <span> <%= post.like %>  likes.</span>
             </div>
@@ -46,27 +45,28 @@
 
     <div class="sidebar d-grid">
       <h3 class="title featured-content-title">Trending news</h3>
-      <% for (let i=0;i< trendingPosts.length;i++) { const post=trendingPosts[i]; %>
-        <a href="/post/<%= post.slug %>" class="trending-news-box">
-          <div class="trending-news-img-box">
-            <span class="trending-number place-items-center">0<%= i+1 %></span>
-            <img
-              src="<%= post.imageUrl %>"
-              alt=""
-              class="article-image"
-            />
-          </div>
-
-          <div class="trending-news-data">
-            <div class="article-data-sidebar">
-              <span><%= post.updatedAt.toLocaleDateString('en-us',{year: 'numeric', month: 'short', day:'numeric'}) %></span>
-              <span class="article-data-spacer"></span>
-              <span><%= post.like %> likes</span>
+      <% for (let i=0; i< trendingPosts.length; i++) { %>
+        <% const post=trendingPosts[i]; %>
+          <a href="/post/<%= post.slug %>" class="trending-news-box">
+            <div class="trending-news-img-box">
+              <span class="trending-number place-items-center">0<%= i+1 %></span>
+              <img
+                src="<%= post.imageUrl %>"
+                alt=""
+                class="article-image"
+              />
             </div>
 
-            <h3 class="title article-title"><%= post.title %></h3>
-          </div>
-        </a>
+            <div class="trending-news-data">
+              <div class="article-data-sidebar">
+                <span><%= post.createdAt.toLocaleDateString('en-us',{year: 'numeric', month: 'short', day:'numeric'}) %></span>
+                <span class="article-data-spacer"></span>
+                <span><%= post.like %> likes</span>
+              </div>
+
+              <h3 class="title article-title"><%= post.title %></h3>
+            </div>
+          </a>
       <% } %>
     </div>
   </div>
@@ -78,29 +78,30 @@
     <h2 class="title section-title" data-name="Older posts">Older posts</h2>
 
     <div class="older-posts-grid-wrapper d-grid">
-      <% for(const post of olderPosts) { %>
-        <a href="/post/<%= post.slug %>" class="article d-grid">
-          <div class="older-posts-article-image-wrapper">
-            <img
-              src="<%= post.imageUrl %>"
-              alt=""
-              class="article-image"
-            />
-          </div>
-
-          <div class="article-data-container">
-            <div class="article-data">
-              <span><%= post.updatedAt.toLocaleDateString('en-us',{year: 'numeric', month: 'short', day: 'numeric'}) %></span>
-              <span class="article-data-spacer"></span>
-              <span><%= post.like %> likes.</span>
+      <% for(let i=3;i< posts.length;i++) { %>
+        <% const post=posts[i]; %>
+          <a href="/post/<%= post.slug %>" class="article d-grid">
+            <div class="older-posts-article-image-wrapper">
+              <img
+                src="<%= post.imageUrl %>"
+                alt=""
+                class="article-image"
+              />
             </div>
 
-            <h3 class="title article-title"><%= post.title %></h3>
-            <p class="article-description">
-              <%= post.description %>
-            </p>
-          </div>
-        </a>
+            <div class="article-data-container">
+              <div class="article-data">
+                <span><%= post.createdAt.toLocaleDateString('en-us',{year: 'numeric', month: 'short', day: 'numeric'}) %></span>
+                <span class="article-data-spacer"></span>
+                <span><%= post.like %> likes.</span>
+              </div>
+
+              <h3 class="title article-title"><%= post.title %></h3>
+              <p class="article-description">
+                <%= post.description %>
+              </p>
+            </div>
+          </a>
       <% } %>
     </div>
 
