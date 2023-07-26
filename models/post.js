@@ -22,7 +22,14 @@ const postSchema = new Schema(
     ],
     slug: { type: String, required: true, unique: true },
     // views
-    like: { type: Number, required: true },
+    like: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: 'User',
+        unique: true,
+        required: false,
+      },
+    ],
     comments: [
       {
         type: Schema.Types.ObjectId,

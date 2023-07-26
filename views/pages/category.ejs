@@ -32,7 +32,7 @@
                   }) %>
                 </span>
                 <span class="article-data-spacer"></span>
-                <span><%= post.like %> likes.</span>
+                <span><%= post.like ? post.like.length : '0' %> likes.</span>
               </div>
     
               <h3 class="title article-title"><%= post.title %></h3>

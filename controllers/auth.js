@@ -161,7 +161,7 @@ exports.postRegister = (req, res, next) => {
   }
   const code = uuid.v4();
   const msg = {
-    from: 'doquangkhoi54@outlook.com',
+    from: process.env.SG_EMAIL,
     to: email,
     subject: 'Your Account Verification',
     html: `
@@ -352,7 +352,7 @@ exports.postReset = (req, res, next) => {
       user = userDoc;
       // send email
       const msg = {
-        from: 'doquangkhoi54@outlook.com',
+        from: process.env.SG_EMAIL,
         to: email,
         subject: 'Reset Password Email Confirmation',
         html: `
@@ -468,7 +468,7 @@ exports.postResendEmail = (req, res, next) => {
       } else {
         code = uuid.v4();
         const msg = {
-          from: 'doquangkhoi54@outlook.com',
+          from: process.env.SG_EMAIL,
           to: email,
           subject: 'Your Account Verification',
           html: `
@@ -540,7 +540,7 @@ exports.postUpdateEmail = (req, res, next) => {
       user = userDoc;
       if (type === 'oldEmail') {
         const msg = {
-          from: 'doquangkhoi54@outlook.com',
+          from: process.env.SG_EMAIL,
           to: userDoc.email,
           subject: 'Changing email confirmation',
           html: `
@@ -561,7 +561,7 @@ exports.postUpdateEmail = (req, res, next) => {
       }
       if (type === 'newEmail') {
         const msg = {
-          from: 'doquangkhoi54@outlook.com',
+          from: process.env.SG_EMAIL,
           to: email,
           subject: 'Changing email confirmation',
           html: `

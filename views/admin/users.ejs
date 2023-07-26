@@ -38,7 +38,7 @@
               <tbody>
                 <% for(let i=0;i<users.length;i++) { %> 
                   <% const user=users[i]; %>
-                    <tr>
+                    <tr style="text-align: center;">
                       <th scope="row">
                         <%= i+1 %>
                       </th>
@@ -54,7 +54,7 @@
                       <td><%= user.social.length %></td>
                       <td><%= user.banned %></td>
                       <td><%= user.createdAt.toLocaleDateString('en-us') %></td>
-                      <td><a href="/admin/detail-user/<%= user._id %>" class="list-link">Details</a></td>
+                      <td><a href="/admin/details-id/<%= user._id %>" class="list-link">Details</a></td>
                     </tr>
                 <% } %>
               </tbody>

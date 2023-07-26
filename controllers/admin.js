@@ -1,6 +1,8 @@
 const Post = require('../models/post');
 const Category = require('../models/category');
 const User = require('../models/user');
+const Comment = require('../models/comment');
+const Contact = require('../models/contact');
 
 const { validationResult } = require('express-validator');
 const { deleteImage } = require('../middlewares/cloud');
@@ -20,6 +22,7 @@ const window = new JSDOM('').window;
 const DOMPurify = createDOMPurify(window);
 
 const items_per_table = 10;
+let sum;
 let option = {};
 let sort = {};
 
@@ -36,7 +39,6 @@ exports.getPostsManage = (req, res, next) => {
     error = errorType = errorHeader = null;
   }
 
-  let sum;
   let categories;
   const sortOption = req.query.sort;
   switch (sortOption) {
@@ -103,7 +105,6 @@ exports.getUsersManage = (req, res, next) => {
     error = errorType = errorHeader = null;
   }
 
-  let sum;
   User.countDocuments()
     .then(counted => {
       sum = counted;
@@ -138,7 +139,6 @@ exports.getCategoriesManage = (req, res, next) => {
     error = errorType = errorHeader = null;
   }
 
-  let sum;
   let cats;
 
   Category.countDocuments()
@@ -156,21 +156,79 @@ exports.getCategoriesManage = (req, res, next) => {
         errorHeader: errorHeader,
         categories: cats,
         sum: sum,
+        categories: cats,
       });
     })
     .catch(err => next(new Error(err)));
 };
 
 exports.getCommentsManage = (req, res, next) => {
-  res.render('admin/cmts', {
-    pageTitle: 'Comments Manage',
-    path: '/comments',
-    error: null,
-    sum: 12,
-  });
+  let error = req.flash('error');
+  let errorType = req.flash('errorType');
+  let errorHeader = req.flash('errorHeader');
+
+  if (error.length > 0) {
+    error = error[0];
+    errorType = errorType[0];
+    errorHeader = errorHeader[0];
+  } else {
+    error = errorType = errorHeader = null;
+  }
+
+  Comment.countDocuments()
+    .then(counted => {
+      sum = counted;
+      return Comment.find();
+    })
+    .then(commments => {
+      res.render('admin/cmts', {
+        pageTitle: 'Comments Manage',
+        path: '/comments',
+        error: error,
+        errorType: errorType,
+        errorHeader: errorHeader,
+        commments: commments,
+        sum: sum,
+      });
+    })
+    .catch(err => next(new Error(err)));
 };
 
-exports.getDetails = (req, res, next) => {
+exports.getContactManage = (req, res, next) => {
+  let error = req.flash('error');
+  let errorType = req.flash('errorType');
+  let errorHeader = req.flash('errorHeader');
+
+  if (error.length > 0) {
+    error = error[0];
+    errorType = errorType[0];
+    errorHeader = errorHeader[0];
+  } else {
+    error = errorType = errorHeader = null;
+  }
+
+  Contact.countDocuments()
+    .then(counted => {
+      sum = counted;
+      return Contact.find({ checked: false })
+        .sort({ limit: 'asc' })
+        .select('-message');
+    })
+    .then(contacts => {
+      res.render('admin/contact', {
+        pageTitle: 'Contact Manage',
+        path: '/contacts',
+        error: error,
+        errorType: errorType,
+        errorHeader: errorHeader,
+        contacts: contacts,
+        sum: sum,
+      });
+    })
+    .catch(err => next(new Error(err)));
+};
+
+exports.getDetailSlug = (req, res, next) => {
   let error = req.flash('error');
   let errorType = req.flash('errorType');
   let errorHeader = req.flash('errorHeader');
@@ -245,7 +303,7 @@ exports.getDetails = (req, res, next) => {
   }
 };
 
-exports.getDetailUser = (req, res, next) => {
+exports.getDetailsId = (req, res, next) => {
   let error = req.flash('error');
   let errorType = req.flash('errorType');
   let errorHeader = req.flash('errorHeader');
@@ -259,18 +317,36 @@ exports.getDetailUser = (req, res, next) => {
   }
 
   const id = req.params.id;
-  User.findById(id)
-    .then(user => {
-      res.render('admin/details', {
-        pageTitle: 'User details',
-        edit: 'user',
-        error: error,
-        errorType: errorType,
-        errorHeader: errorHeader,
-        user: user,
-      });
-    })
-    .catch(err => next(new Error(err)));
+  const edit = req.query.edit;
+
+  if (edit === 'user') {
+    User.findById(id)
+      .then(user => {
+        res.render('admin/details', {
+          pageTitle: 'User details',
+          edit: edit,
+          error: error,
+          errorType: errorType,
+          errorHeader: errorHeader,
+          user: user,
+        });
+      })
+      .catch(err => next(new Error(err)));
+  }
+  if (edit === 'contact') {
+    Contact.findById(id)
+      .then(contact => {
+        res.render('admin/details', {
+          pageTitle: 'Contact details',
+          edit: edit,
+          error: error,
+          errorType: errorType,
+          errorHeader: errorHeader,
+          contact: contact,
+        });
+      })
+      .then(err => next(new Error(err)));
+  }
 };
 
 exports.createPost = (req, res, next) => {
@@ -319,7 +395,6 @@ exports.createPost = (req, res, next) => {
           author: req.session.user._id,
           status: status,
           slug: slug,
-          like: 0,
         });
         return post.save().then(result => {
           req.flash('error', 'Create new post successfully.');
@@ -487,6 +562,14 @@ exports.updatePost = (req, res, next) => {
     });
 };
 
+exports.updateUser = (req, res, next) => {
+  const { id } = req.body;
+};
+
+exports.updateContact = (req, res, next) => {
+  const { id, checked } = req.body;
+};
+
 exports.deletePost = (req, res, next) => {
   const id = req.body.id;
 
@@ -545,6 +628,15 @@ exports.deleteUser = (req, res, next) => {
         req.flash('errorHeader', 'Success');
         res.redirect('/admin/users');
       });
+    })
+    .catch(err => next(new Error(err)));
+};
+
+exports.deleteContacts = (req, res, next) => {
+  Contact.deleteMany({ checked: true, limit: { $lt: Date.now() } })
+    .then(result => {
+      req.flash('error', 'Cleaning up successfully,');
+      return res.redirect('/admin/contacts');
     })
     .catch(err => next(new Error(err)));
 };

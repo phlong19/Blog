@@ -11,7 +11,11 @@ const userSchema = new Schema(
     activation_expiration: Date,
     reset_code: String,
     reset_expiration: Date,
-    avatarUrl: { type: String, required: false },
+    avatarUrl: {
+      type: String,
+      default:
+        'https://res.cloudinary.com/ddot3p3my/image/upload/v1690302821/users/image_2023-07-25_233343045_zggymb.png',
+    },
     avatarId: { type: String, required: false },
     shortDes: { type: String, required: false },
     social: [
