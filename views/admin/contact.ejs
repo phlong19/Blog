@@ -1,0 +1,137 @@
+<%- include('../components/header.ejs') %>
+
+    <link rel="stylesheet" href="/css/table.css">
+
+    <link rel="stylesheet" href="/css/noti.css">
+</head>
+
+<%- include('../components/nav.ejs') %>
+    
+<%- include('../components/admin-header.ejs') %>
+    
+    <% if(error) {%>
+      <%- include('../components/notification.ejs')%>
+    <% } %>
+
+    <%- include('../components/admin-nav.ejs') %>
+
+      <div class="content">
+        <div class="container">
+          <h2 class="mb-5">All contacts</h2>
+          <button>Delete expired contacts</button>
+          <div class="table-responsive custom-table-responsive">
+
+            <table class="table custom-table">
+              <thead>
+                <tr>  
+                    <th scope="col">#</th>
+                    <th scope="col">Name</th>
+                    <th scope="col">Email</th>
+                    <th scope="col">Subject</th>
+                    <th scope="col">Expire</th>
+                    <th scope="col">Checked</th>
+                    <th scope="col"></th>
+                </tr>
+              </thead>
+              <tbody>
+                <% for (let i = 0; i < contacts.length; i++) { %>
+                  <% const contact = contacts[i]; %>                    
+                    <tr scope="row">
+                      <th scope="row">
+                        <%= i+1 %>
+                      </th>
+                      <td>
+                        <%= contact.name %>
+                      </td>
+                      <td><%= contact.email %></td>
+                      <td>
+                        <%= contact.subject %>
+                        <!-- <small class="d-block">Far far away, behind the word mountains.</small> -->
+                      </td>
+                      <td><%= contact.limit.toLocaleDateString('en-us',{year:'numeric',month:'short',day:'numeric'}) %></td>
+                      <td><%= contact.checked %></td>
+                      <td><a href="/admin/details-id/<%= contact._id %>?edit=contact" class="list-link">Details</a></td>
+                    </tr>
+                <% } %>
+                
+              </tbody>
+            </table>
+            
+          </div>
+          <%- include('../components/pagination.ejs') %>
+        </div>
+      </div>
+    
+<%- include('../components/footer.ejs') %>
+
+<script src="/js/noti.js"></script>
+
+</body>
+</html><%- include('../components/header.ejs') %>
+
+    <link rel="stylesheet" href="/css/table.css">
+
+    <link rel="stylesheet" href="/css/noti.css">
+</head>
+
+<%- include('../components/nav.ejs') %>
+    
+<%- include('../components/admin-header.ejs') %>
+    
+    <% if(error) {%>
+      <%- include('../components/notification.ejs')%>
+    <% } %>
+
+    <%- include('../components/admin-nav.ejs') %>
+
+
+      <div class="content">
+        <div class="container">
+          <h2 class="mb-5">All comments</h2>
+          
+          <div class="table-responsive custom-table-responsive">
+
+            <table class="table custom-table">
+              <thead>
+                <tr>  
+                    <th scope="col">#</th>
+                    <th scope="col">Username</th>
+                    <th scope="col">Email</th>
+                    <th scope="col">Content</th>
+                    <th scope="col">Post's title</th>
+                    <th scope="col"></th>
+                </tr>
+              </thead>
+              <tbody>
+
+                <tr scope="row">
+                  <th scope="row">
+                    1
+                  </th>
+                  <td>
+                    1392
+                  </td>
+                  <td>James Yates</td>
+                  <td>
+                    Web Designer
+                    <small class="d-block">Far far away, behind the word mountains.</small>
+                  </td>
+                  <td>+63 983 0962 971</td>
+                  <td><a href="#" class="list-link">Details</a></td>
+                </tr>
+                
+                
+              </tbody>
+            </table>
+            
+          </div>
+          <%- include('../components/pagination.ejs') %>
+        </div>
+      </div>
+    
+<%- include('../components/footer.ejs') %>
+
+<script src="/js/noti.js"></script>
+
+</body>
+</html>

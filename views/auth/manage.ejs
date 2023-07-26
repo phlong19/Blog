@@ -112,15 +112,16 @@
             <section id="email" class="tab-panel">
               <h1 class="title">Change email</h1>
               <br>
-              <h4>Please re-active your account with the new email address after updating email successfully!</h4>
+              <h4 id="note" style="display: none;color: green;">Please re-active your account with the new email address after updating email successfully!</h4>
               <br>
               <form action="/auth/manage/update-email" method="post">
                 <label for="email" class="formbold-form-label">New email</label>
                 <input type="email" class="formbold-form-input" name="email" id="email" required>
+                <br>
                 <label for="type" class="formbold-form-label">Choose activation type you can use.</label>
-                <select name="type" id="type">
+                <select name="type" id="type" class="formbold-form-input">
                   <option value="oldEmail" selected>Confirming email address transfer with current email.</option>
-                  <option value="newEmail">I lost my email or no longer have access to that email.</option>
+                  <option value="newEmail" onselect="note()">I lost my email or no longer have access to my old email.</option>
                 </select>
                 <input type="hidden" name="oldEMail" value="<%= user.email %>">
                 <input type="hidden" name="_csrf" value="<%= csrfToken %>">
@@ -239,15 +240,15 @@
   let select = document.getElementById('select-list');
   let icon;
   select.addEventListener('change', e => {
-  if (e.target.value=='close') {
-    document.getElementById('div-social').style.display = 'none';
-  } else {
-    // get id of option = e.target[e.target.selectedIndex].id;
-    icon=e.target.value;
-    document.getElementById('div-social').style.display = 'block';
-    document.getElementById('icon').setAttribute('value',icon);
-  }
-});
+    if (e.target.value=='close') {
+      document.getElementById('div-social').style.display = 'none';
+    } else {
+      // get id of option = e.target[e.target.selectedIndex].id;
+      icon=e.target.value;
+      document.getElementById('div-social').style.display = 'block';
+      document.getElementById('icon').setAttribute('value',icon);
+    }
+  });
   function confirmed(){
     let confirm = document.getElementById('confirm-delete').value;
     if (confirm === "CONFIRMED") {
@@ -256,7 +257,18 @@
       document.getElementById('btn-delete').style.display = "none";
     }
   }
+  
+  let note = document.getElementById('note');
+  let type = document.getElementById('type');
 
+  type.addEventListener('change', e => {
+    if(e.target.value === 'newEmail') {
+      note.style.display = "block";
+    } else {
+      note.style.display = "none";
+    }
+  });
+  
 </script>
 
 </body>

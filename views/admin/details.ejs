@@ -205,7 +205,7 @@
           <div class="formbold-mb-3">
             <label for="email" class="formbold-form-label"> Email </label>
             <input
-              type="text"
+              type="email"
               name="email"
               id="email"
               class="formbold-form-input"
@@ -263,12 +263,51 @@
             </select>
           </div>
 
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
           <input type="hidden" name="userId" value="<%= user._id %>">
 
           <button type="submit" class="formbold-btn">Update</button>
         </form>
+
+        <form action="/admin/delete-user" method="post">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <input type="hidden" name="userId" value="<%= user._id %>">
+          <button type="submit" class="formbold-btn-delete">Delete</button>
+        </form>
     <% } %>
-</div>
+
+    <% if(edit==='contact') { %>
+      <form action="/admin/update-contact" method="post">
+        <div class="formbold-mb-3">
+          <label for="checked" class="formbold-form-label">Name</label>
+          <input type="text" class="formbold-form-input" value="<%= contact.name %>" disabled>
+        </div>  
+        <div class="formbold-mb-3">
+          <label for="checked" class="formbold-form-label">Email</label>
+          <input type="email" class="formbold-form-input" value="<%= contact.email %>" disabled>
+        </div>
+        <div class="formbold-mb-3">
+          <label for="checked" class="formbold-form-label">Subject</label>
+          <input type="text" class="formbold-form-input" value="<%= contact.subject %>">
+        </div>
+        <div class="formbold-mb-3">
+          <label for="checked" class="formbold-form-label">Message</label>
+          <input type="text" class="formbold-form-input" value="<%= contact.message %>">
+        </div>
+        <div class="formbold-mb-3">
+          <label for="checked" class="formbold-form-label">Checked</label>
+          <select name="checked" class="formbold-form-input">
+            <option value="0" selected>False</option>
+            <option value="1" >True</option>
+          </select>
+        </div> 
+        
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        
+        <button type="submit" class="formbold-btn">Update</button>
+      </form>
+    <% } %>
+  </div>
 <br><br>
 
 <script src="/js/noti.js"></script>

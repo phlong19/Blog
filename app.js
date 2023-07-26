@@ -81,10 +81,6 @@ app.use((error, req, res, next) => {
   res.status(500).render('errors/500', {
     pageTitle: '500',
     error: error,
-    isAuthenticated: req.session.isLoggedIn,
-    name: req.session.user.name,
-    level: req.session.user.level,
-    csrfToken: req.csrfToken(),
   });
 });
 

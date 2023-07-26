@@ -1,8 +1,13 @@
+require('dotenv').config();
+
 const { validationResult } = require('express-validator');
+const sendGrid = require('@sendgrid/mail');
 const Category = require('../models/category');
 const Post = require('../models/post');
-
+const Contact = require('../models/contact');
 const { marked } = require('marked');
+
+sendGrid.setApiKey(process.env.SG_API_KEY);
 const items_per_pages = 6;
 
 exports.getIndex = (req, res, next) => {
@@ -51,6 +56,18 @@ exports.getIndex = (req, res, next) => {
 };
 
 exports.getPostDetails = (req, res, next) => {
+  let error = req.flash('error');
+  let errorType = req.flash('errorType');
+  let errorHeader = req.flash('errorHeader');
+
+  if (error.length > 0) {
+    error = error[0];
+    errorType = errorType[0];
+    errorHeader = errorHeader[0];
+  } else {
+    error = errorType = errorHeader = null;
+  }
+
   const slug = req.params.slug;
   Post.findOne({ slug: slug })
     .select('-description -imageId')
@@ -63,7 +80,47 @@ exports.getPostDetails = (req, res, next) => {
         post: post,
         html: html,
         author: post.author,
+        error: error,
+        errorType: errorType,
+        errorHeader: errorHeader,
       });
+    })
+    .catch(err => next(new Error(err)));
+};
+
+exports.postLike = (req, res, next) => {
+  const postId = req.body.postId;
+  const userId = req.session.user._id;
+  let slug;
+
+  Post.findById(postId)
+    .then(post => {
+      if (!post) {
+        req.flash('error', "Can't find any post.");
+        req.flash('errorType', 'warning');
+        req.flash('errorHeader', 'Error');
+        return res.redirect('/');
+      }
+      slug = post.slug;
+      const likeList = [...post.like];
+      if (likeList.some(like => like.equals(userId))) {
+        req.flash('error', 'You can only like this post 1 time.');
+        req.flash('errorType', 'info');
+        req.flash('errorHeader', 'Already liked');
+        return res.redirect('/post/' + slug);
+      } else {
+        likeList.push(userId);
+        post.like = likeList;
+        return post.save().then(result => {
+          req.flash(
+            'error',
+            "Post's author feels happy because you liked this post."
+          );
+          req.flash('errorType', '');
+          req.flash('errorHeader', 'Thanks <3');
+          res.redirect('/post/' + slug);
+        });
+      }
     })
     .catch(err => next(new Error(err)));
 };
@@ -106,86 +163,6 @@ exports.postSearch = (req, res, next) => {
     })
     .catch(err => next(new Error(err)));
 };
-
-// exports.postSearch = (req, res, next) => {
-//   const keyword = req.body.keyword;
-//   const errors = validationResult(req);
-//   if (!errors.isEmpty()) {
-//     req.flash('error', errors.array()[0].msg);
-//     req.flash('errorType', 'alert');
-//     req.flash('errorHeader', 'Search Validation Error');
-//     return res.redirect('/');
-//   }
-
-//   Post.find({
-//     status: true,
-//     $or: [
-//       { title: { $regex: keyword, $options: 'i' } },
-//       { content: { $regex: keyword, $options: 'i' } },
-//       { description: { $regex: keyword, $options: 'i' } },
-//     ],
-//   })
-//     .then(posts => {
-//       if (Array.isArray(posts) && posts.length === 0) {
-//         req.flash('error', "We can't find any posts with this keyword.");
-//         req.flash('errorType', 'info');
-//         req.flash('errorHeader', 'None posts');
-//         req.flash('keyword', keyword);
-//         return res.redirect('/search');
-//       }
-//       req.flash('posts', posts);
-//       req.flash('keyword', keyword);
-//       return res.redirect('/search');
-//     })
-//     .catch(err => next(new Error(err)));
-// };
-
-// exports.getSearch = (req, res, next) => {
-//   let error = req.flash('error');
-//   let errorType = req.flash('errorType');
-//   let errorHeader = req.flash('errorHeader');
-
-//   if (error.length > 0) {
-//     error = error[0];
-//     errorType = errorType[0];
-//     errorHeader = errorHeader[0];
-//   } else {
-//     error = errorType = errorHeader = null;
-//   }
-
-//   let posts = req.flash('posts');
-//   let sum;
-//   if (posts.length > 0) {
-//     posts = posts;
-//     sum = posts.length;
-//   } else {
-//     posts = null;
-//     sum = 'none';
-//   }
-
-//   let keyword = req.flash('keyword');
-//   keyword = keyword[0];
-
-//   if (keyword === undefined) {
-//     req.flash('error', "Some error occurred here, it's us, not you.");
-//     req.flash('errorType', 'warning');
-//     req.flash('errorHeader', 'Please try again');
-//     req.flash(
-//       'keyword',
-//       'An error occurred here, idk but this error is out of my control, so please try again'
-//     );
-//     return res.redirect('/search');
-//   }
-//   res.render('pages/search', {
-//     pageTitle: 'Searching result',
-//     error: error,
-//     errorType: errorType,
-//     errorHeader: errorHeader,
-//     posts: posts,
-//     sumResult: sum,
-//     keyword: keyword,
-//   });
-// };
 
 exports.getCategories = (req, res, next) => {
   Category.find()
@@ -245,7 +222,63 @@ exports.getAbout = (req, res, next) => {
 };
 
 exports.getContact = (req, res, next) => {
+  let error = req.flash('error');
+  let errorType = req.flash('errorType');
+  let errorHeader = req.flash('errorHeader');
+
+  if (error.length > 0) {
+    error = error[0];
+    errorType = errorType[0];
+    errorHeader = errorHeader[0];
+  } else {
+    error = errorType = errorHeader = null;
+  }
+
   res.render('pages/contact', {
     pageTitle: 'Contact me',
+    error: error,
+    errorType: errorType,
+    errorHeader: errorHeader,
   });
+};
+
+exports.postContact = (req, res, next) => {
+  const { name, email, subject, message } = req.body;
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    req.flash('error', errors.array()[0].msg);
+    req.flash('errorType', 'alert');
+    req.flash('errorHeader', 'Validation Error');
+    return res.redirect('/contact');
+  }
+
+  Contact.findOne({ email: email, limit: { $lt: Date.now() } })
+    .then(contact => {
+      if (contact) {
+        req.flash(
+          'error',
+          "You've contacted me recently. Please wait at least 1 day after the last sent."
+        );
+        req.flash('errorType', 'warning');
+        req.flash('errorHeader', 'Chill out');
+        return res.redirect('/contact');
+      } else {
+        const contact = new Contact({
+          name: name,
+          email: email,
+          subject: subject,
+          message: message,
+          limit: Date.now() + 24 * 3600000, // a day later
+        });
+
+        return contact.save().then(result => {
+          req.flash('error', 'Thanks for contact me. I will reply you ASAP!');
+          req.flash('errorType', '');
+          req.flash('errorHeader', '<3');
+          return res.redirect('/contact');
+        });
+      }
+    })
+    .catch(err => next(new Error(err)));
 };

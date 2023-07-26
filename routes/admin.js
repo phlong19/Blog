@@ -1,6 +1,7 @@
 const express = require('express');
 const { body } = require('express-validator');
 
+const User = require('../models/user');
 const adminController = require('../controllers/admin');
 const { uploadCategories, uploadPosts } = require('../middlewares/cloud');
 const isPermitted = require('../middlewares/isPermitted');
@@ -62,10 +63,13 @@ router.get('/users', isAdmin, adminController.getUsersManage);
 // COMMENTS
 router.get('/comments', isPermitted, adminController.getCommentsManage);
 
-// Details
-router.get('/details/:slug', isPermitted, adminController.getDetails);
+// CONTACTS
+router.get('/contacts', isAdmin, adminController.getContactManage);
 
-router.get('/detail-user/:id', isAdmin, adminController.getDetailUser);
+// Details
+router.get('/details/:slug', isPermitted, adminController.getDetailSlug);
+
+router.get('/details-id/:id', isAdmin, adminController.getDetailsId);
 
 // Update routes
 router.post(
@@ -110,7 +114,27 @@ router.post(
   adminController.updateCategory
 );
 
-router.post('/update-user'); //not allow update user's image, maybe just edit level and banned
+router.post(
+  '/update-user',
+  [
+    body('email')
+      .notEmpty()
+      .isEmail()
+      .withMessage('Invalid email address')
+      .custom((value, { req }) => {
+        User.findOne({ email: value }).then(user => {
+          if (user) {
+            return Promise.reject('This email is already in used.');
+          }
+        });
+      })
+      .normalizeEmail(),
+  ],
+  isAdmin,
+  adminController.updateUser
+);
+
+router.post('/update-contact', isAdmin, adminController.updateContact);
 
 // delete routes
 router.post('/delete-post', isPermitted, adminController.deletePost);
@@ -119,6 +143,8 @@ router.post('/delete-category', isAdmin, adminController.deleteCategory);
 
 router.post('/delete-user', isAdmin, adminController.deleteUser);
 
-router.post('/delete-comment');
+router.post('/delete-contact', isAdmin, adminController.deleteContacts);
+
+router.post('/delete-comment', isPermitted, adminController.deleteComment);
 
 module.exports = router;

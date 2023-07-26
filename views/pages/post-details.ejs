@@ -4,8 +4,14 @@
     
     <link rel="stylesheet" href="/css/quill.css">
 
+    <link rel="stylesheet" href="/css/noti.css">
+
 </head>
   <%- include('../components/nav.ejs') %>
+
+  <% if(error) { %>
+    <%- include('../components/notification.ejs') %>
+  <% } %>
   
   <section class="blog-post section-header-offset">
     <div class="blog-post-container container">
@@ -21,7 +27,7 @@
                     }) %>
                 </span>
                 <span class="article-data-spacer"></span>
-                <span><%= post.like %> likes.</span>
+                <span><%= post.like ? post.like.length : '0' %> likes.</span>
 				<div class="post-tag">
 					Tag: 
                     <% for (const cat of post.category) { %>
@@ -40,17 +46,19 @@
 
             <div class="author d-grid">
                 <div class="author-image-box">
-                    <img src="<%= author.avatarUrl ? author.avatarUrl : 'https://i.stack.imgur.com/oBJxw.png' %>" alt="" class="article-image">
+                    <img src="<%= author ? author.avatarUrl : 'https://res.cloudinary.com/ddot3p3my/image/upload/v1690302821/users/image_2023-07-25_233343045_zggymb.png' %>" alt="" class="article-image">
                 </div>
                 <div class="author-about">
-                    <h3 class="author-name"><%= author.name %></h3>
-                    <p><%= author.shortDes ? author.shortDes : 'None description.' %></p>
+                    <h3 class="author-name"><%= author ? author.name : 'Deleted author account.' %></h3>
+                    <p><%= author ? author.shortDes : 'None description.' %></p>
                     <ul class="list social-media">
-                        <% if(author.social.length > 0) { %>
-                            <% for (const media of author.social) { %>
-                                <li class="list-item">
-                                    <a href="http://<%= media.link %>" class="list-link"><i class="<%= media.icon%>"></i></a>
-                                </li>
+                        <% if(author) { %>
+                            <% if(author.social.length > 0) { %>
+                                <% for (const media of author.social) { %>
+                                    <li class="list-item">
+                                        <a href="http://<%= media.link %>" class="list-link"><i class="<%= media.icon%>"></i></a>
+                                    </li>
+                                <% } %>
                             <% } %>
                         <% } %>
                     </ul>
@@ -63,6 +71,8 @@
 <%- include('../components/comment.ejs') %>
 
 <%- include('../components/footer.ejs') %>
+
+<script src="/js/noti.js"></script>
 
 </body>
 </html>
