@@ -18,6 +18,12 @@
       <div class="content">
         <div class="container">
           <h2 class="mb-5">All users</h2>
+          <h4 class="sortHeader"> Sort by: 
+            <a class="list-link <%= sortOption==='name' ? 'active' : '' %>" href="?sort=name">Name</a>
+            <a class="list-link <%= sortOption==='level' ? 'active' : '' %>" href="?sort=level">Level</a>
+            <a class="list-link <%= sortOption==='banned' ? 'active' : '' %>" href="?sort=banned">Banned</a>
+            <%- include('../components/sort.ejs') %>
+          </h4>
           
           <div class="table-responsive custom-table-responsive">
 
@@ -61,9 +67,9 @@
             </table>
             
           </div>
-
-          <%- include('../components/pagination.ejs') %>
-
+          <% if(users.length >0) { %>
+            <%- include('../components/pagination.ejs') %>
+          <% } %>
         </div>
       </div>
     

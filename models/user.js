@@ -28,6 +28,7 @@ const userSchema = new Schema(
       },
     ],
     level: { type: Number, default: 1 },
+    warning: { type: Number, default: 0 },
     banned: { type: Boolean, default: false },
   },
   { timestamps: true }

@@ -1,6 +1,6 @@
 <div class="comment-section blog-post-container">
   <div class="container">
-    <div>
+    <div class="like-post">
       <h3>The Conversation <span class="total-comment"><%= post.comment ? post.comment.length : 'Not yet any' %> comment</span> </h3>
       <h4>Good post? Like it. ->
         <form action="/post/like" method="post" style="display: inline;">
@@ -12,68 +12,87 @@
     </div>
     <hr>
     <h4>Start a discussion, not a fire &#128293;. Comment with kindness.</h4>
-    <img style="width: 300px;" src="https://scontent.fhan4-3.fna.fbcdn.net/v/t39.30808-6/343752764_200215959459011_5839997412340766272_n.jpg?_nc_cat=100&ccb=1-7&_nc_sid=dbeb18&_nc_ohc=KLaJJnVNdS4AX89mO0L&_nc_ht=scontent.fhan4-3.fna&oh=00_AfBnNZiHQGtpxkJcf-dZA-5KBLBd2HeoYx0tZR_05uimOg&oe=64C43F6B" alt="">
+    <img style="width: 300px;" 
+    src="https://res.cloudinary.com/ddot3p3my/image/upload/v1690516691/resource/343752764_200215959459011_5839997412340766272_n.jpg_vjy0tc.jpg" 
+    alt="">
     
-    <form class="comment-form" method="post" action="">
-      <div>
-        <label class="write-comment" for="comment-text">Write a comment</label>
-        <textarea id="comment-text" name="comment" required></textarea>
-      </div>
-      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-      <button type="submit" class="button-54">Post Comment</button>
-    </form>
-
-    <% if(post.comment) { %>
-      <ul class="comment-list">
+    <% if(isAuthenticated) { %>
+      <form class="comment-form" method="post" action="/post/new-comment">
+        <div>
+          <label class="write-comment" for="comment-text">Write a comment</label>
+          <textarea id="comment-text" name="content" required></textarea>
+        </div>
+        <input type="hidden" name="userId" value="<%= userId %>">
+        <input type="hidden" name="postId" value="<%= post._id %>">
+        <input type="hidden" name="slug" value="<%= post.slug %>">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <button type="submit" class="button-54">Post a new comment</button>
+      </form>
+    <% } %>
+  <ul class="comment-list">
+    <% for(let i=0; i< comments.length; i++) { %>
+      <% const comment = comments[i]; %>
         <li>
           <div class="comment">
-            <img src="https://previews.123rf.com/images/metelsky/metelsky1904/metelsky190400021/121859823-male-avatar-icon-or-portrait-handsome-young-man-face-with-beard-vector-illustration.jpg" class="comment-avatar">
+            <a class="list-link" href="/user/<%= comment.userId.name %>">
+              <img src="<%= comment.userId.avatarUrl %>" alt="" class="comment-avatar">
+            </a>
             <div class="comment-content">
-              <h5 class="comment-author-name">John Doe</h5>
-              <span class="comment-time-posted">June 20, 2023</span>
-              <p class="comment-text">Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
-              <button class="reply-button">Reply</button>
-
-              <form class="comment-form reply-form" method="post" style="display:none;">
-                <div>
-                  <label for="comment-text"> Write a reply</label>
-                  <br>
-                  <textarea id="comment-text" name="comment" required></textarea>
-                </div>
-                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                <div class="reply-form-buttons">
-                  <button type="submit" class="post-reply-button">Post Reply</button>
-                  <button type="button" class="cancel-reply-button">Cancel</button>
-                </div>
-              </form>
-
+              <a class="list-link comment-author-name" href="/user/<%= comment.userId.name %>"><%= comment.userId.name %></a>
+              <span class="comment-time-posted"><%= comment.createdAt.toLocaleDateString('en-us',{
+                year:'numeric',
+                month:'long',
+                day:'numeric',
+              }); %></span>
+              <p class="comment-text"><%= comment.content %></p>
+              
+              <% if(isAuthenticated) { %>
+                <button class="reply-button">Reply</button>
+                <form action="/post/reply-comment" class="comment-form reply-form" method="post" style="display:none;">
+                  <div>
+                    <label for="comment-text"> Write a reply</label>
+                    <br>
+                    <textarea id="comment-text" name="content" required></textarea>
+                  </div>
+                  <input type="hidden" name="parentCommentId" value="<%= comment._id %>">
+                  <input type="hidden" name="userId" value="<%= userId %>">
+                  <input type="hidden" name="postId" value="<%= post._id%>">
+                  <input type="hidden" name="slug" value="<%= post.slug %>">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                  <div class="reply-form-buttons">
+                    <button type="submit" class="post-reply-button">Post Reply</button>
+                    <button type="button" class="cancel-reply-button">Cancel</button>
+                  </div>
+                </form>
+              <% } %>
             </div>
           </div>
-          <ul class="comment-reply-list">
-            <li>
-              <div class="comment">
-                <img src="https://media.vanityfair.com/photos/54cbfe423c894ccb27c81fb3/master/w_2560%2Cc_limit/image.jpg" class="comment-avatar">
-                <div class="comment-content">
-                  <h5 class="comment-author-name">Jane Doe</h5>
-                  <span class="comment-time-posted">June 21, 2023</span>
-                  <p class="comment-text">Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</p>
-                </div>
-              </div>
-            </li>
-            <li>
-              <div class="comment">
-                <img src="https://media.vanityfair.com/photos/54cbfe423c894ccb27c81fb3/master/w_2560%2Cc_limit/image.jpg" class="comment-avatar">
-                <div class="comment-content">
-                  <h5 class="comment-author-name">Jane Doe</h5>
-                  <span class="comment-time-posted">June 21, 2023</span>
-                  <p class="comment-text">Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.</p>
-                </div>
-              </div>
-            </li>
-          </ul>
+            <% if (comment.childComment.length > 0) { %>
+              <ul class="comment-reply-list">
+                <% for(let j=0; j < comment.childComment.length; j++) { %>
+                  <% const child = comment.childComment[j]; %>
+                    <li>
+                      <div class="comment">
+                        <a class="list-link" href="/user/<%= child.userId.name %>">
+                          <img src="<%= child.userId.avatarUrl %>" alt="" class="comment-avatar">
+                        </a>
+                        <div class="comment-content">
+                          <a class="list-link comment-author-name" href="/user/<%= child.userId.name %>"><%= child.userId.name %></a>
+                          <span class="comment-time-posted"><%= child.createdAt.toLocaleDateString('en-us',{
+                            year:'numeric',
+                            month:'long',
+                            day:'numeric',
+                          })%></span>
+                          <p class="comment-text"><%= child.content %></p>
+                        </div>
+                      </div>
+                    </li>
+                <% } %>
+              </ul> 
+            <% } %>
         </li>
-      </ul>
     <% } %>
+  </ul>
   </div>
 </div>
 

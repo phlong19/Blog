@@ -5,6 +5,7 @@ const uuid = require('uuid');
 const sendGrid = require('@sendgrid/mail');
 const User = require('../models/user');
 const { validationResult } = require('express-validator');
+const { deleteImage } = require('../middlewares/cloud');
 
 sendGrid.setApiKey(process.env.SG_API_KEY);
 
@@ -609,8 +610,49 @@ exports.postUpdateEmail = (req, res, next) => {
     .catch(err => next(new Error(err)));
 };
 
+exports.postUpdateName = (req, res, next) => {
+  const { name, userId } = req.body;
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    req.flash('error', errors.array()[0].msg);
+    req.flash('errorType', 'alert');
+    req.flash('errorHeader', 'Validation Error');
+    return res.redirect('/auth/manage');
+  }
+  if (userId !== req.session.user._id) {
+    return User.findById(req.session.user._id)
+      .then(user => {
+        user.warning += 1;
+        return user.save().then(result => {
+          req.flash(
+            'error',
+            "You're trying to violate another account. Receive enough 5 warnings, you will be banned."
+          );
+          req.flash('errorType', 'alert');
+          req.flash('errorHeader', '+1 warning');
+          return res.redirect('/auth/manage');
+        });
+      })
+      .catch(err => next(new Error(err)));
+  }
+  User.findById(userId)
+    .then(user => {
+      user.name = name;
+      return user.save().then(result => {
+        req.flash('error', 'Update username successfully.');
+        req.flash('errorType', '');
+        req.flash('errorHeader', 'Success');
+        return res.redirect('/auth/manage');
+      });
+    })
+    .catch(err => next(new Error(err)));
+};
+
 exports.postUpdatePassword = (req, res, next) => {
   const { userId, oldPassword, newPassword, confirmPassword } = req.body;
+  const sessionId = req.session.user._id;
+
   let user;
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -625,27 +667,31 @@ exports.postUpdatePassword = (req, res, next) => {
     req.flash('errorHeader', 'Validation Error');
     return res.redirect('/auth/manage');
   }
-  if (userId !== req.session.user._id) {
-    req.flash('error', "You're trying violate other account");
-    req.flash('errorType', 'alert');
-    req.flash('errorHeader', 'Caution');
-    return res.redirect('/auth/manage');
+  if (userId !== sessionId) {
+    return User.findById(sessionId)
+      .then(user => {
+        user.warning += 1;
+        return user.save().then(result => {
+          req.flash(
+            'error',
+            "You're trying to violate another account. Receive enough 5 warnings, you will be banned."
+          );
+          req.flash('errorType', 'alert');
+          req.flash('errorHeader', '+1 warning');
+          return res.redirect('/auth/manage');
+        });
+      })
+      .catch(err => next(new Error(err)));
   }
 
   User.findById(userId)
     .then(userDoc => {
-      if (!userDoc) {
-        req.flash('error', "We can't find your account.");
-        req.flash('errorType', 'alert');
-        req.flash('errorHeader', 'Error');
-        return res.redirect('/auth/manage');
-      }
       user = userDoc;
       return brcypt.compare(oldPassword, userDoc.password);
     })
     .then(matched => {
       if (matched) {
-        brcypt.hash(newPassword, 12).then(hashedPassword => {
+        return brcypt.hash(newPassword, 12).then(hashedPassword => {
           user.password = hashedPassword;
           return user.save().then(result => {
             req.session.destroy(err => {
@@ -669,25 +715,35 @@ exports.postUpdatePassword = (req, res, next) => {
 exports.postUpdateAvatar = (req, res, next) => {
   const image = req.file;
   const userId = req.body.userId;
+  const sessionId = req.session.user._id;
+
   if (!image) {
     req.flash('error', 'The attached file was not an image.');
     req.flash('errorType', 'alert');
     req.flash('errorHeader', 'Wrong format');
     return res.redirect('/auth/manage');
   }
-  if (userId !== req.session.user._id) {
-    req.flash('error', "You're trying violate other account");
-    req.flash('errorType', 'alert');
-    req.flash('errorHeader', 'Caution');
-    return res.redirect('/auth/manage');
+  if (userId !== sessionId) {
+    return User.findById(sessionId)
+      .then(user => {
+        user.warning += 1;
+        return user.save().then(result => {
+          req.flash(
+            'error',
+            "You're trying to violate another account. Receive enough 5 warnings, you will be banned."
+          );
+          req.flash('errorType', 'alert');
+          req.flash('errorHeader', '+1 warning');
+          return res.redirect('/auth/manage');
+        });
+      })
+      .catch(err => next(new Error(err)));
   }
+
   User.findById(userId)
     .then(user => {
-      if (!user) {
-        req.flash('error', 'Update password successfully.');
-        req.flash('errorType', '');
-        req.flash('errorHeader', 'Please re-login');
-        return res.redirect('/auth/manage');
+      if (user.avatarId) {
+        deleteImage(user.avatarId);
       }
       user.avatarUrl = image.path;
       user.avatarId = image.filename;
@@ -703,6 +759,8 @@ exports.postUpdateAvatar = (req, res, next) => {
 
 exports.postUpdateBio = (req, res, next) => {
   const { bio, userId } = req.body;
+  const sessionId = req.session.user._id;
+
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     req.flash('error', errors.array()[0].msg);
@@ -710,20 +768,24 @@ exports.postUpdateBio = (req, res, next) => {
     req.flash('errorHeader', 'Validation Error');
     return res.redirect('/auth/manage');
   }
-  if (userId !== req.session.user._id) {
-    req.flash('error', "You're trying violate other account");
-    req.flash('errorType', 'alert');
-    req.flash('errorHeader', 'Caution');
-    return res.redirect('/auth/manage');
+  if (userId !== sessionId) {
+    return User.findById(sessionId)
+      .then(user => {
+        user.warning += 1;
+        return user.save().then(result => {
+          req.flash(
+            'error',
+            "You're trying to violate another account. Receive enough 5 warnings, you will be banned."
+          );
+          req.flash('errorType', 'alert');
+          req.flash('errorHeader', '+1 warning');
+          return res.redirect('/auth/manage');
+        });
+      })
+      .catch(err => next(new Error(err)));
   }
   User.findById(userId)
     .then(user => {
-      if (!user) {
-        req.flash('error', "We can't find any account.");
-        req.flash('errorType', 'alert');
-        req.flash('errorHeader', 'Error');
-        return res.redirect('/auth/manage');
-      }
       user.shortDes = bio;
       return user.save().then(result => {
         req.flash('error', 'Update your bio successfully.');
@@ -747,12 +809,6 @@ exports.postUpdateLink = (req, res, next) => {
   }
   User.findById(userId)
     .then(user => {
-      if (!user) {
-        req.flash('error', "We can't find your account to update.");
-        req.flash('errorType', 'alert');
-        req.flash('errorHeader', 'Validation Error');
-        return res.redirect('/auth/manage');
-      }
       const userSocialLinks = [...user.social];
       const index = userSocialLinks.findIndex(i => i.icon === icon);
       if (index === -1) {
@@ -774,25 +830,30 @@ exports.postUpdateLink = (req, res, next) => {
 
 exports.postDelete = (req, res, next) => {
   const userId = req.body.userId;
-  if (userId !== req.session.user._id) {
-    req.flash('error', "You're trying to violate other account.");
-    req.flash('errorType', 'alert');
-    req.flash('errorHeader', 'Error');
-    return res.redirect('/auth/manage');
+  const sessionId = req.session.user._id;
+  if (userId !== sessionId) {
+    return User.findById(sessionId).then(user => {
+      user.warning += 1;
+      return user.save().then(result => {
+        req.flash(
+          'error',
+          "You're trying to violate another account. Receive enough 5 warnings, you will be banned."
+        );
+        req.flash('errorType', 'alert');
+        req.flash('errorHeader', '+1 warning');
+        return res.redirect('/auth/manage');
+      });
+    });
   }
   User.findById(userId)
     .then(user => {
-      if (!user) {
-        req.flash('error', "We can't find your account.");
-        req.flash('errorType', 'alert');
-        req.flash('errorHeader', 'Error');
-        res.redirect('/auth/manage');
-      }
       return user.deleteOne().then(result => {
-        req.flash('error', 'Your account has been deleted.');
-        req.flash('errorType', '');
-        req.flash('errorHeader', 'Completed');
-        res.redirect('/');
+        req.session.destroy(err => {
+          if (err) {
+            throw new Error(err);
+          }
+          res.redirect('/');
+        });
       });
     })
     .catch(err => next(new Error(err)));

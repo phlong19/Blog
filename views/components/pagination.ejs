@@ -8,14 +8,30 @@
     </p>
 
     <section class="pagination">
-      <% %>
-      <a href="">< previous</a>
-      <a href="?page=1">1</a>
-      <!-- <a href="?page=2">2</a> -->
-      ...
-      <a href="">23</a>
-      <a href="?page=4" class="active">24</a>
-      <a href="?page=25">25</a>
-      <a href="">next ></a>
+      <% if(hasPreviousPage) { %>
+        <a href="?page=<%= previousPage %>">< pre</a>
+      <% } %>
+      <% if(currentPage!== 1 && previousPage !== 1) { %>
+        <a href="?page=1">1</a>
+      <% } %>
+      <% if(currentPage >3) { %>
+        ...
+      <% } %>
+      <% if(hasPreviousPage) { %>
+        <a href="?page=<%= previousPage %>"><%= previousPage %></a>
+      <% } %>
+      <a href="?page=<%= currentPage %>" class="active"><%= currentPage %></a>
+      <% if(hasNextPage) { %>
+        <a href="?page=<%= nextPage %>"><%= nextPage %></a>
+      <% } %>
+      <% if(lastPage >= nextPage+3) { %>
+        ...  
+      <% } %>
+      <% if(lastPage != currentPage && lastPage != nextPage) { %>
+        <a href="?page=<%= lastPage %>"><%= lastPage %></a>
+      <% } %>
+      <% if(hasNextPage) { %>
+        <a href="?page=<%= nextPage %>">next ></a>
+      <% } %>
     </section>
 </div>

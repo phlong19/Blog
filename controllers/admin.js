@@ -24,9 +24,9 @@ const DOMPurify = createDOMPurify(window);
 const items_per_table = 10;
 let sum;
 let option = {};
-let sort = {};
 
 exports.getPostsManage = (req, res, next) => {
+  const page = +req.query.page || 1;
   let error = req.flash('error');
   let errorType = req.flash('errorType');
   let errorHeader = req.flash('errorHeader');
@@ -40,13 +40,17 @@ exports.getPostsManage = (req, res, next) => {
   }
 
   let categories;
+  let sort = {};
   const sortOption = req.query.sort;
   switch (sortOption) {
-    case 'alphabet':
+    case 'title':
       sort = { title: 'desc' };
       break;
     case 'like':
       sort = { like: 'desc' };
+      break;
+    case 'status':
+      sort = { status: 'desc' };
       break;
     case 'newest':
       sort = { createdAt: 'desc' };
@@ -71,9 +75,10 @@ exports.getPostsManage = (req, res, next) => {
     .then(cats => {
       categories = cats;
       return Post.find(option)
-        .select('-content')
+        .skip((page - 1) * items_per_table)
+        .limit(items_per_table)
+        .select('-content -imageId -category')
         .populate('author', 'name')
-        .populate('category', 'name slug')
         .sort(sort);
     })
     .then(posts => {
@@ -85,14 +90,22 @@ exports.getPostsManage = (req, res, next) => {
         errorHeader: errorHeader,
         posts: posts,
         categories: categories,
-        sum: sum,
         sortOption: sortOption,
+        // pagination
+        sum: sum,
+        currentPage: page,
+        hasNextPage: page * items_per_table < sum,
+        hasPreviousPage: page > 1,
+        nextPage: page + 1,
+        previousPage: page - 1,
+        lastPage: Math.ceil(sum / items_per_table),
       });
     })
     .catch(err => next(new Error(err)));
 };
 
 exports.getUsersManage = (req, res, next) => {
+  const page = +req.query.page || 1;
   let error = req.flash('error');
   let errorType = req.flash('errorType');
   let errorHeader = req.flash('errorHeader');
@@ -105,12 +118,36 @@ exports.getUsersManage = (req, res, next) => {
     error = errorType = errorHeader = null;
   }
 
+  let sort = {};
+  const sortOption = req.query.sort;
+  switch (sortOption) {
+    case 'newest':
+      sort = { createdAt: 'desc' };
+      break;
+    case 'oldest':
+      sort = { createdAt: 'asc' };
+      break;
+    case 'level':
+      sort = { level: 'desc' };
+      break;
+    case 'name':
+      sort = { name: 'desc' };
+      break;
+    case 'banned':
+      sort = { banned: 'asc' };
+      break;
+    default:
+      break;
+  }
+
   User.countDocuments()
     .then(counted => {
       sum = counted;
       return User.find()
+        .skip((page - 1) * items_per_table)
+        .limit(items_per_table)
         .select('name email avatarUrl level banned social active createdAt')
-        .sort({ level: 'desc' });
+        .sort(sort);
     })
     .then(users => {
       res.render('admin/users', {
@@ -120,13 +157,22 @@ exports.getUsersManage = (req, res, next) => {
         error: error,
         errorType: errorType,
         errorHeader: errorHeader,
+        sortOption: sortOption,
+        // pagi
         sum: sum,
+        currentPage: page,
+        hasNextPage: page * items_per_table < sum,
+        hasPreviousPage: page > 1,
+        nextPage: page + 1,
+        previousPage: page - 1,
+        lastPage: Math.ceil(sum / items_per_table),
       });
     })
     .catch(err => next(new Error(err)));
 };
 
 exports.getCategoriesManage = (req, res, next) => {
+  const page = +req.query.page || 1;
   let error = req.flash('error');
   let errorType = req.flash('errorType');
   let errorHeader = req.flash('errorHeader');
@@ -140,11 +186,28 @@ exports.getCategoriesManage = (req, res, next) => {
   }
 
   let cats;
-
+  let sort = {};
+  const sortOption = req.query.sort;
+  switch (sortOption) {
+    case 'newest':
+      sort = { createdAt: 'desc' };
+      break;
+    case 'oldest':
+      sort = { createdAt: 'asc' };
+      break;
+    case 'name':
+      sort = { name: 'desc' };
+      break;
+    default:
+      break;
+  }
   Category.countDocuments()
     .then(counted => {
       sum = counted;
-      return Category.find();
+      return Category.find()
+        .skip((page - 1) * items_per_table)
+        .limit(items_per_table)
+        .sort(sort);
     })
     .then(catsDoc => {
       cats = catsDoc;
@@ -155,14 +218,22 @@ exports.getCategoriesManage = (req, res, next) => {
         errorType: errorType,
         errorHeader: errorHeader,
         categories: cats,
+        sortOption: sortOption,
+        // pagi
         sum: sum,
-        categories: cats,
+        currentPage: page,
+        hasNextPage: page * items_per_table < sum,
+        hasPreviousPage: page > 1,
+        nextPage: page + 1,
+        previousPage: page - 1,
+        lastPage: Math.ceil(sum / items_per_table),
       });
     })
     .catch(err => next(new Error(err)));
 };
 
 exports.getCommentsManage = (req, res, next) => {
+  const page = +req.query.page || 1;
   let error = req.flash('error');
   let errorType = req.flash('errorType');
   let errorHeader = req.flash('errorHeader');
@@ -175,26 +246,61 @@ exports.getCommentsManage = (req, res, next) => {
     error = errorType = errorHeader = null;
   }
 
+  let sort = {};
+  const sortOption = req.query.sort;
+  switch (sortOption) {
+    case 'newest':
+      sort = { createdAt: 'desc' };
+      break;
+    case 'oldest':
+      sort = { createdAt: 'asc' };
+      break;
+    default:
+      break;
+  }
+
   Comment.countDocuments()
     .then(counted => {
       sum = counted;
-      return Comment.find();
+      return Comment.find()
+        .skip((page - 1) * items_per_table)
+        .limit(items_per_table)
+        .populate([
+          {
+            path: 'userId',
+            select: 'name email',
+          },
+          {
+            path: 'postId',
+            select: 'title slug',
+          },
+        ])
+        .sort(sort);
     })
-    .then(commments => {
+    .then(comments => {
       res.render('admin/cmts', {
         pageTitle: 'Comments Manage',
         path: '/comments',
         error: error,
         errorType: errorType,
         errorHeader: errorHeader,
-        commments: commments,
+        comments: comments,
+        sortOption: sortOption,
+        // pagi
         sum: sum,
+        currentPage: page,
+        hasNextPage: page * items_per_table < sum,
+        hasPreviousPage: page > 1,
+        nextPage: page + 1,
+        previousPage: page - 1,
+        lastPage: Math.ceil(sum / items_per_table),
       });
     })
     .catch(err => next(new Error(err)));
 };
 
 exports.getContactManage = (req, res, next) => {
+  const page = +req.query.page || 1;
   let error = req.flash('error');
   let errorType = req.flash('errorType');
   let errorHeader = req.flash('errorHeader');
@@ -207,12 +313,35 @@ exports.getContactManage = (req, res, next) => {
     error = errorType = errorHeader = null;
   }
 
+  let sort = {};
+  const sortOption = req.query.sort;
+  switch (sortOption) {
+    case 'newest':
+      sort = { createdAt: 'desc' };
+      break;
+    case 'oldest':
+      sort = { createdAt: 'asc' };
+      break;
+    case 'expire':
+      sort = { limit: 'desc' };
+      break;
+    case 'name':
+      sort = { name: 'desc' };
+      break;
+    case 'checked':
+      sort = { checked: 'asc' };
+      break;
+    default:
+      break;
+  }
   Contact.countDocuments()
     .then(counted => {
       sum = counted;
       return Contact.find({ checked: false })
-        .sort({ limit: 'asc' })
-        .select('-message');
+        .skip((page - 1) * items_per_table)
+        .limit(items_per_table)
+        .select('-message')
+        .sort(sort);
     })
     .then(contacts => {
       res.render('admin/contact', {
@@ -222,7 +351,15 @@ exports.getContactManage = (req, res, next) => {
         errorType: errorType,
         errorHeader: errorHeader,
         contacts: contacts,
+        sortOption: sortOption,
+        // pagi
         sum: sum,
+        currentPage: page,
+        hasNextPage: page * items_per_table < sum,
+        hasPreviousPage: page > 1,
+        nextPage: page + 1,
+        previousPage: page - 1,
+        lastPage: Math.ceil(sum / items_per_table),
       });
     })
     .catch(err => next(new Error(err)));
@@ -643,4 +780,39 @@ exports.deleteContacts = (req, res, next) => {
 
 exports.deleteComment = (req, res, next) => {
   const id = req.body.id;
+  Comment.findById(id)
+    .then(comment => {
+      if (!comment) {
+        req.flash('error', "Can't find any comment.");
+        req.flash('errorType', 'alert');
+        req.flash('errorHeader', 'Error');
+        return res.redirect('/admin/comments');
+      }
+      return comment.deleteOne().then(result => {
+        req.flash('error', 'Delete comment successfully.');
+        req.flash('errorType', 'alert');
+        req.flash('errorHeader', 'Success');
+        res.redirect('/admin/comments');
+      });
+    })
+    .catch(err => next(new Error(err)));
+};
+
+exports.postSearch = (req, res, next) => {
+  const { keyword, path } = req.body;
+
+  if (path === '/posts') {
+  }
+
+  if (path === '/users') {
+  }
+
+  if (path === '/categories') {
+  }
+
+  if (path === '/comments') {
+  }
+
+  if (path === '/contacts') {
+  }
 };

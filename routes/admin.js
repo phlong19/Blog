@@ -20,7 +20,7 @@ router.post(
     body('title')
       .trim()
       .isLength({ min: 30, max: 70 })
-      .withMessage('Title must have at least 5-25 characters.'),
+      .withMessage('Title must have at least 30-70 characters.'),
     body('description')
       .trim()
       .isLength({ min: 100, max: 175 })
@@ -79,16 +79,16 @@ router.post(
   [
     body('title')
       .trim()
-      .isLength({ min: 5, max: 40 })
-      .withMessage('Title must have at least 5-25 characters.'),
+      .isLength({ min: 30, max: 70 })
+      .withMessage('Title must have at least 30-70 characters.'),
     body('description')
       .trim()
-      .isLength({ min: 8, max: 175 })
-      .withMessage('Description must have at least 50-175 characters.'),
+      .isLength({ min: 100, max: 175 })
+      .withMessage('Description must have at least 100-175 characters.'),
     body('content')
       .trim()
-      .isLength({ min: 10 })
-      .withMessage("Post's content must have at least 500 characters."),
+      .isLength({ min: 1000 })
+      .withMessage("Post's content must have at least 1000 characters."),
     body('catIds')
       .notEmpty()
       .isArray({ min: 2 })
@@ -116,6 +116,7 @@ router.post(
 
 router.post(
   '/update-user',
+  isAdmin,
   [
     body('email')
       .notEmpty()
@@ -130,7 +131,6 @@ router.post(
       })
       .normalizeEmail(),
   ],
-  isAdmin,
   adminController.updateUser
 );
 
@@ -143,8 +143,11 @@ router.post('/delete-category', isAdmin, adminController.deleteCategory);
 
 router.post('/delete-user', isAdmin, adminController.deleteUser);
 
-router.post('/delete-contact', isAdmin, adminController.deleteContacts);
+router.post('/clean-contacts', isAdmin, adminController.deleteContacts);
 
 router.post('/delete-comment', isPermitted, adminController.deleteComment);
+
+// search bar
+router.post('/search', isPermitted, adminController.postSearch);
 
 module.exports = router;

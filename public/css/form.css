@@ -65,8 +65,8 @@
   backdrop-filter: blur(5px);
 }
 
-@media screen and (min-width:1000px) and (min-height:900px) {
-  .blur-bg{
+@media screen and (min-width: 1000px) and (min-height: 900px) {
+  .blur-bg {
     height: 125%;
   }
 }
@@ -224,7 +224,52 @@ select.formbold-form-input,
   width: 45%;
 }
 
-form input.larger{
+form input.larger {
   transform: scale(1.3);
   /* font-size: 1.6rem; */
+}
+
+/* 
+  ADMIN PAGE SEARCH BAR
+*/
+
+div.adminSearchBar {
+  display: flex;
+  align-items: center;
+}
+div.adminSearchBar form.searchBar {
+  display: flex;
+  flex-wrap: wrap;
+  width: 85%;
+  margin: 0 auto;
+}
+
+form.searchBar input.searchInput[type='search'] {
+  border: none;
+  background: var(--secondary-background-color);
+  color: var(--light-color);
+  border-radius: 5px 0 0 5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 0.35em 0.75em;
+  border: none;
+  font-size: 1.1em;
+  text-decoration: none;
+  line-height: normal;
+  max-height: 3em;
+  flex: 2 0 250px;
+}
+
+form.searchBar button.searchButton {
+  flex: 1 0 90px;
+  max-height: 3em;
+  font-size: 1.1em;
+  letter-spacing: 0.2em;
+  border-radius: 0px 5px 5px 0px;
+  background: var(--synthwave-gradient-color);
+  color: white;
+  border: none;
+  padding: 0.35em 0.75em;
+  cursor: pointer;
 }

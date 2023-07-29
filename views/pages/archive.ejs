@@ -9,38 +9,44 @@
 </div>
 
 <section class="older-posts section">
-  <div class="container">
-    <div class="older-posts-grid-wrapper d-grid">
-      <% for (const post of posts) { %>
-        <a href="/post/<%= post.slug %>" class="article d-grid">
-          <div class="older-posts-article-image-wrapper">
-            <img
-              src="<%= post.imageUrl %>"
-              alt=""
-              class="article-image"
-            />
-          </div>
-
-          <div class="article-data-container">
-            <div class="article-data">
-              <span>
-                <%= post.createdAt.toLocaleDateString('en-us',{
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric' }) %>
-              </span>
-              <span class="article-data-spacer"></span>
-              <span><%= post.like ? post.like.length : '0' %> likes.</span>
+  <% if(posts.length > 0) { %>
+    <div class="container">
+      <div class="older-posts-grid-wrapper d-grid">
+        <% for (const post of posts) { %>
+          <a href="/post/<%= post.slug %>" class="article d-grid">
+            <div class="older-posts-article-image-wrapper">
+              <img
+                src="<%= post.imageUrl %>"
+                alt=""
+                class="article-image"
+              />
             </div>
 
-            <h3 class="title article-title"><%= post.title %></h3>
-            <p class="article-description"><%= post.description%></p>
-          </div>
-        </a>
-      <% } %>
+            <div class="article-data-container">
+              <div class="article-data">
+                <span>
+                  <%= post.createdAt.toLocaleDateString('en-us',{
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric' }) %>
+                </span>
+                <span class="article-data-spacer"></span>
+                <span><%= post.like ? post.like.length : '0' %> likes.</span>
+              </div>
+
+              <h3 class="title article-title"><%= post.title %></h3>
+              <p class="article-description"><%= post.description%></p>
+            </div>
+          </a>
+        <% } %>
+      </div>
+      <%- include('../components/pagination.ejs') %>
     </div>
-    <%- include('../components/pagination.ejs') %>
-  </div>
+  <% } else { %>
+    <div class="container">
+      <h1>No posts found.</h1>
+    </div>
+  <% } %>
 </section>
 
 <%- include('../components/footer.ejs') %>

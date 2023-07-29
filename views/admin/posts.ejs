@@ -23,13 +23,12 @@
 
     <div class="content">
       <div class="container"><button class="open-modal"> &plus; Create post</button>
-        
-          <h2 class="mb-5">All posts</h2> 
-          <h4 class="sortHeader"> Sort by: 
-            <a class="list-link <%= sortOption==='alphabet' ? 'active' : '' %>" href="?sort=alphabet">A-Z</a> 
-            <a class="list-link <%= sortOption==='like' ? 'active' : '' %>" href="?sort=like">Like</a>
-            <a class="list-link <%= sortOption==='newest' ? 'active' : '' %>" href="?sort=newest">Newest</a>
-            <a class="list-link <%= sortOption==='oldest' ? 'active' : '' %>" href="?sort=oldest">Oldest</a>
+        <h2 class="mb-5">All posts</h2> 
+        <h4 class="sortHeader"> Sort by: 
+          <a class="list-link <%= sortOption==='title' ? 'active' : '' %>" href="?sort=title">Title</a> 
+          <a class="list-link <%= sortOption==='like' ? 'active' : '' %>" href="?sort=like">Like</a>
+          <a class="list-link <%= sortOption==='status' ? 'active' : '' %>" href="?sort=status">Status</a>
+          <%- include('../components/sort.ejs') %>
         </h4>
         <div class="table-responsive custom-table-responsive">
               <div class="modal-content hidden-modal">
@@ -136,9 +135,9 @@
                   <th scope="col">#</th>
                   <th scope="col">Title</th>
                   <th scope="col">Image Url</th>
-                  <th scope="col">Content</th>
                   <th scope="col">Description</th>
                   <th scope="col">Author</th>
+                  <th scope="col">Likes</th>
                   <th scope="col">Status</th>
                   <th scope="col">Created At</th>
                   <th scope="col"></th>
@@ -151,27 +150,23 @@
                   <th scope="row">
                     <%= i+1 %>
                   </th>
-                  <td>
+                  <td class="shorten-250">
                     <%= post.title %>
                   </td>
                   <td class="shorten-250"><%= post.imageUrl %></td>
-                  <td class="shorten-250">
-                    <!-- Lorem ipsum dolor sit amet, consectetur adipiscing elit. Vestibulum dignissim mi eu velit porta, non elementum  -->
-                    <small class="d-block">Click details to view post's content.</small>
-                  </td>
                   <td class="shorten-250"><%= post.description %></td>
-                  <td>
-                    
-                      <% if(post.author === null) { %> 
+                  <td class="centered">
+                      <% if(!post.author) { %> 
                          Deleted 
                       <% } else { %>
-                         <a href="#" class="list-link""><%= post.author.name %></a>
+                         <a href="/user/<%= post.author.name%>" class="list-link""><%= post.author.name %></a>
                       <% } %>
                   </td>
-                  <td><%= post.status === true ? 'Published' : 'Not publish' %></td>
-                  <td>
-                    <%= post.createdAt.toLocaleDateString('en-us') %>
-                  </td>
+                    <td class="centered"><%= post.like.length %></td>
+                    <td class="centered"><%= post.status === true ? 'Published' : 'Not publish' %></td>
+                    <td class="centered">
+                      <%= post.createdAt.toLocaleDateString('en-us') %>
+                    </td>
                   <td><a href="/admin/details/<%= post.slug %>?edit=post" class="list-link">Details</a></td>
                 </tr>
                 <tr class="spacer"><td colspan="100"></td></tr>
@@ -181,9 +176,9 @@
           </table>
           
         </div>
-
-        <%- include('../components/pagination.ejs') %>
-
+        <% if(posts.length >0) { %>
+          <%- include('../components/pagination.ejs') %>
+        <% } %>
       </div>
     </div>
     

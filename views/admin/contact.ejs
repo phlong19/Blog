@@ -1,4 +1,5 @@
 <%- include('../components/header.ejs') %>
+    <link rel="stylesheet" href="/css/form.css">
 
     <link rel="stylesheet" href="/css/table.css">
 
@@ -16,10 +17,34 @@
     <%- include('../components/admin-nav.ejs') %>
 
       <div class="content">
-        <div class="container">
+        <div class="container"> <button style="background: red;" class="open-modal">Delete expired contacts</button>
           <h2 class="mb-5">All contacts</h2>
-          <button>Delete expired contacts</button>
+          <h4 class="sortHeader"> Sort by: 
+            <a class="list-link <%= sortOption==='like' ? 'active' : '' %>" href="?sort=like">Name</a>
+            <a class="list-link <%= sortOption==='expire' ? 'active' : '' %>" href="?sort=expire">Expire</a>
+            <a class="list-link <%= sortOption==='checked' ? 'active' : '' %>" href="?sort=checked">Checked</a>
+            <%- include('../components/sort.ejs') %>
+          </h4>
           <div class="table-responsive custom-table-responsive">
+            <div class="modal-content hidden-modal">
+              <div class="modal-header">
+                <h3>Clean all checked contacts?</h3>
+                <br>
+                <button style="margin-left: 30px;" class="close-modal" title="Close"> &times;</button>
+              </div>
+              <div class="modal-body">
+                <h4>You're going to clean your checked contacts, are you sure?</h4>
+                <br>
+                <form action="/admin/clean-contacts">
+                  <div class="formbold-mb-3">
+                    <label class="formbold-form-label">Click button below to process.</label>
+                  </div>
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                  <button type="submit" class="formbold-btn-delete">Delete</button>
+                </form>
+              </div>
+            </div>
+            <div class="blur-bg hidden-blur"></div>
 
             <table class="table custom-table">
               <thead>
@@ -58,80 +83,16 @@
             </table>
             
           </div>
-          <%- include('../components/pagination.ejs') %>
+          <% if(contacts.length >0) { %>
+            <%- include('../components/pagination.ejs') %>
+          <% } %>
         </div>
       </div>
     
 <%- include('../components/footer.ejs') %>
 
 <script src="/js/noti.js"></script>
-
-</body>
-</html><%- include('../components/header.ejs') %>
-
-    <link rel="stylesheet" href="/css/table.css">
-
-    <link rel="stylesheet" href="/css/noti.css">
-</head>
-
-<%- include('../components/nav.ejs') %>
-    
-<%- include('../components/admin-header.ejs') %>
-    
-    <% if(error) {%>
-      <%- include('../components/notification.ejs')%>
-    <% } %>
-
-    <%- include('../components/admin-nav.ejs') %>
-
-
-      <div class="content">
-        <div class="container">
-          <h2 class="mb-5">All comments</h2>
-          
-          <div class="table-responsive custom-table-responsive">
-
-            <table class="table custom-table">
-              <thead>
-                <tr>  
-                    <th scope="col">#</th>
-                    <th scope="col">Username</th>
-                    <th scope="col">Email</th>
-                    <th scope="col">Content</th>
-                    <th scope="col">Post's title</th>
-                    <th scope="col"></th>
-                </tr>
-              </thead>
-              <tbody>
-
-                <tr scope="row">
-                  <th scope="row">
-                    1
-                  </th>
-                  <td>
-                    1392
-                  </td>
-                  <td>James Yates</td>
-                  <td>
-                    Web Designer
-                    <small class="d-block">Far far away, behind the word mountains.</small>
-                  </td>
-                  <td>+63 983 0962 971</td>
-                  <td><a href="#" class="list-link">Details</a></td>
-                </tr>
-                
-                
-              </tbody>
-            </table>
-            
-          </div>
-          <%- include('../components/pagination.ejs') %>
-        </div>
-      </div>
-    
-<%- include('../components/footer.ejs') %>
-
-<script src="/js/noti.js"></script>
+<script src="/js/form.js"></script>
 
 </body>
 </html>

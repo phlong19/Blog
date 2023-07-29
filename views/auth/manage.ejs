@@ -30,7 +30,7 @@
       <div class="left-sidebar">
         <div class="profile-card">
           <img id="avatar"
-            src="https://i.ytimg.com/vi/oscnmPsiEqE/hqdefault.jpg?sqp=-oaymwEiCKgBEF5IWvKriqkDFQgBFQAAAAAYASUAAMhCPQCAokN4AQ==&rs=AOn4CLCQzovMCSR4eA3rboZEXADeQucnzQ"
+            src="<%= user.avatarUrl %>"
             alt="Profile Image"
           />
           <br /><br />
@@ -45,10 +45,10 @@
       <div class="main-content">
         <div class="tabset">
           <!-- Tab 1 -->
-          <input type="radio" name="tabset" id="tab1" required aria-controls="data" checked />
+          <input type="radio" name="tabset" id="tab1" aria-controls="data" checked />
           <label for="tab1">Account Data</label>
           <!-- Tab 2 -->
-          <input type="radio" name="tabset" id="tab2" required aria-controls="email" />
+          <input type="radio" name="tabset" id="tab2" aria-controls="email" />
           <label for="tab2">Email</label>
           <!-- Tab 3 -->
           <input type="radio" name="tabset" id="tab3" aria-controls="password" />
@@ -106,6 +106,15 @@
                     </td>
                   </tr>   
                 </table>
+              </div>
+              <div class="formUpdateUsername">
+                <form action="/auth/manage/update-username" method="post">
+                  <label class="formbold-form-label" for="name">Username</label>
+                  <input class="formbold-form-input" type="text" name="name" id="name" required value="<%= user.name %>">
+                  <input type="hidden" name="userId" value="<%= user._id %>">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                  <button type="submit" class="formbold-btn">Update</button>
+                </form>
               </div>
             </section>
 

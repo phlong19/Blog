@@ -13,15 +13,15 @@
       <%- include('../components/notification.ejs')%>
     <% } %>
 
-    <tr%- include('../components/admin-nav.ejs') %>
-
+    <%- include('../components/admin-nav.ejs') %>
 
       <div class="content">
         <div class="container">
           <h2 class="mb-5">All comments</h2>
-          
+          <h4 class="sortHeader"> Sort by: 
+            <%- include('../components/sort.ejs') %>
+          </h4>
           <div class="table-responsive custom-table-responsive">
-
             <table class="table custom-table">
               <thead>
                 <tr>  
@@ -30,33 +30,40 @@
                     <th scope="col">Email</th>
                     <th scope="col">Content</th>
                     <th scope="col">Post's title</th>
-                    <th scope="col"></th>
+                    <th scope="col">Link</th>
                 </tr>
               </thead>
               <tbody>
-
-                <tr style="text-align: center;">
-                  <th scope="row">
-                    1
-                  </th>
-                  <td>
-                    1392
-                  </td>
-                  <td>James Yates</td>
-                  <td>
-                    Web Designer
-                    <small class="d-block">Far far away, behind the word mountains.</small>
-                  </td>
-                  <td>+63 983 0962 971</td>
-                  <td><a href="#" class="list-link">Details</a></td>
-                </tr>
-                
-                
+                <% for(let i=0; i< comments.length; i++) { %>
+                  <% const comment = comments[i]; %>
+                    <tr style="text-align: center;">
+                      <th scope="row">
+                        <%= i+1 %>
+                      </th>
+                      <td>
+                        <%= comment.userId.name %>
+                      </td>
+                      <td><%= comment.userId.email %></td>
+                      <td>
+                        <%= comment.content %>
+                      </td>
+                      <td><a href="/post/<%= comment.postId.slug %>" class="list-link"><%= comment.postId.title %></a></td>
+                      <td>
+                        <form action="/admin/delete-comment" method="post">
+                          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                          <input type="hidden" name="commentId" value="<%= comment._id %>">
+                          <button type="submit" class="list-link" style="cursor: pointer;">Delete</button>
+                        </form>
+                      </td>
+                    </tr>
+                <% } %>
               </tbody>
             </table>
             
           </div>
-          <%- include('../components/pagination.ejs') %>
+          <% if(comments.length >0) { %>
+            <%- include('../components/pagination.ejs') %>
+          <% } %>
         </div>
       </div>
     

@@ -1,0 +1,104 @@
+<%- include('../components/header.ejs') %>
+
+<link rel="stylesheet" href="/css/table.css" />
+
+<link rel="stylesheet" href="/css/form.css" />
+
+<link rel="stylesheet" href="/css/noti.css">
+
+<style> 
+  #div-social {
+    display: none;
+  }
+</style>
+</head>
+
+<%- include('../components/nav.ejs') %>
+
+<div class="section-header-offset custom-header">
+  <h2 class="title section-title" data-name="View user account">
+    View user account
+  </h2>
+</div>
+
+<div class="content" style="min-height: 620px;">
+  <div class="container">
+    <div class="m-container">
+      <div class="left-sidebar">
+        <div class="profile-card">
+          <img id="avatar"
+            src="<%= user.avatarUrl %>"
+            alt="Profile Image"
+          />
+          <br /><br />
+          <h2><%= user.name %></h2>
+          <br>
+          <p><%= user.shortDes ? user.shortDes : 'None description' %></p>
+          
+        </div>
+        <br>
+      </div>
+
+      <div class="main-content">
+        <div class="tabset">
+          <!-- Tab 1 -->
+          <input type="radio" name="tabset" id="tab1" aria-controls="data" checked />
+          <label for="tab1">Account Data</label>
+          <!-- Tab 2 -->
+          <input type="radio" name="tabset" id="tab2" aria-controls="social" />
+          <label for="tab2">Social</label>
+
+          <div class="tab-panels">
+            <section id="data" class="tab-panel">
+              <h1 class="title">Personal Account Data</h1>
+              <div class="table-responsive custom-table-responsive">
+                <table class="table custom-table" style="text-align: center;">
+                  <tr>
+                    <th>Account Level</th>
+                    <td>
+                      <%= user.level %>
+                    </td>
+                  </tr>
+                  <tr>
+                    <th>Email</th>
+                    <td>******@gmail.com</td>
+                  </tr>
+                  <tr>
+                    <th>Social Media Links</th>
+                    <td>
+                      <%= user.social.length %>
+                    </td>
+                  </tr>   
+                </table>
+              </div>
+            </section>
+
+            <section id="social" class="tab-panel">
+              <h1 class="title">Social media links</h1>
+              <br>
+              <h3>Current links</h3><br>
+              <% if(user.social.length>0) { %>
+                <ul class="social-media ">
+                  <% for (const link of user.social) { %>
+                    <div class="list">
+                      <li class="list-item"><a target="_blank" href="<%= link.link.includes('https://') ? '' : 'https://' %><%= link.link %>" class="list-link"><i class="<%= link.icon %>"></i></a></li> - <p><%= link.link %></p>
+                    </div>
+                  <% } %>
+                    <br>
+                </ul>
+              <% } else { %>
+                <h4>No links found here.</h4>
+                <br>
+              <% } %>
+            </section>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<%- include('../components/footer.ejs') %>
+
+</body>
+</html>

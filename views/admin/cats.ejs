@@ -19,6 +19,10 @@
       <div class="content">
         <div class="container"><button class="open-modal">&plus; Create category</button>
           <h2 class="mb-5">All categories</h2>
+          <h4 class="sortHeader"> Sort by: 
+            <a class="list-link <%= sortOption==='name' ? 'active' : '' %>" href="?sort=name">Name</a>
+            <%- include('../components/sort.ejs') %>
+          </h4>
           
           <div class="table-responsive custom-table-responsive">
                 <div class="modal-content hidden-modal">
@@ -115,9 +119,9 @@
             </table>
             
           </div>
-
-          <%- include('../components/pagination.ejs') %>
-
+          <% if(categories.length>0) { %>
+            <%- include('../components/pagination.ejs') %>
+          <% } %>
         </div>
       </div>
     
