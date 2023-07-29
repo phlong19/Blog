@@ -118,7 +118,6 @@ thead {
   display: block !important;
 }
 
-
 /* 
   manage page
 */
@@ -160,7 +159,7 @@ thead {
  Tabs
 */
 
-.tabset > input[type="radio"] {
+.tabset > input[type='radio'] {
   position: absolute;
   left: -200vw;
 }
@@ -190,7 +189,7 @@ thead {
 }
 
 .tabset > label::after {
-  content: "";
+  content: '';
   position: absolute;
   left: 15px;
   bottom: 10px;
@@ -200,7 +199,7 @@ thead {
 }
 
 input:focus-visible + label {
-  outline: 2px solid rgba(0,102,204,1);
+  outline: 2px solid rgba(0, 102, 204, 1);
   border-radius: 3px;
 }
 
@@ -283,4 +282,8 @@ input:focus-visible + label {
   max-width: 250px;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+
+.centered {
+  text-align: center;
 }

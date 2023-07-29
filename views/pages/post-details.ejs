@@ -49,8 +49,20 @@
                     <img src="<%= author ? author.avatarUrl : 'https://res.cloudinary.com/ddot3p3my/image/upload/v1690302821/users/image_2023-07-25_233343045_zggymb.png' %>" alt="" class="article-image">
                 </div>
                 <div class="author-about">
-                    <h3 class="author-name"><%= author ? author.name : 'Deleted author account.' %></h3>
-                    <p><%= author ? author.shortDes : 'None description.' %></p>
+                    <h3 class="author-name">
+                        <% if(author) { %>
+                            <a href="/user/<%= author.name %>"><%= author.name %></a>
+                        <% } else { %>
+                            The Author has deleted their account.
+                        <% } %>
+                    </h3>
+                    <p>
+                        <% if(author) { %>
+                            <%= author.shortDes ? author.shortDes : 'None description.' %>
+                        <% } else { %>
+                            None description.
+                        <% } %>
+                    </p>
                     <ul class="list social-media">
                         <% if(author) { %>
                             <% if(author.social.length > 0) { %>

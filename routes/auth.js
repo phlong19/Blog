@@ -43,7 +43,16 @@ router.post(
       .isAlphanumeric()
       .withMessage(
         'Username length is 5-15 characters and only can contain text and numbers'
-      ),
+      )
+      .custom((value, { req }) => {
+        return User.findOne({ name: value }).then(user => {
+          if (user) {
+            return Promise.reject(
+              'This username has already used. Please choose another one!'
+            );
+          }
+        });
+      }),
     body('email')
       .notEmpty()
       .isEmail()
@@ -52,7 +61,7 @@ router.post(
         return User.findOne({ email: value }).then(userDoc => {
           if (userDoc) {
             return Promise.reject(
-              'This email has already existed, please choose another one!'
+              'This email has already existed. Please choose another one!'
             );
           }
         });
@@ -195,6 +204,29 @@ router.post(
 );
 
 router.post(
+  '/manage/update-username',
+  isAuth,
+  [
+    body('name')
+      .isLength({ min: 5, max: 15 })
+      .isAlphanumeric()
+      .withMessage(
+        'Username length is 5-15 characters and only can contain text and numbers'
+      )
+      .custom((value, { req }) => {
+        return User.findOne({ name: value }).then(user => {
+          if (user) {
+            return Promise.reject(
+              'This username has already used. Please choose another one!'
+            );
+          }
+        });
+      }),
+  ],
+  authController.postUpdateName
+);
+
+router.post(
   '/manage/update-password',
   isAuth,
   [
@@ -226,6 +258,15 @@ router.post(
       .trim()
       .isLength({ min: 8, max: 20 })
       .withMessage("Password does't match"),
+    body('userId')
+      .notEmpty()
+      .custom((value, { req }) => {
+        return User.findById(userId).then(user => {
+          if (!user) {
+            return Promise.reject("We can't find your account.");
+          }
+        });
+      }),
   ],
   authController.postUpdatePassword
 );
@@ -233,7 +274,18 @@ router.post(
 router.post(
   '/manage/update-avatar',
   isAuth,
-  uploadUsers.single('image'),
+  uploadUsers.single('avatar'),
+  [
+    body('userId')
+      .notEmpty()
+      .custom((value, { req }) => {
+        return User.findById(userId).then(user => {
+          if (!user) {
+            return Promise.reject("We can't find your account.");
+          }
+        });
+      }),
+  ],
   authController.postUpdateAvatar
 );
 
@@ -245,6 +297,15 @@ router.post(
       .notEmpty()
       .isLength({ max: 500 })
       .withMessage('Maximum bio length is 500 characters'),
+    body('userId')
+      .notEmpty()
+      .custom((value, { req }) => {
+        return User.findById(userId).then(user => {
+          if (!user) {
+            return Promise.reject("We can't find your account.");
+          }
+        });
+      }),
   ],
   authController.postUpdateBio
 );
@@ -257,10 +318,34 @@ router.post(
       .notEmpty()
       .isURL()
       .withMessage('Please provide your real social media link.'),
+    body('userId')
+      .notEmpty()
+      .custom((value, { req }) => {
+        return User.findById(userId).then(user => {
+          if (!user) {
+            return Promise.reject("We can't find your account.");
+          }
+        });
+      }),
   ],
   authController.postUpdateLink
 );
 
-router.post('/manage/delete/', isAuth, authController.postDelete);
+router.post(
+  '/manage/delete/',
+  isAuth,
+  [
+    body('userId')
+      .notEmpty()
+      .custom((value, { req }) => {
+        return User.findById(userId).then(user => {
+          if (!user) {
+            return Promise.reject("We can't find your account.");
+          }
+        });
+      }),
+  ],
+  authController.postDelete
+);
 
 module.exports = router;

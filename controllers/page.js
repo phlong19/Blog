@@ -4,11 +4,14 @@ const { validationResult } = require('express-validator');
 const sendGrid = require('@sendgrid/mail');
 const Category = require('../models/category');
 const Post = require('../models/post');
+const User = require('../models/user');
+const Comment = require('../models/comment');
 const Contact = require('../models/contact');
 const { marked } = require('marked');
 
 sendGrid.setApiKey(process.env.SG_API_KEY);
-const items_per_pages = 6;
+const items_per_pages = 10;
+let sum;
 
 exports.getIndex = (req, res, next) => {
   let error = req.flash('error');
@@ -68,11 +71,26 @@ exports.getPostDetails = (req, res, next) => {
     error = errorType = errorHeader = null;
   }
 
+  let userId = undefined;
+  if (req.session.user) {
+    userId = req.session.user._id;
+  }
+
   const slug = req.params.slug;
-  Post.findOne({ slug: slug })
+  Post.findOne({ slug: slug, status: true })
     .select('-description -imageId')
-    .populate('author')
+    .populate('author', 'name active level banned social avatarUrl')
     .populate('category', 'name slug')
+    .populate({
+      path: 'comments',
+      populate: [
+        { path: 'userId', select: 'name avatarUrl' },
+        {
+          path: 'childComment',
+          populate: { path: 'userId', select: 'name avatarUrl' },
+        },
+      ],
+    })
     .then(post => {
       const html = marked(post.content);
       res.render('pages/post-details', {
@@ -80,6 +98,8 @@ exports.getPostDetails = (req, res, next) => {
         post: post,
         html: html,
         author: post.author,
+        comments: post.comments,
+        userId: userId,
         error: error,
         errorType: errorType,
         errorHeader: errorHeader,
@@ -96,10 +116,10 @@ exports.postLike = (req, res, next) => {
   Post.findById(postId)
     .then(post => {
       if (!post) {
-        req.flash('error', "Can't find any post.");
+        req.flash('error', "Can't find any post. Please try again!");
         req.flash('errorType', 'warning');
         req.flash('errorHeader', 'Error');
-        return res.redirect('/');
+        return res.redirect('/post/' + slug);
       }
       slug = post.slug;
       const likeList = [...post.like];
@@ -121,6 +141,89 @@ exports.postLike = (req, res, next) => {
           res.redirect('/post/' + slug);
         });
       }
+    })
+    .catch(err => next(new Error(err)));
+};
+
+exports.postNewComment = (req, res, next) => {
+  const { postId, userId, content, slug } = req.body;
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    req.flash('error', errors.array()[0].msg);
+    req.flash('errorType', 'alert');
+    req.flash('errorHeader', 'Validation Error');
+    return res.redirect('/post/' + slug);
+  }
+  Comment.findOne({ content: content })
+    .then(comment => {
+      if (comment) {
+        req.flash('error', 'Comment duplicated!');
+        req.flash('errorType', 'warning');
+        req.flash('errorHeader', 'Error');
+        return res.redirect('/post/' + slug);
+      }
+      return Post.findById(postId);
+    })
+    .then(post => {
+      const comment = new Comment({
+        userId: userId,
+        postId: postId,
+        content: content,
+      });
+      return comment.save().then(result => {
+        const commentsList = [...post.comments];
+        commentsList.push(result._id);
+        post.comments = commentsList;
+        return post.save();
+      });
+    })
+    .then(saved => {
+      req.flash('error', 'Your comment has been posted successfully.');
+      req.flash('errorType', '');
+      req.flash('errorHeader', 'Posted');
+      return res.redirect('/post/' + slug);
+    })
+    .catch(err => next(new Error(err)));
+};
+
+exports.postReplyComment = (req, res, next) => {
+  const { postId, userId, parentCommentId, content, slug } = req.body;
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    req.flash('error', errors.array()[0].msg);
+    req.flash('errorType', 'alert');
+    req.flash('errorHeader', 'Validation Error');
+    return res.redirect('/post/' + slug);
+  }
+  Comment.findOne({ content: content })
+    .then(comment => {
+      if (comment) {
+        req.flash('error', 'Comment duplicated!');
+        req.flash('errorType', 'warning');
+        req.flash('errorHeader', 'Error');
+        return res.redirect('/post/' + slug);
+      }
+      return Comment.findById(parentCommentId);
+    })
+    .then(parentComment => {
+      const comment = new Comment({
+        userId: userId,
+        postId: postId,
+        content: content,
+      });
+      return comment.save().then(result => {
+        const childCommentsList = [...parentComment.childComment];
+        childCommentsList.push(result._id);
+        parentComment.childComment = childCommentsList;
+        return parentComment.save();
+      });
+    })
+    .then(saved => {
+      req.flash('error', 'Your reply comment has been posted successfully!');
+      req.flash('errorType', '');
+      req.flash('errorHeader', 'Posted');
+      return res.redirect('/post/' + slug);
     })
     .catch(err => next(new Error(err)));
 };
@@ -178,38 +281,60 @@ exports.getCategories = (req, res, next) => {
 
 exports.getCategory = (req, res, next) => {
   const slug = req.params.slug;
+  const page = +req.query.page || 1;
   let category;
   Category.findOne({ slug: slug })
     .then(cat => {
       category = cat;
-      return Post.find({ category: cat._id, status: true });
+      return Post.countDocuments({ category: cat._id, status: true });
+    })
+    .then(countedDocs => {
+      sum = countedDocs;
+      return Post.find({ category: category._id, status: true })
+        .skip((page - 1) * items_per_pages)
+        .limit(items_per_pages);
     })
     .then(posts => {
       res.render('pages/category', {
         pageTitle: category.name,
         category: category,
-        sum: posts.length,
         posts: posts,
+        // pagi
+        sum: sum,
+        currentPage: page,
+        hasNextPage: page * items_per_pages < sum,
+        hasPreviousPage: page > 1,
+        nextPage: page + 1,
+        previousPage: page - 1,
+        lastPage: Math.ceil(sum / items_per_pages),
       });
     })
-    .catch(err =>
-      next(
-        new Error(
-          "We can't find any category with that name, please try again."
-        )
-      )
-    );
+    .catch(err => next(new Error(err)));
 };
 
 exports.getArchive = (req, res, next) => {
-  Post.find({ status: true })
-    .select('title slug imageUrl description like createdAt')
-    .sort({ createdAt: 'desc' })
+  const page = +req.query.page || 1;
+  Post.countDocuments({ status: true })
+    .then(countedDocs => {
+      sum = countedDocs;
+      return Post.find({ status: true })
+        .skip((page - 1) * items_per_pages)
+        .limit(items_per_pages)
+        .select('title slug imageUrl description like createdAt')
+        .sort({ createdAt: 'desc' });
+    })
     .then(posts => {
       res.render('pages/archive', {
         pageTitle: 'Archive',
-        sum: posts.length,
         posts: posts,
+        // pagi
+        sum: sum,
+        currentPage: page,
+        hasNextPage: page * items_per_pages < sum,
+        hasPreviousPage: page > 1,
+        nextPage: page + 1,
+        previousPage: page - 1,
+        lastPage: Math.ceil(sum / items_per_pages),
       });
     })
     .catch(err => next(new Error(err)));
@@ -218,6 +343,22 @@ exports.getArchive = (req, res, next) => {
 exports.getAbout = (req, res, next) => {
   res.render('pages/about', {
     pageTitle: 'About',
+  });
+};
+
+exports.getUserDetails = (req, res, next) => {
+  const name = req.params.name;
+  User.findOne({ name: name }).then(user => {
+    if (!user) {
+      req.flash('error', "We can't find any account");
+      req.flash('errorType', 'warning');
+      req.flash('errorHeader', 'Error');
+      return res.redirect('/');
+    }
+    res.render('pages/user-details', {
+      pageTitle: name + 'details',
+      user: user,
+    });
   });
 };
 

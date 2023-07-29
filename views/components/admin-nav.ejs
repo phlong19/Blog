@@ -1,5 +1,4 @@
-
-<div class="admin-nav">
+<div class="admin-nav" style="display: flex;">
     <a href="/admin/posts" class="<%= path==='/posts' ? 'active' :'' %>">
       Posts
     </a>
@@ -17,4 +16,12 @@
     <a href="/admin/comments" class="<%= path==='/comments' ? 'active' :'' %>">
       Comments
     </a>
+  <div class="adminSearchBar"> <h3>Keyword: </h3>
+    <form action="/admin/search" method="post" class="searchBar">
+      <input type="search" class="searchInput" name="keyword">
+      <input type="hidden" name="path" value="<%= path %>">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <button class="searchButton" type="submit">Search</button>
+    </form>
+  </div>
 </div>
