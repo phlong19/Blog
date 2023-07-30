@@ -20,7 +20,8 @@
         <div class="container"> <button style="background: red;" class="open-modal">Delete expired contacts</button>
           <h2 class="mb-5">All contacts</h2>
           <h4 class="sortHeader"> Sort by: 
-            <a class="list-link <%= sortOption==='like' ? 'active' : '' %>" href="?sort=like">Name</a>
+            <a class="list-link <%= sortOption==='nameaz' ? 'active' : '' %>" href="?sort=nameaz">Name(A-Z)</a>
+            <a class="list-link <%= sortOption==='nameza' ? 'active' : '' %>" href="?sort=nameza">Name(Z-A)</a>
             <a class="list-link <%= sortOption==='expire' ? 'active' : '' %>" href="?sort=expire">Expire</a>
             <a class="list-link <%= sortOption==='checked' ? 'active' : '' %>" href="?sort=checked">Checked</a>
             <%- include('../components/sort.ejs') %>
@@ -93,6 +94,7 @@
 
 <script src="/js/noti.js"></script>
 <script src="/js/form.js"></script>
+<script src="/js/pagination.js"></script>
 
 </body>
 </html>

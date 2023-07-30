@@ -10,7 +10,7 @@ const Contact = require('../models/contact');
 const { marked } = require('marked');
 
 sendGrid.setApiKey(process.env.SG_API_KEY);
-const items_per_pages = 10;
+const items_per_pages = 1;
 let sum;
 
 exports.getIndex = (req, res, next) => {
@@ -283,6 +283,30 @@ exports.getCategory = (req, res, next) => {
   const slug = req.params.slug;
   const page = +req.query.page || 1;
   let category;
+  let sort = {};
+  const sortOption = req.query.sort;
+  switch (sortOption) {
+    case 'newest':
+      sort = { createdAt: 'desc' };
+      break;
+    case 'oldest':
+      sort = { createdAt: 'asc' };
+      break;
+    case 'most':
+      sort = { likeCounts: 'desc' };
+      break;
+    case 'least':
+      sort = { likeCounts: 'asc' };
+      break;
+    case 'nameaz':
+      sort = { title: 'desc' };
+      break;
+    case 'nameza':
+      sort = { title: 'asc' };
+      break;
+    default:
+      break;
+  }
   Category.findOne({ slug: slug })
     .then(cat => {
       category = cat;
@@ -291,14 +315,17 @@ exports.getCategory = (req, res, next) => {
     .then(countedDocs => {
       sum = countedDocs;
       return Post.find({ category: category._id, status: true })
+        .select('-content -imageId -comments')
         .skip((page - 1) * items_per_pages)
-        .limit(items_per_pages);
+        .limit(items_per_pages)
+        .sort(sort);
     })
     .then(posts => {
       res.render('pages/category', {
         pageTitle: category.name,
         category: category,
         posts: posts,
+        sortOption: sortOption,
         // pagi
         sum: sum,
         currentPage: page,
@@ -314,6 +341,30 @@ exports.getCategory = (req, res, next) => {
 
 exports.getArchive = (req, res, next) => {
   const page = +req.query.page || 1;
+  const sortOption = req.query.sort;
+  let sort = {};
+  switch (sortOption) {
+    case 'newest':
+      sort = { createdAt: 'desc' };
+      break;
+    case 'oldest':
+      sort = { createdAt: 'asc' };
+      break;
+    case 'most':
+      sort = { likeCounts: 'desc' };
+      break;
+    case 'least':
+      sort = { likeCounts: 'asc' };
+      break;
+    case 'titleaz':
+      sort = { title: 'desc' };
+      break;
+    case 'titleza':
+      sort = { title: 'asc' };
+      break;
+    default:
+      break;
+  }
   Post.countDocuments({ status: true })
     .then(countedDocs => {
       sum = countedDocs;
@@ -321,12 +372,13 @@ exports.getArchive = (req, res, next) => {
         .skip((page - 1) * items_per_pages)
         .limit(items_per_pages)
         .select('title slug imageUrl description like createdAt')
-        .sort({ createdAt: 'desc' });
+        .sort(sort);
     })
     .then(posts => {
       res.render('pages/archive', {
         pageTitle: 'Archive',
         posts: posts,
+        sortOption: sortOption,
         // pagi
         sum: sum,
         currentPage: page,

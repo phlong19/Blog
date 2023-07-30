@@ -43,11 +43,17 @@ exports.getPostsManage = (req, res, next) => {
   let sort = {};
   const sortOption = req.query.sort;
   switch (sortOption) {
-    case 'title':
+    case 'titleaz':
       sort = { title: 'desc' };
       break;
-    case 'like':
-      sort = { like: 'desc' };
+    case 'titleza':
+      sort = { title: 'asc' };
+      break;
+    case 'most':
+      sort = { $expr: { $size: '$like' } };
+      break;
+    case 'least':
+      sort = { $expr: { $size: { $multiply: [1, '$like'] } } }; // Ascending order
       break;
     case 'status':
       sort = { status: 'desc' };
@@ -130,8 +136,11 @@ exports.getUsersManage = (req, res, next) => {
     case 'level':
       sort = { level: 'desc' };
       break;
-    case 'name':
+    case 'nameaz':
       sort = { name: 'desc' };
+      break;
+    case 'nameza':
+      sort = { name: 'asc' };
       break;
     case 'banned':
       sort = { banned: 'asc' };
@@ -195,8 +204,11 @@ exports.getCategoriesManage = (req, res, next) => {
     case 'oldest':
       sort = { createdAt: 'asc' };
       break;
-    case 'name':
+    case 'nameaz':
       sort = { name: 'desc' };
+      break;
+    case 'nameza':
+      sort = { name: 'asc' };
       break;
     default:
       break;
@@ -254,6 +266,12 @@ exports.getCommentsManage = (req, res, next) => {
       break;
     case 'oldest':
       sort = { createdAt: 'asc' };
+      break;
+    case 'nameaz':
+      sort = { name: 'desc' };
+      break;
+    case 'nameza':
+      sort = { name: 'asc' };
       break;
     default:
       break;
@@ -325,8 +343,11 @@ exports.getContactManage = (req, res, next) => {
     case 'expire':
       sort = { limit: 'desc' };
       break;
-    case 'name':
+    case 'nameaz':
       sort = { name: 'desc' };
+      break;
+    case 'nameza':
+      sort = { name: 'asc' };
       break;
     case 'checked':
       sort = { checked: 'asc' };
@@ -337,7 +358,7 @@ exports.getContactManage = (req, res, next) => {
   Contact.countDocuments()
     .then(counted => {
       sum = counted;
-      return Contact.find({ checked: false })
+      return Contact.find()
         .skip((page - 1) * items_per_table)
         .limit(items_per_table)
         .select('-message')
