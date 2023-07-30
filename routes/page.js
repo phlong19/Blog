@@ -76,8 +76,8 @@ router.post(
   '/search',
   body('keyword')
     .trim()
-    .isLength({ min: 7 })
-    .withMessage('Please be more specific about what you are looking for.'),
+    .isLength({ min: 10, max: 100 })
+    .withMessage('Please provide keywords between 10-100 characters.'),
   pageController.postSearch
 );
 
