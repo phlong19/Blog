@@ -237,14 +237,15 @@ div.adminSearchBar {
   display: flex;
   align-items: center;
 }
-div.adminSearchBar form.searchBar {
+
+div.adminSearchBar div.formSearch {
   display: flex;
   flex-wrap: wrap;
   width: 85%;
   margin: 0 auto;
 }
 
-form.searchBar input.searchInput[type='search'] {
+div.formSearch input.searchInput[type='search'] {
   border: none;
   background: var(--secondary-background-color);
   color: var(--light-color);
@@ -261,7 +262,7 @@ form.searchBar input.searchInput[type='search'] {
   flex: 2 0 250px;
 }
 
-form.searchBar button.searchButton {
+div.formSearch a.searchButton {
   flex: 1 0 90px;
   max-height: 3em;
   font-size: 1.1em;

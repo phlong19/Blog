@@ -242,7 +242,7 @@ input:focus-visible + label {
   font-weight: 600;
 }
 
-.admin-nav a::after {
+.admin-nav a:not(#searchButton)::after {
   content: '';
   position: absolute;
   left: 15px;
@@ -254,14 +254,14 @@ input:focus-visible + label {
   margin-left: 10px;
 }
 
-.admin-nav a:hover,
-.admin-nav a.active {
+.admin-nav a:not(#searchButton):hover,
+.admin-nav a:not(#searchButton).active {
   /* color: #06c; */
   color: var(--light-color);
 }
 
-.admin-nav a:hover::after,
-.admin-nav a.active::after {
+.admin-nav a:not(#searchButton):hover::after,
+.admin-nav a:not(#searchButton).active::after {
   /* background: #06c; */
   background: var(--gradient-color);
 }

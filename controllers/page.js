@@ -293,10 +293,10 @@ exports.getCategory = (req, res, next) => {
       sort = { createdAt: 'asc' };
       break;
     case 'most':
-      sort = { likeCounts: 'desc' };
+      sort = { like: 'desc' };
       break;
     case 'least':
-      sort = { likeCounts: 'asc' };
+      sort = { like: 'asc' };
       break;
     case 'nameaz':
       sort = { title: 'desc' };
@@ -351,10 +351,10 @@ exports.getArchive = (req, res, next) => {
       sort = { createdAt: 'asc' };
       break;
     case 'most':
-      sort = { likeCounts: 'desc' };
+      sort = { like: 'desc' };
       break;
     case 'least':
-      sort = { likeCounts: 'asc' };
+      sort = { like: 'asc' };
       break;
     case 'titleaz':
       sort = { title: 'desc' };

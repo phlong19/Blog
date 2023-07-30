@@ -1,4 +1,4 @@
-<div class="admin-nav" style="display: flex;">
+<div class="admin-nav" id="admin-nav" style="display: flex;">
     <a href="/admin/posts" class="<%= path==='/posts' ? 'active' :'' %>">
       Posts
     </a>
@@ -17,11 +17,21 @@
       Comments
     </a>
   <div class="adminSearchBar"> <h3>Keyword: </h3>
-    <form action="/admin/search" method="post" class="searchBar">
-      <input type="search" class="searchInput" name="keyword">
-      <input type="hidden" name="path" value="<%= path %>">
-      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-      <button class="searchButton" type="submit">Search</button>
-    </form>
+    <div class="formSearch">
+      <input type="search" oninput="searchType()" id="searchInput" class="searchInput" name="keyword">
+      <a href="" class="searchButton" id="searchButton">Search</a>
+    </div>
   </div>
 </div>
+
+<script>
+  let path = document.getElementById('admin-nav').getElementsByClassName('active');
+  let model = path[0].textContent.trim().toLowerCase();
+  
+  function searchType() {
+    let keywords = document.getElementById('searchInput').value;
+    if (keywords) {
+      document.getElementById('searchButton').href = `/admin/search?model=${model}` + '&search=' + keywords;
+    }
+  }
+</script>

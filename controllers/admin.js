@@ -50,10 +50,10 @@ exports.getPostsManage = (req, res, next) => {
       sort = { title: 'asc' };
       break;
     case 'most':
-      sort = { $expr: { $size: '$like' } };
+      sort = { like: 'desc' };
       break;
     case 'least':
-      sort = { $expr: { $size: { $multiply: [1, '$like'] } } }; // Ascending order
+      sort = { like: 'asc' };
       break;
     case 'status':
       sort = { status: 'desc' };
@@ -94,8 +94,8 @@ exports.getPostsManage = (req, res, next) => {
         error: error,
         errorType: errorType,
         errorHeader: errorHeader,
-        posts: posts,
         categories: categories,
+        posts: posts,
         sortOption: sortOption,
         // pagination
         sum: sum,
@@ -280,7 +280,7 @@ exports.getCommentsManage = (req, res, next) => {
   Comment.countDocuments()
     .then(counted => {
       sum = counted;
-      return Comment.find()
+      return Comment.find() // fix author
         .skip((page - 1) * items_per_table)
         .limit(items_per_table)
         .populate([
@@ -819,21 +819,68 @@ exports.deleteComment = (req, res, next) => {
     .catch(err => next(new Error(err)));
 };
 
-exports.postSearch = (req, res, next) => {
-  const { keyword, path } = req.body;
+exports.getSearch = (req, res, next) => {
+  const keyword = req.query.search;
+  const path = req.query.model;
+  const page = +req.query.page || 1;
+  let sum;
 
-  if (path === '/posts') {
+  if (path === 'posts') {
+    Post.countDocuments({
+      $or: [
+        { title: { $regex: keyword, $options: 'i' } },
+        { content: { $regex: keyword, $options: 'i' } },
+        { description: { $regex: keyword, $options: 'i' } },
+      ],
+    })
+      .then(counted => {
+        sum = counted;
+        return Post.find({
+          $or: [
+            { title: { $regex: keyword, $options: 'i' } },
+            { content: { $regex: keyword, $options: 'i' } },
+            { description: { $regex: keyword, $options: 'i' } },
+          ],
+        })
+          .skip((page - 1) * items_per_table)
+          .limit(items_per_table)
+          .populate('author', 'name slug');
+      })
+      .then(posts => {
+        if (Array.isArray(posts) && posts.length === 0) {
+          req.flash('error', "We can't find any posts with your keyword.");
+          req.flash('errorType', 'info');
+          req.flash('errorHeader', 'None posts');
+          return res.redirect('/admin/posts');
+        } else {
+          return res.render('admin/search', {
+            pageTitle: 'Searching result',
+            path: '/posts',
+            posts: posts,
+            keyword: keyword,
+            // pagi
+            sum: sum,
+            currentPage: page,
+            hasNextPage: page * items_per_table < sum,
+            hasPreviousPage: page > 1,
+            nextPage: page + 1,
+            previousPage: page - 1,
+            lastPage: Math.ceil(sum / items_per_table),
+          });
+        }
+      })
+      .catch(err => next(new Error(err)));
   }
 
-  if (path === '/users') {
+  if (path === 'users') {
   }
 
-  if (path === '/categories') {
+  if (path === 'categories') {
   }
 
-  if (path === '/comments') {
+  if (path === 'comments') {
   }
 
-  if (path === '/contacts') {
+  if (path === 'contacts') {
   }
 };

@@ -66,10 +66,12 @@ router.get('/comments', isPermitted, adminController.getCommentsManage);
 // CONTACTS
 router.get('/contacts', isAdmin, adminController.getContactManage);
 
-// Details
+// Details + Search
 router.get('/details/:slug', isPermitted, adminController.getDetailSlug);
 
 router.get('/details-id/:id', isAdmin, adminController.getDetailsId);
+
+router.get('/search', isPermitted, adminController.getSearch);
 
 // Update routes
 router.post(
@@ -146,8 +148,5 @@ router.post('/delete-user', isAdmin, adminController.deleteUser);
 router.post('/clean-contacts', isAdmin, adminController.deleteContacts);
 
 router.post('/delete-comment', isPermitted, adminController.deleteComment);
-
-// search bar
-router.post('/search', isPermitted, adminController.postSearch);
 
 module.exports = router;
