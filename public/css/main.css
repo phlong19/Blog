@@ -1083,6 +1083,6 @@ i.ri-information-line {
   font-size: 1.5rem;
 }
 
-h4.sortHeader a.active {
+.sortHeader a.list-link.active {
   color: var(--light-color);
 }

@@ -19,6 +19,8 @@
         <div class="container">
           <h2 class="mb-5">All comments</h2>
           <h4 class="sortHeader"> Sort by: 
+            <a class="list-link <%= sortOption==='nameaz' ? 'active' : '' %>" href="?nameaz">Name(A-Z)</a>
+            <a class="list-link <%= sortOption==='nameza' ? 'active' : '' %>" href="?nameza">Name(Z-A)</a>
             <%- include('../components/sort.ejs') %>
           </h4>
           <div class="table-responsive custom-table-responsive">
@@ -30,7 +32,7 @@
                     <th scope="col">Email</th>
                     <th scope="col">Content</th>
                     <th scope="col">Post's title</th>
-                    <th scope="col">Link</th>
+                    <th scope="col"></th>
                 </tr>
               </thead>
               <tbody>
@@ -70,6 +72,7 @@
 <%- include('../components/footer.ejs') %>
 
 <script src="/js/noti.js"></script>
+<script src="/js/pagination.js"></script>
 
 </body>
 </html>

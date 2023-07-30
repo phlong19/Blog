@@ -5,7 +5,13 @@
 <%- include('../components/nav.ejs') %>
 <div class="section-header-offset custom-header">
   <h2 class="title section-title" data-name="Archive">Archive</h2>
-  <h3>All posts sorted by date.</h3>
+  <h3 class="sortHeader"> Sort by:
+    <a class="list-link <%= sortOption==='titleaz' ? 'active' : '' %>" href="?sort=titleaz">Title(A-Z)</a>
+    <a class="list-link <%= sortOption==='titleza' ? 'active' : '' %>" href="?sort=titleza">Title(Z-A)</a>
+    <a class="list-link <%= sortOption==='most' ? 'active' : '' %>" href="?sort=most">Most-Liked</a>
+    <a class="list-link <%= sortOption==='least' ? 'active' : '' %>" href="?sort=least">Least-Liked</a>
+    <%- include('../components/sort.ejs') %>
+  </h3>
 </div>
 
 <section class="older-posts section">
@@ -50,6 +56,8 @@
 </section>
 
 <%- include('../components/footer.ejs') %>
-
+  
+  <script src="/js/pagination.js"></script>
+  
 </body>
 </html>
