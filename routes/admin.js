@@ -2,6 +2,11 @@ const express = require('express');
 const { body } = require('express-validator');
 
 const User = require('../models/user');
+const Post = require('../models/post');
+const Category = require('../models/category');
+const Comment = require('../models/comment');
+const Contact = require('../models/contact');
+
 const adminController = require('../controllers/admin');
 const { uploadCategories, uploadPosts } = require('../middlewares/cloud');
 const isPermitted = require('../middlewares/isPermitted');
@@ -9,7 +14,7 @@ const isAdmin = require('../middlewares/isAdmin');
 
 const router = express.Router();
 
-// POSTS
+//#region POSTS
 router.get('/posts', isPermitted, adminController.getPostsManage);
 
 router.post(
@@ -36,8 +41,9 @@ router.post(
   ],
   adminController.createPost
 );
+//#endregion
 
-// CATEGORIES
+//#region CATEGORIES
 router.get('/categories', isAdmin, adminController.getCategoriesManage);
 
 router.post(
@@ -56,6 +62,7 @@ router.post(
   ],
   adminController.createCategory
 );
+//#endregion
 
 // USERS
 router.get('/users', isAdmin, adminController.getUsersManage);
@@ -66,14 +73,15 @@ router.get('/comments', isPermitted, adminController.getCommentsManage);
 // CONTACTS
 router.get('/contacts', isAdmin, adminController.getContactManage);
 
-// Details + Search
+//#region DETAILS AND SEARCH
 router.get('/details/:slug', isPermitted, adminController.getDetailSlug);
 
 router.get('/details-id/:id', isAdmin, adminController.getDetailsId);
 
 router.get('/search', isPermitted, adminController.getSearch);
+//#endregion
 
-// Update routes
+//#region UPDATE ROUTES
 router.post(
   '/update-post',
   isPermitted,
@@ -120,33 +128,99 @@ router.post(
   '/update-user',
   isAdmin,
   [
-    body('email')
-      .notEmpty()
-      .isEmail()
-      .withMessage('Invalid email address')
-      .custom((value, { req }) => {
-        User.findOne({ email: value }).then(user => {
-          if (user) {
-            return Promise.reject('This email is already in used.');
-          }
-        });
-      })
-      .normalizeEmail(),
+    body('name')
+      .trim()
+      .isLength({ min: 5, max: 15 })
+      .isAlphanumeric()
+      .withMessage(
+        'Username length is 5-15 characters and only can contain text and numbers.'
+      ),
+    body('email').notEmpty().isEmail().withMessage('Invalid email address.'),
+    body('shortDes').isLength({ max: 500 }),
+    body('warning')
+      .isInt({ min: 0, max: 6 })
+      .withMessage('Invalid warning number.'),
+    body('level')
+      .isInt({ min: 1, max: 3 })
+      .withMessage('Invalid level number.'),
+    body('active').isBoolean(),
+    body('banned').isBoolean(),
   ],
   adminController.updateUser
 );
 
-router.post('/update-contact', isAdmin, adminController.updateContact);
+router.post(
+  '/update-contact',
+  isAdmin,
+  [body('checked').notEmpty().isBoolean()],
+  adminController.updateContact
+);
+//#endregion
 
-// delete routes
-router.post('/delete-post', isPermitted, adminController.deletePost);
+//#region DELETE ROUTES
+router.post(
+  '/delete-post',
+  isPermitted,
+  [
+    body('id')
+      .notEmpty()
+      .custom((value, { req }) => {
+        return Post.findById(value).then(post => {
+          if (!post) {
+            return Promise.reject("Can't find any post.");
+          }
+        });
+      }),
+  ],
+  adminController.deletePost
+);
 
-router.post('/delete-category', isAdmin, adminController.deleteCategory);
+router.post(
+  '/delete-category',
+  isAdmin,
+  [
+    body('id')
+      .notEmpty()
+      .custom((value, { req }) => {
+        return Category.findById(value).then(cat => {
+          return Promise.reject("Can't find any categoty.");
+        });
+      }),
+  ],
+  adminController.deleteCategory
+);
 
-router.post('/delete-user', isAdmin, adminController.deleteUser);
+router.post(
+  '/delete-user',
+  isAdmin,
+  [
+    body('id')
+      .notEmpty()
+      .custom((value, { req }) => {
+        return User.findById(value).then(user => {
+          return Promise.reject('Wrong Id or user no longer exist.');
+        });
+      }),
+  ],
+  adminController.deleteUser
+);
 
 router.post('/clean-contacts', isAdmin, adminController.deleteContacts);
 
-router.post('/delete-comment', isPermitted, adminController.deleteComment);
+router.post(
+  '/delete-comment',
+  isAdmin,
+  [
+    body('id')
+      .notEmpty()
+      .custom((value, { req }) => {
+        return Comment.findById(value).then(comment => {
+          return Promise.reject("Can't find any comment.");
+        });
+      }),
+  ],
+  adminController.deleteComment
+);
+//#endregion
 
 module.exports = router;

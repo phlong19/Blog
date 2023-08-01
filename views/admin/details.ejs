@@ -193,12 +193,8 @@
           
           <div class="formbold-mb-3">
             <label class="formbold-form-label">Current Avatar</label>
-            <div class="profile-card">
-              <% if(user.imageUrl) {%>
-                <img src="<%= user.imageUrl %>" alt="">
-              <% } else {%>
-                <p>None</p>
-              <% } %>
+            <div class="profile-card"> 
+                <img src="<%= user.avatarUrl %>" alt="">
             </div>
           </div>
 
@@ -227,7 +223,7 @@
 
           <div class="formbold-mb-3">
             <label for="active" class="formbold-form-label">Active</label>
-            <select name="level" id="level" class="formbold-form-input">
+            <select name="active" id="level" class="formbold-form-input">
               <option value="0" <%= user.active === false ? 'Selected' : '' %> > Not yet </option>
               <option value="1" <%= user.active === true ? 'Selected' : '' %> > Actived </option>
             </select>
@@ -253,6 +249,11 @@
               name="shortDes"
               id="shortDes"
               class="formbold-form-input"><%= user.shortDes %></textarea>
+          </div>
+
+          <div class="formbold-mb-3">
+            <label for="warning" class="formbold-form-label">Warning</label>
+            <input type="number" name="warning" id="warning" class="formbold-form-input" value="<%= user.warning %>">  
           </div>
 
           <div class="formbold-mb-3">
@@ -288,11 +289,11 @@
         </div>
         <div class="formbold-mb-3">
           <label for="checked" class="formbold-form-label">Subject</label>
-          <input type="text" class="formbold-form-input" value="<%= contact.subject %>">
+          <input type="text" class="formbold-form-input" value="<%= contact.subject %>" disabled>
         </div>
         <div class="formbold-mb-3">
           <label for="checked" class="formbold-form-label">Message</label>
-          <input type="text" class="formbold-form-input" value="<%= contact.message %>">
+          <input type="text" class="formbold-form-input" value="<%= contact.message %>" disabled>
         </div>
         <div class="formbold-mb-3">
           <label for="checked" class="formbold-form-label">Checked</label>
@@ -302,6 +303,7 @@
           </select>
         </div> 
         
+        <input type="hidden" name="id" value="<%= contact._id %>">
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
         
         <button type="submit" class="formbold-btn">Update</button>

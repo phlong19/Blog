@@ -82,24 +82,33 @@
 <!-- Search box -->
 <div class="search-form-container container" id="search-form-container">
   <div class="form-container-inner">
-    <form action="/search" method="post" class="form">
+    <div action="/search" class="form">
       <input
         class="form-input"
+        id="form-input"
         type="text"
         name="keyword"
         placeholder="What are you looking for?"
-        minlength="7"
         required
         autofocus
+        oninput="search()"
       />
-      <input type="hidden" name="_csrf" value="<%= csrfToken%>">
-      <button class="btn form-btn" type="submit">
+      <a class="btn form-btn" id="form-btn" href="" role="button">
         <i class="ri-search-line"></i>
-      </button>
-    </form>
+      </a>
+    </div>
     <span class="form-note">Or press ESC to close.</span>
   </div>
   <button class="btn form-close-btn place-items-center" id="form-close-btn">
     <i class="ri-close-line"></i>
   </button>
+
+  <script>
+  function search() {
+    let keywords = document.getElementById('form-input').value;
+    if (keywords) {
+      document.getElementById('form-btn').href = '/search?search=' + keywords;
+    }
+  }
+  </script>
 </div>

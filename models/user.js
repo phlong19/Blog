@@ -11,6 +11,7 @@ const userSchema = new Schema(
     activation_expiration: Date,
     reset_code: String,
     reset_expiration: Date,
+    change_name_countdown: Date,
     avatarUrl: {
       type: String,
       default:

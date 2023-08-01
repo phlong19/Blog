@@ -25,6 +25,8 @@ const items_per_table = 10;
 let sum;
 let option = {};
 
+//#region GET PAGES
+
 exports.getPostsManage = (req, res, next) => {
   const page = +req.query.page || 1;
   let error = req.flash('error');
@@ -155,7 +157,7 @@ exports.getUsersManage = (req, res, next) => {
       return User.find()
         .skip((page - 1) * items_per_table)
         .limit(items_per_table)
-        .select('name email avatarUrl level banned social active createdAt')
+        .select('name email warning level banned social active createdAt')
         .sort(sort);
     })
     .then(users => {
@@ -365,7 +367,7 @@ exports.getContactManage = (req, res, next) => {
         .sort(sort);
     })
     .then(contacts => {
-      res.render('admin/contact', {
+      res.render('admin/contacts', {
         pageTitle: 'Contact Manage',
         path: '/contacts',
         error: error,
@@ -385,6 +387,10 @@ exports.getContactManage = (req, res, next) => {
     })
     .catch(err => next(new Error(err)));
 };
+
+//#endregion
+
+//#region DETAILS
 
 exports.getDetailSlug = (req, res, next) => {
   let error = req.flash('error');
@@ -507,6 +513,10 @@ exports.getDetailsId = (req, res, next) => {
   }
 };
 
+//#endregion
+
+//#region CREATE
+
 exports.createPost = (req, res, next) => {
   const { title, content, catIds } = req.body.title;
   const des = req.body.description;
@@ -611,6 +621,10 @@ exports.createCategory = (req, res, next) => {
       return next(error);
     });
 };
+
+//#endregion
+
+//#region UPDATE
 
 exports.updateCategory = (req, res, next) => {
   const { name, description, catId, oldSlug } = req.body;
@@ -721,12 +735,73 @@ exports.updatePost = (req, res, next) => {
 };
 
 exports.updateUser = (req, res, next) => {
-  const { id } = req.body;
+  const { userId, email, name, active, level, shortDes, banned, warning } =
+    req.body;
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    req.flash('error', errors.array()[0].msg);
+    req.flash('errorType', 'alert');
+    req.flash('errorHeader', 'Validation Error');
+    return res.redirect('/admin/users');
+  }
+  User.findById(userId)
+    .then(user => {
+      if (!user) {
+        req.flash('error', "Can't find any account");
+        req.flash('errorType', 'alert');
+        req.flash('errorHeader', 'Error');
+        return res.redirect('/admin/users');
+      }
+      user.email = email;
+      user.name = name;
+      user.active = active;
+      user.level = level;
+      user.shortDes = shortDes;
+      user.banned = banned;
+      user.warning = warning;
+      return user.save().then(result => {
+        req.flash('error', 'Updated user successfully.');
+        req.flash('errorType', '');
+        req.flash('errorHeader', 'Success');
+        return res.redirect('/admin/users');
+      });
+    })
+    .catch(err => next(new Error(err)));
 };
 
 exports.updateContact = (req, res, next) => {
   const { id, checked } = req.body;
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    req.flash('error', errors.array()[0].msg);
+    req.flash('errorType', 'alert');
+    req.flash('errorHeader', 'Validation Error');
+    return res.redirect('/admin/contacts');
+  }
+  Contact.findById(id)
+    .then(contact => {
+      if (!contact) {
+        req.flash('error', "Can't find any contact.");
+        req.flash('errorType', 'alert');
+        req.flash('errorHeader', 'Error');
+        return res.redirect('/admin/contacts');
+      }
+      contact.checked = checked;
+      return contact.save().then(result => {
+        req.flash('error', 'Checked contact successfully.');
+        req.flash('errorType', '');
+        req.flash('errorHeader', 'Success');
+        return res.redirect('/admin/contacts');
+      });
+    })
+    .catch(err => next(new Error(err)));
 };
+
+//#endregion
+
+//#region DELETE
 
 exports.deletePost = (req, res, next) => {
   const id = req.body.id;
@@ -739,12 +814,6 @@ exports.deletePost = (req, res, next) => {
 
   Post.findOne(option)
     .then(post => {
-      if (!post) {
-        req.flash('error', "Can't find any post.");
-        req.flash('errorType', 'alert');
-        req.flash('errorHeader', 'Error');
-        return res.redirect('/admin/posts');
-      }
       deleteImage(post.imageId);
       return post.deleteOne().then(result => {
         req.flash('error', 'Delete post successfully.');
@@ -794,38 +863,55 @@ exports.deleteContacts = (req, res, next) => {
   Contact.deleteMany({ checked: true, limit: { $lt: Date.now() } })
     .then(result => {
       req.flash('error', 'Cleaning up successfully,');
+      req.flash('errorType', '');
+      req.flash('errorHeader', 'Success');
       return res.redirect('/admin/contacts');
     })
     .catch(err => next(new Error(err)));
 };
 
 exports.deleteComment = (req, res, next) => {
-  const id = req.body.id;
+  const id = req.body.commentId;
   Comment.findById(id)
+    .populate('childComment')
     .then(comment => {
-      if (!comment) {
-        req.flash('error', "Can't find any comment.");
-        req.flash('errorType', 'alert');
-        req.flash('errorHeader', 'Error');
-        return res.redirect('/admin/comments');
+      if (comment.childComment.length > 0) {
+        comment.content =
+          'Deleted by admin because comment content is not appropriate.';
+        return comment.save().then(result => {
+          req.flash('error', 'Updated comment successfully.');
+          req.flash('errorType', '');
+          req.flash('errorHeader', 'Success');
+          return res.redirect('/admin/comments');
+        });
+      } else {
+        return comment.deleteOne().then(result => {
+          req.flash('error', 'Deleted comment successfully.');
+          req.flash('errorType', '');
+          req.flash('errorHeader', 'Success');
+          res.redirect('/admin/comments');
+        });
       }
-      return comment.deleteOne().then(result => {
-        req.flash('error', 'Delete comment successfully.');
-        req.flash('errorType', 'alert');
-        req.flash('errorHeader', 'Success');
-        res.redirect('/admin/comments');
-      });
     })
     .catch(err => next(new Error(err)));
 };
 
+//#endregion
+
 exports.getSearch = (req, res, next) => {
   const keyword = req.query.search;
-  const path = req.query.model;
+  const model = req.query.model;
   const page = +req.query.page || 1;
-  let sum;
+  const level = req.session.user.level;
 
-  if (path === 'posts') {
+  if (keyword.length < 4) {
+    req.flash('error', 'Keyword too short. Minimum length is 4 characters.');
+    req.flash('errorType', 'alert');
+    req.flash('errorHeader', 'Validation Error');
+    return res.redirect('/admin/posts');
+  }
+
+  if (model === 'posts') {
     Post.countDocuments({
       $or: [
         { title: { $regex: keyword, $options: 'i' } },
@@ -842,45 +928,207 @@ exports.getSearch = (req, res, next) => {
             { description: { $regex: keyword, $options: 'i' } },
           ],
         })
+          .select('title imageUrl description author like status createdAt')
           .skip((page - 1) * items_per_table)
           .limit(items_per_table)
           .populate('author', 'name slug');
       })
       .then(posts => {
         if (Array.isArray(posts) && posts.length === 0) {
-          req.flash('error', "We can't find any posts with your keyword.");
+          req.flash('error', "We can't find any post with your keyword.");
           req.flash('errorType', 'info');
-          req.flash('errorHeader', 'None posts');
+          req.flash('errorHeader', 'None post found');
           return res.redirect('/admin/posts');
-        } else {
-          return res.render('admin/search', {
-            pageTitle: 'Searching result',
-            path: '/posts',
-            posts: posts,
-            keyword: keyword,
-            // pagi
-            sum: sum,
-            currentPage: page,
-            hasNextPage: page * items_per_table < sum,
-            hasPreviousPage: page > 1,
-            nextPage: page + 1,
-            previousPage: page - 1,
-            lastPage: Math.ceil(sum / items_per_table),
-          });
         }
+        return res.render('admin/search', {
+          pageTitle: 'Found ' + sum + ' results',
+          path: '/posts',
+          model: model,
+          posts: posts,
+          keyword: keyword,
+          // pagi
+          sum: sum,
+          currentPage: page,
+          hasNextPage: page * items_per_table < sum,
+          hasPreviousPage: page > 1,
+          nextPage: page + 1,
+          previousPage: page - 1,
+          lastPage: Math.ceil(sum / items_per_table),
+        });
       })
       .catch(err => next(new Error(err)));
   }
 
-  if (path === 'users') {
+  if (model === 'users' && level === 3) {
+    User.countDocuments({
+      $or: [
+        { email: { $regex: keyword, $options: 'i' } },
+        { name: { $regex: keyword, $options: 'i' } },
+      ],
+    })
+      .then(counted => {
+        sum = counted;
+        return User.find({
+          $or: [
+            { email: { $regex: keyword, $options: 'i' } },
+            { name: { $regex: keyword, $options: 'i' } },
+          ],
+        })
+          .skip((page - 1) * items_per_table)
+          .limit(items_per_table)
+          .select('name email avatarUrl level banned social active createdAt');
+      })
+      .then(users => {
+        if (Array.isArray(users) && users.length === 0) {
+          req.flash('error', "We can't find any user with your keyword.");
+          req.flash('errorType', 'info');
+          req.flash('errorHeader', 'None user found');
+          return res.redirect('/admin/users');
+        }
+        return res.render('admin/search', {
+          pageTitle: 'Found ' + sum + ' results',
+          path: '/users',
+          model: model,
+          users: users,
+          keyword: keyword,
+          // pagi
+          sum: sum,
+          currentPage: page,
+          hasNextPage: page * items_per_table < sum,
+          hasPreviousPage: page > 1,
+          nextPage: page + 1,
+          previousPage: page - 1,
+          lastPage: Math.ceil(sum / items_per_table),
+        });
+      })
+      .catch(err => next(new Error(err)));
   }
 
-  if (path === 'categories') {
+  if (model === 'categories' && level === 3) {
+    Category.countDocuments({
+      $or: [
+        { name: { $regex: keyword, $options: 'i' } },
+        { description: { $regex: keyword, $options: 'i' } },
+      ],
+    })
+      .then(counted => {
+        sum = counted;
+        return Category.find({
+          $or: [{ name: { $regex: keyword, $options: 'i' } }],
+        })
+          .skip((page - 1) * items_per_table)
+          .limit(items_per_table);
+      })
+      .then(cats => {
+        if (Array.isArray(cats) && cats.length === 0) {
+          req.flash('error', "We can't find any category with your keyword.");
+          req.flash('errorType', 'info');
+          req.flash('errorHeader', 'None category found');
+          return res.redirect('/admin/categories');
+        }
+        return res.render('admin/search', {
+          pageTitle: 'Found ' + sum + ' results',
+          path: '/categories',
+          model: model,
+          categories: cats,
+          keyword: keyword,
+          // pagi
+          sum: sum,
+          currentPage: page,
+          hasNextPage: page * items_per_table < sum,
+          hasPreviousPage: page > 1,
+          nextPage: page + 1,
+          previousPage: page - 1,
+          lastPage: Math.ceil(sum / items_per_table),
+        });
+      })
+      .catch(err => next(new Error(err)));
   }
 
-  if (path === 'comments') {
+  if (model === 'comments') {
+    Comment.countDocuments({
+      $or: [{ content: { $regex: keyword, $options: 'i' } }],
+    })
+      .then(counted => {
+        sum = counted;
+        return Comment.find({
+          $or: [{ content: { $regex: keyword, $options: 'i' } }],
+        })
+          .skip((page - 1) * items_per_table)
+          .limit(items_per_table)
+          .populate([
+            {
+              path: 'userId',
+              select: 'name slug',
+            },
+            {
+              path: 'postId',
+              select: 'title slug',
+            },
+          ]);
+      })
+      .then(cmts => {
+        if (Array.isArray(cmts) && cmts.length === 0) {
+          req.flash('error', "We can't find any comment with your keyword.");
+          req.flash('errorType', 'info');
+          req.flash('errorHeader', 'None comment found');
+          return res.redirect('/admin/comments');
+        }
+        return res.render('admin/search', {
+          pageTitle: 'Found ' + sum + ' results',
+          path: '/comments',
+          model: model,
+          comment,
+        });
+      })
+      .catch(err => next(new Error(err)));
   }
 
-  if (path === 'contacts') {
+  if (model === 'contacts' && level === 3) {
+    Contact.countDocuments({
+      $or: [
+        { name: { $regex: keyword, $options: 'i' } },
+        { email: { $regex: keyword, $options: 'i' } },
+        { subject: { $regex: keyword, $options: 'i' } },
+        { message: { $regex: keyword, $options: 'i' } },
+      ],
+    })
+      .then(counted => {
+        sum = counted;
+        return Contact.find({
+          $or: [
+            { name: { $regex: keyword, $options: 'i' } },
+            { email: { $regex: keyword, $options: 'i' } },
+            { subject: { $regex: keyword, $options: 'i' } },
+            { message: { $regex: keyword, $options: 'i' } },
+          ],
+        })
+          .skip((page - 1) * items_per_table)
+          .limit(items_per_table);
+      })
+      .then(contacts => {
+        if (Array.isArray(contacts) && contacts.length === 0) {
+          req.flash('error', "We can't find any contact with your keyword.");
+          req.flash('errorType', 'info');
+          req.flash('errorHeader', 'None contact found');
+          return res.redirect('/admin/contacts');
+        }
+        return res.render('admin/search', {
+          pageTitle: 'Found ' + sum + ' results',
+          path: '/contacts',
+          model: model,
+          contacts: contacts,
+          keyword: keyword,
+          // pagi
+          sum: sum,
+          currentPage: page,
+          hasNextPage: page + items_per_table < sum,
+          hasPreviousPage: page > 1,
+          nextPage: page + 1,
+          previousPage: page - 1,
+          lastPage: Math.ceil(sum / items_per_table),
+        });
+      })
+      .catch(err => next(new Error(err)));
   }
 };
