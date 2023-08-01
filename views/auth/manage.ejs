@@ -109,7 +109,10 @@
               </div>
               <div class="formUpdateUsername">
                 <form action="/auth/manage/update-username" method="post">
-                  <label class="formbold-form-label" for="name">Username</label>
+                  <label class="formbold-form-label" for="name">
+                    Username
+                    <i class="ri-information-line" title="Please note that you can only change name again after 15 days."></i>
+                  </label>
                   <input class="formbold-form-input" type="text" name="name" id="name" required value="<%= user.name %>">
                   <input type="hidden" name="userId" value="<%= user._id %>">
                   <input type="hidden" name="_csrf" value="<%= csrfToken %>">

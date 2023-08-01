@@ -58,6 +58,8 @@ exports.getIndex = (req, res, next) => {
     .catch(err => next(new Error(err)));
 };
 
+//#region SINGLE POST PAGE
+
 exports.getPostDetails = (req, res, next) => {
   let error = req.flash('error');
   let errorType = req.flash('errorType');
@@ -107,6 +109,8 @@ exports.getPostDetails = (req, res, next) => {
     })
     .catch(err => next(new Error(err)));
 };
+
+
 
 exports.postLike = (req, res, next) => {
   const postId = req.body.postId;
@@ -228,17 +232,20 @@ exports.postReplyComment = (req, res, next) => {
     .catch(err => next(new Error(err)));
 };
 
-exports.postSearch = (req, res, next) => {
-  const keyword = req.body.keyword;
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    req.flash('error', errors.array()[0].msg);
+//#endregion
+
+exports.getSearch = (req, res, next) => {
+  const keyword = req.query.search;
+  const page = +req.query.page || 1;
+
+  if (keyword.length < 10) {
+    req.flash('error', 'Keyword too short. Minimum length is 10 characters.');
     req.flash('errorType', 'alert');
     req.flash('errorHeader', 'Validation Error');
     return res.redirect('/');
   }
 
-  Post.find({
+  Post.countDocuments({
     status: true,
     $or: [
       { title: { $regex: keyword, $options: 'i' } },
@@ -246,6 +253,20 @@ exports.postSearch = (req, res, next) => {
       { description: { $regex: keyword, $options: 'i' } },
     ],
   })
+    .then(counted => {
+      sum = counted;
+      return Post.find({
+        status: true,
+        $or: [
+          { title: { $regex: keyword, $options: 'i' } },
+          { content: { $regex: keyword, $options: 'i' } },
+          { description: { $regex: keyword, $options: 'i' } },
+        ],
+      })
+        .select('title slug imageUrl description like createdAt')
+        .skip((page - 1) * items_per_pages)
+        .limit(items_per_pages);
+    })
     .then(posts => {
       if (Array.isArray(posts) && posts.length === 0) {
         req.flash('error', "We can't find any posts with your keyword.");
@@ -254,18 +275,27 @@ exports.postSearch = (req, res, next) => {
         return res.redirect('/');
       } else {
         return res.render('pages/search', {
-          pageTitle: 'Searching result',
+          pageTitle: 'Found ' + sum + ' results',
           error: 'Finding posts with your keyword successfully.',
           errorType: '',
           errorHeader: 'Success',
           posts: posts,
-          sumResult: posts.length,
           keyword: keyword,
+          // pagi
+          sum: sum,
+          currentPage: page,
+          hasNextPage: page * items_per_pages < sum,
+          hasPreviousPage: page > 1,
+          nextPage: page + 1,
+          previousPage: page - 1,
+          lastPage: Math.ceil(sum / items_per_pages),
         });
       }
     })
     .catch(err => next(new Error(err)));
 };
+
+//#region GET PAGES CATEGORIES + ARCHIVE + ABOUT 
 
 exports.getCategories = (req, res, next) => {
   Category.find()
@@ -397,9 +427,15 @@ exports.getAbout = (req, res, next) => {
     pageTitle: 'About',
   });
 };
+//#endregion
 
 exports.getUserDetails = (req, res, next) => {
   const name = req.params.name;
+
+  if (name === req.session.user.name) {
+    return res.redirect('/auth/manage');
+  }
+
   User.findOne({ name: name }).then(user => {
     if (!user) {
       req.flash('error', "We can't find any account");
@@ -408,11 +444,13 @@ exports.getUserDetails = (req, res, next) => {
       return res.redirect('/');
     }
     res.render('pages/user-details', {
-      pageTitle: name + 'details',
+      pageTitle: name + ' details',
       user: user,
     });
   });
 };
+
+//#region CONTACT
 
 exports.getContact = (req, res, next) => {
   let error = req.flash('error');
@@ -475,3 +513,5 @@ exports.postContact = (req, res, next) => {
     })
     .catch(err => next(new Error(err)));
 };
+
+//#endregion

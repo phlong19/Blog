@@ -7,6 +7,7 @@ const { uploadUsers } = require('../middlewares/cloud');
 
 const router = express.Router();
 
+//#region LOGIN + REGISTER + ACTIVE ACCOUNT
 router.get('/login', authController.getLogin);
 
 router.post(
@@ -39,6 +40,7 @@ router.post(
   '/register',
   [
     body('name')
+      .trim()
       .isLength({ min: 5, max: 15 })
       .isAlphanumeric()
       .withMessage(
@@ -89,7 +91,9 @@ router.post(
 );
 
 router.post('/active', authController.postActive);
+//#endregion
 
+//#region PASSWORD + EMAIL
 router.get('/reset-password', authController.getReset);
 
 router.post(
@@ -161,13 +165,14 @@ router.post(
   ],
   authController.postResendEmail
 );
+//#endregion
 
 router.post('/logout', isAuth, authController.postLogout);
 
-// manage account
+// MANAGE ACCOUNT PAGE
 router.get('/manage', isAuth, authController.getManageAccount);
 
-//manage update things
+//#region MANAGE PAGES UPDATE ROUTES
 router.post(
   '/manage/update-email',
   isAuth,
@@ -330,7 +335,9 @@ router.post(
   ],
   authController.postUpdateLink
 );
+//#endregion
 
+// SELF DELETE ACCOUNT
 router.post(
   '/manage/delete/',
   isAuth,

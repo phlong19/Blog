@@ -22,8 +22,13 @@ paginationLinks.forEach(link => {
   if (sortParam) {
     href = `?sort=${sortParam}${href}`;
   }
+  // search in admin page
   if (searchParam && modelParam) {
     href = `?model=${modelParam}&search=${searchParam}${href}`;
+  }
+  // search in nav bar
+  if (searchParam) {
+    href = `?search=${searchParam}${href}`;
   }
 
   // Set the updated href attribute

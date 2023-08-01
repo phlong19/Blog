@@ -11,10 +11,8 @@
   <% } %>
 
   <div class="section-header-offset custom-header">
-      <small style="font-size: var(--font-size-xsm);">If sometimes it's not working properly. Please be sympathetic to me!</small>
       <h2 class="title section-title" data-name="<%= pageTitle %> "><%= pageTitle %></h2>
-       <br>
-      <h3>There is <%= sumResult %> result related to "<%= keyword %>" . . .<h3>
+      <h3>There is <%= sum %> result related to "<%= keyword %>" . . .<h3>
   </div>
 
 <section class="older-posts section">
@@ -53,12 +51,14 @@
           <% } %>
         <% } %>
       </div>
+      <%- include('../components/pagination.ejs') %>
     </div>
   </section>
 
 <%- include('../components/footer.ejs') %>
 
 <script src="/js/noti.js"></script>
+<script src="/js/pagination.js"></script>
 
 </body>
 </html>
