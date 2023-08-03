@@ -15,7 +15,6 @@ const errorController = require('./controllers/error');
 
 // database things
 const uri = process.env.URI;
-const PORT = +process.env.PORT || 8080;
 
 // Config app middlewares
 const app = express();
@@ -88,7 +87,7 @@ app.use((error, req, res, next) => {
 mongoose
   .connect(uri)
   .then(result => {
-    console.log('LISTENING AT PORT ' + PORT + ' ...');
-    app.listen(PORT);
+    console.log('LISTENING...');
+    app.listen(10000);
   })
   .catch(error => console.log(error));
