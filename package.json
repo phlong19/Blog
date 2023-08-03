@@ -1,7 +1,7 @@
 {
   "name": "personal-projects",
   "engines": {
-    "node": "14.17.0"
+    "node": "19.8.1"
   },
   "version": "1.0.0",
   "description": "",
