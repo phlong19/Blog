@@ -52,13 +52,17 @@
                         <%= comment.content %>
                       </td>
                       <td><a href="/post/<%= comment.postId.slug %>" class="list-link"><%= comment.postId.title %></a></td>
-                      <td>
-                        <form action="/admin/delete-comment" method="post">
-                          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-                          <input type="hidden" name="commentId" value="<%= comment._id %>">
-                          <button type="submit" class="list-link" style="cursor: pointer;" >Delete</button>
-                        </form>
-                      </td>
+                      <% if(level>2) { %>
+                        <td>
+                          <form action="/admin/delete-comment" method="post">
+                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                            <input type="hidden" name="commentId" value="<%= comment._id %>">
+                            <button type="submit" class="list-link" style="cursor: pointer;" >Delete</button>
+                          </form>
+                        </td>
+                      <% } else { %>
+                        <td><%= comment.createdAt.toLocaleDateString('en-us') %></td>
+                      <% } %>
                     </tr>
                 <% } %>
               </tbody>

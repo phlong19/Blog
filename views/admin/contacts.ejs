@@ -36,7 +36,7 @@
               <div class="modal-body">
                 <h4>You're going to clean your checked contacts, are you sure?</h4>
                 <br>
-                <form action="/admin/clean-contacts">
+                <form action="/admin/clean-contacts" method="post">
                   <div class="formbold-mb-3">
                     <label class="formbold-form-label">Click button below to process.</label>
                   </div>
@@ -66,17 +66,17 @@
                       <th scope="row">
                         <%= i+1 %>
                       </th>
-                      <td>
+                      <td class="centered">
                         <%= contact.name %>
                       </td>
-                      <td><%= contact.email %></td>
-                      <td>
+                      <td class="centered"><%= contact.email %></td>
+                      <td class="centered">
                         <%= contact.subject %>
                         <!-- <small class="d-block">Far far away, behind the word mountains.</small> -->
                       </td>
-                      <td><%= contact.limit.toLocaleDateString('en-us',{year:'numeric',month:'short',day:'numeric'}) %></td>
-                      <td><%= contact.checked %></td>
-                      <td><a href="/admin/details-id/<%= contact._id %>?edit=contact" class="list-link">Details</a></td>
+                      <td class="centered"><%= contact.limit.toLocaleDateString('en-us',{year:'numeric',month:'short',day:'numeric'}) %></td>
+                      <td class="centered"><%= contact.checked %></td>
+                      <td class="centered"><a href="/admin/details-id/<%= contact._id %>?edit=contact" class="list-link">Details</a></td>
                     </tr>
                 <% } %>
                 

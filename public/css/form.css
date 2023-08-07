@@ -46,6 +46,23 @@
   color: #fa5252;
 }
 
+.reset-modal {
+  background: transparent;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 20px;
+  width: 20px;
+  margin-left: 60px;
+  font-size: 32px;
+  cursor: pointer;
+}
+
+.reset-modal:hover {
+  color: #18ee6a;
+}
+
 .modal-body p {
   font-size: 22px;
   line-height: 1.5;

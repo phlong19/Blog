@@ -4,8 +4,6 @@
   --border-color-inner: rgba(255, 255, 255, 0.5);
   --input-color: #fff;
   --bg-right-background-color: #00d4ff;
-  --dots-color: rgb(66, 255, 66);
-  --remember-checked-color: #ffd700;
   --btn-gradient-color: linear-gradient(
     115deg,
     #3ea357,
@@ -178,38 +176,6 @@ h1 {
 .block-cube.block-cube-hover:focus .bg .bg-inner,
 .block-cube.block-cube-hover:hover .bg .bg-inner {
   top: 100%;
-}
-
-#remember {
-  width: auto;
-  margin-top: 10px;
-  margin-bottom: 12px;
-  margin-left: 12px;
-}
-
-#dots {
-  color: var(--dots-color);
-  font-size: larger;
-}
-.remember-label {
-  z-index: 2;
-  position: relative;
-  font-size: 100%;
-  color: var(--input-color);
-  opacity: 0.8;
-  font-family: var(--font-family);
-}
-input[type='checkbox'][id='remember']:checked
-  ~ div.modify-box
-  .bg-top
-  .bg-inner {
-  background-color: var(--remember-checked-color);
-}
-input[type='checkbox'][id='remember']:checked
-  ~ div.modify-box
-  .bg-right
-  .bg-inner {
-  background-color: var(--remember-checked-color);
 }
 
 @media screen and (min-width: 780px) {

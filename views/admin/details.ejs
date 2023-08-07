@@ -280,7 +280,7 @@
     <% } %>
 
     <% if(edit==='contact') { %>
-      <form action="/admin/update-contact" method="post">
+      <form style="min-width: 500px;" action="/admin/update-contact" method="post">
         <div class="formbold-mb-3">
           <label for="checked" class="formbold-form-label">Name</label>
           <input type="text" class="formbold-form-input" value="<%= contact.name %>" disabled>
@@ -295,7 +295,7 @@
         </div>
         <div class="formbold-mb-3">
           <label for="checked" class="formbold-form-label">Message</label>
-          <input type="text" class="formbold-form-input" value="<%= contact.message %>" disabled>
+          <textarea type="text" class="formbold-form-input" rows="7" disabled><%= contact.message%></textarea>
         </div>
         <div class="formbold-mb-3">
           <label for="checked" class="formbold-form-label">Checked</label>

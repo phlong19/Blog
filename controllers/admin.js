@@ -46,10 +46,10 @@ exports.getPostsManage = (req, res, next) => {
   const sortOption = req.query.sort;
   switch (sortOption) {
     case 'titleaz':
-      sort = { title: 'desc' };
+      sort = { title: 'asc' };
       break;
     case 'titleza':
-      sort = { title: 'asc' };
+      sort = { title: 'desc' };
       break;
     case 'most':
       sort = { like: 'desc' };
@@ -139,10 +139,10 @@ exports.getUsersManage = (req, res, next) => {
       sort = { level: 'desc' };
       break;
     case 'nameaz':
-      sort = { name: 'desc' };
+      sort = { name: 'asc' };
       break;
     case 'nameza':
-      sort = { name: 'asc' };
+      sort = { name: 'desc' };
       break;
     case 'banned':
       sort = { banned: 'asc' };
@@ -207,10 +207,10 @@ exports.getCategoriesManage = (req, res, next) => {
       sort = { createdAt: 'asc' };
       break;
     case 'nameaz':
-      sort = { name: 'desc' };
+      sort = { name: 'asc' };
       break;
     case 'nameza':
-      sort = { name: 'asc' };
+      sort = { name: 'desc' };
       break;
     default:
       break;
@@ -270,10 +270,10 @@ exports.getCommentsManage = (req, res, next) => {
       sort = { createdAt: 'asc' };
       break;
     case 'nameaz':
-      sort = { name: 'desc' };
+      sort = { name: 'asc' };
       break;
     case 'nameza':
-      sort = { name: 'asc' };
+      sort = { name: 'desc' };
       break;
     default:
       break;
@@ -346,10 +346,10 @@ exports.getContactManage = (req, res, next) => {
       sort = { limit: 'desc' };
       break;
     case 'nameaz':
-      sort = { name: 'desc' };
+      sort = { name: 'asc' };
       break;
     case 'nameza':
-      sort = { name: 'asc' };
+      sort = { name: 'desc' };
       break;
     case 'checked':
       sort = { checked: 'asc' };
@@ -509,7 +509,7 @@ exports.getDetailsId = (req, res, next) => {
           contact: contact,
         });
       })
-      .then(err => next(new Error(err)));
+      .catch(err => next(new Error(err)));
   }
 };
 

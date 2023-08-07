@@ -6,12 +6,12 @@ let timer1, timer2;
 
 timer1 = setTimeout(() => {
   toast.classList.remove('active');
-}, 5000); //1s = 1000 milliseconds
+}, 6000); //1s = 1000 milliseconds
 
 timer2 = setTimeout(() => {
   toast.setAttribute('hidden', 'true');
   progress.classList.remove('active');
-}, 5300);
+}, 6300);
 
 closeIcon.addEventListener('click', () => {
   toast.classList.remove('active');

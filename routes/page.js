@@ -2,8 +2,9 @@ const express = require('express');
 
 const Post = require('../models/post');
 const User = require('../models/user');
+const Category = require('../models/category');
 const pageController = require('../controllers/page');
-const { body } = require('express-validator');
+const { body, param } = require('express-validator');
 const isAuth = require('../middlewares/isAuth');
 
 const router = express.Router();
@@ -79,7 +80,23 @@ router.get('/search', pageController.getSearch);
 //#region GET CATEGORY + ARCHIVE + ABOUT
 router.get('/categories', pageController.getCategories);
 
-router.get('/categories/:slug', pageController.getCategory);
+router.get(
+  '/categories/:slug',
+  [
+    param('slug')
+      .notEmpty()
+      .custom((value, { req }) => {
+        return Category.findOne({ slug: value }).then(catDoc => {
+          if (!catDoc) {
+            return Promise.reject("We can't find any category with this name");
+          }
+        });
+      }),
+  ],
+  pageController.getCategory
+);
+
+router.get('/posts/:name', pageController.getCreatorPosts);
 
 router.get('/archive', pageController.getArchive);
 
@@ -99,8 +116,8 @@ router.post(
     body('email').notEmpty().isEmail().withMessage('Invalid email address'),
     body('subject')
       .trim()
-      .isLength({ min: 20, max: 100 })
-      .withMessage('Subject length is 20-100 characters.'),
+      .isLength({ min: 10, max: 100 })
+      .withMessage('Subject length is 10-100 characters.'),
     body('message')
       .trim()
       .isLength({ max: 400 })
@@ -112,5 +129,11 @@ router.post(
 
 // VIEW OTHERS ACCOUNT DETAILS
 router.get('/user/:name', pageController.getUserDetails);
+
+router.post(
+  '/subcribe',
+  [body('email').notEmpty().isEmail().withMessage('Invalid email address')],
+  pageController.postSubcribe
+);
 
 module.exports = router;

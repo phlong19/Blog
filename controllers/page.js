@@ -10,7 +10,7 @@ const Contact = require('../models/contact');
 const { marked } = require('marked');
 
 sendGrid.setApiKey(process.env.SG_API_KEY);
-const items_per_pages = 1;
+const items_per_pages = 8;
 let sum;
 
 exports.getIndex = (req, res, next) => {
@@ -109,8 +109,6 @@ exports.getPostDetails = (req, res, next) => {
     })
     .catch(err => next(new Error(err)));
 };
-
-
 
 exports.postLike = (req, res, next) => {
   const postId = req.body.postId;
@@ -238,8 +236,8 @@ exports.getSearch = (req, res, next) => {
   const keyword = req.query.search;
   const page = +req.query.page || 1;
 
-  if (keyword.length < 10) {
-    req.flash('error', 'Keyword too short. Minimum length is 10 characters.');
+  if (keyword.length < 7) {
+    req.flash('error', 'Keyword too short. Minimum length is 7 characters.');
     req.flash('errorType', 'alert');
     req.flash('errorHeader', 'Validation Error');
     return res.redirect('/');
@@ -295,15 +293,30 @@ exports.getSearch = (req, res, next) => {
     .catch(err => next(new Error(err)));
 };
 
-//#region GET PAGES CATEGORIES + ARCHIVE + ABOUT 
+//#region GET PAGES CATEGORIES + ARCHIVE + ABOUT + CREATOR POSTS
 
 exports.getCategories = (req, res, next) => {
+  let error = req.flash('error');
+  let errorType = req.flash('errorType');
+  let errorHeader = req.flash('errorHeader');
+
+  if (error.length > 0) {
+    error = error[0];
+    errorType = errorType[0];
+    errorHeader = errorHeader[0];
+  } else {
+    error = errorType = errorHeader = null;
+  }
+
   Category.find()
     .select('-imageId')
     .then(cats => {
       res.render('pages/categories', {
         pageTitle: 'All Categories',
         categories: cats,
+        error: error,
+        errorType: errorType,
+        errorHeader: errorHeader,
       });
     })
     .catch(err => next(new Error(err)));
@@ -329,18 +342,27 @@ exports.getCategory = (req, res, next) => {
       sort = { like: 'asc' };
       break;
     case 'nameaz':
-      sort = { title: 'desc' };
+      sort = { title: 'asc' };
       break;
     case 'nameza':
-      sort = { title: 'asc' };
+      sort = { title: 'desc' };
       break;
     default:
       break;
   }
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    req.flash('error', errors.array()[0].msg);
+    req.flash('errorType', 'alert');
+    req.flash('errorHeader', 'Validation Error');
+    return res.redirect('/categories');
+  }
+
   Category.findOne({ slug: slug })
     .then(cat => {
       category = cat;
-      return Post.countDocuments({ category: cat._id, status: true });
+      return Post.countDocuments({ category: category._id, status: true });
     })
     .then(countedDocs => {
       sum = countedDocs;
@@ -387,10 +409,10 @@ exports.getArchive = (req, res, next) => {
       sort = { like: 'asc' };
       break;
     case 'titleaz':
-      sort = { title: 'desc' };
+      sort = { title: 'asc' };
       break;
     case 'titleza':
-      sort = { title: 'asc' };
+      sort = { title: 'desc' };
       break;
     default:
       break;
@@ -422,10 +444,87 @@ exports.getArchive = (req, res, next) => {
     .catch(err => next(new Error(err)));
 };
 
-exports.getAbout = (req, res, next) => {
-  res.render('pages/about', {
-    pageTitle: 'About',
-  });
+exports.getAbout = async (req, res, next) => {
+  let admin;
+
+  User.findOne({ level: 3 })
+    .select('name level shortDes avatarUrl')
+    .then(adminDoc => {
+      admin = adminDoc;
+      return User.find({ level: 2 }).select('name level shortDes avatarUrl');
+    })
+    .then(creators => {
+      res.render('pages/about', {
+        pageTitle: 'About',
+        admin: admin,
+        creators: creators,
+      });
+    })
+    .catch(err => next(new Error(err)));
+};
+
+exports.getCreatorPosts = (req, res, next) => {
+  const name = req.params.name;
+  const page = +req.query.page || 1;
+  const sortOption = req.query.sort;
+  let user;
+  let sort = {};
+  switch (sortOption) {
+    case 'newest':
+      sort = { createdAt: 'desc' };
+      break;
+    case 'oldest':
+      sort = { createdAt: 'asc' };
+      break;
+    case 'most':
+      sort = { like: 'desc' };
+      break;
+    case 'least':
+      sort = { like: 'asc' };
+      break;
+    case 'titleaz':
+      sort = { title: 'asc' };
+      break;
+    case 'titleza':
+      sort = { title: 'desc' };
+      break;
+    default:
+      break;
+  }
+
+  User.findOne({ name: name, level: { $gte: 2 } })
+    .then(userDoc => {
+      if (!userDoc) {
+        return res.redirect('/');
+      }
+      user = userDoc;
+      return Post.countDocuments({ author: userDoc._id });
+    })
+    .then(counted => {
+      sum = counted;
+      return Post.find({ author: user._id })
+        .skip((page - 1) * items_per_pages)
+        .limit(items_per_pages)
+        .select('title description slug imageUrl createdAt like')
+        .sort(sort);
+    })
+    .then(posts => {
+      res.render('pages/creator-posts', {
+        pageTitle: user.name + ' posts',
+        posts: posts,
+        sortOption: sortOption,
+        name: name,
+        // pagi
+        sum: sum,
+        currentPage: page,
+        hasNextPage: page * items_per_pages < sum,
+        hasPreviousPage: page > 1,
+        nextPage: page + 1,
+        previousPage: page - 1,
+        lastPage: Math.ceil(sum / items_per_pages),
+      });
+    })
+    .catch(err => next(new Error(err)));
 };
 //#endregion
 
@@ -515,3 +614,19 @@ exports.postContact = (req, res, next) => {
 };
 
 //#endregion
+
+exports.postSubcribe = (req, res, next) => {
+  const email = req.body.email;
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    req.flash('error', errors.array()[0].msg);
+    req.flash('errorType', 'alert');
+    req.flash('errorHeader', 'Validation Error');
+    return res.redirect('/');
+  } else {
+    req.flash('error', "I'm sorry cuz this function has been abandoned.");
+    req.flash('errorType', 'info');
+    req.flash('errorHeader', 'Dear ' + email);
+    return res.redirect('/');
+  }
+};

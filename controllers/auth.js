@@ -1,11 +1,20 @@
 require('dotenv').config();
-
+const path = require('path');
+const ejs = require('ejs');
 const brcypt = require('bcryptjs');
 const uuid = require('uuid');
 const sendGrid = require('@sendgrid/mail');
 const User = require('../models/user');
 const { validationResult } = require('express-validator');
 const { deleteImage } = require('../middlewares/cloud');
+
+const htmlPath = path.join(
+  path.dirname(process.mainModule.filename),
+  'public',
+  'email.ejs'
+);
+
+const site = 'https://synthwave-blog.onrender.com';
 
 sendGrid.setApiKey(process.env.SG_API_KEY);
 
@@ -165,23 +174,41 @@ exports.postRegister = (req, res, next) => {
     req.flash('errorHeader', 'Validation Error');
     return res.redirect('/auth/register');
   }
+
+  let html;
   const code = uuid.v4();
+  ejs.renderFile(
+    htmlPath,
+    {
+      name: name,
+      content1:
+        "Congratulations! You've created your new account successfully.",
+      content2:
+        "We're thrilled to have you as part of our community. To ensure the security of your account, we kindly ask that you have to verify the activation of your account before logging in for the first time.",
+      content3:
+        'This one-time process will be quick and easy. Thank you for choosing to be a part of our platform!',
+      content4:
+        'Please click the button below to verify your account. This email will expire within two hours.',
+      type: 'form',
+      action: site + '/auth/active',
+      code: code,
+      email: email,
+      oldEmail: '',
+    },
+    (err, data) => {
+      if (err) {
+        throw err;
+      } else {
+        html = data;
+      }
+    }
+  );
+
   const msg = {
-    from: process.env.SG_EMAIL,
+    from: { email: process.env.SG_EMAIL, name: process.env.SG_NAME },
     to: email,
     subject: 'Your Account Verification',
-    html: `
-        <body style="font-family:'Cascadia Code';color:white;background:rgba(0,0,0,0.8)">
-          <h1 style="color:green;">Congratulations! You've created your new account successful.</h1>
-          <h3>Please click the button below to verify your account.</h3>
-          <h4 style="color:rgba(255,35,35,0.87)">This verification email is valid within 2 hours.</h4>
-          <form action="http://localhost:3000/auth/active" method="post">
-            <input type="hidden" name="code" value="${code}">
-            <input type="hidden" name="email" value=${email}">
-            <button type="submit" style="cursor: pointer;">Click here.</button>
-          </form>
-        </body>
-        `,
+    html: html,
   };
   sendGrid
     .send(msg)
@@ -323,7 +350,7 @@ exports.postLogin = (req, res, next) => {
         req.session.user = user;
         return req.session.save(err => {
           if (err) {
-            throw new Error(err);
+            throw err;
           }
           res.redirect('/');
         });
@@ -342,8 +369,8 @@ exports.postLogin = (req, res, next) => {
 
 exports.postReset = (req, res, next) => {
   const email = req.body.email;
-  let code;
   let user;
+  let html;
 
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -352,23 +379,38 @@ exports.postReset = (req, res, next) => {
     req.flash('errorHeader', 'Account not exist');
     return res.redirect('/auth/reset-password');
   }
+  const code = uuid.v4();
+
   User.findOne({ email: email })
     .then(userDoc => {
-      code = uuid.v4();
       user = userDoc;
       // send email
+      ejs.renderFile(
+        htmlPath,
+        {
+          name: userDoc.name,
+          content1: '!Attention!',
+          content2:
+            'We just have received a request from someone to reset your account password. If you did not make this request, please ignore this email.',
+          content3:
+            'However, if it was you, please click the button below to set a new password for your account. We put user security as the first priority, and take it very seriously, so please regard this email with the utmost importance.',
+          content4: 'This email will expire within one hour.',
+          type: 'href',
+          href: site + '/auth/new-password?id=' + user._id + '&code=' + code,
+        },
+        (err, data) => {
+          if (err) {
+            throw err;
+          } else {
+            html = data;
+          }
+        }
+      );
       const msg = {
-        from: process.env.SG_EMAIL,
+        from: { email: process.env.SG_EMAIL, name: process.env.SG_NAME },
         to: email,
-        subject: 'Reset Password Email Confirmation',
-        html: `
-        <body style="font-family:'Cascadia Code';color:white;background:rgba(0,0,0,0.82)">
-          <h1 style="color:green;">You've requested to reset your password at our site.</h1>
-          <h3>If it was not you, ignore this email. Or else please click the button below to reset your password.</h3>
-          <h4 style="color:rgba(255,35,35,0.87)">This verification email is valid within 1 hours.</h4>
-          <a href="http://localhost:3000/auth/new-password?id=${user._id}&code=${code}">Click here.</a>
-        </body>
-        `,
+        subject: 'Reset Password Confirmation',
+        html: html,
       };
       return sendGrid.send(msg);
     })
@@ -454,7 +496,8 @@ exports.postNewPassword = (req, res, next) => {
 
 exports.postResendEmail = (req, res, next) => {
   const email = req.body.email;
-  let code;
+  let html;
+  let user;
 
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -465,30 +508,45 @@ exports.postResendEmail = (req, res, next) => {
   }
 
   User.findOne({ email: email })
-    .then(user => {
-      if (user.activation_code === 'actived') {
+    .then(userDoc => {
+      if (userDoc.activation_code === 'actived') {
         req.flash('error', 'Your account has been verified before.');
         req.flash('errorType', 'info');
         req.flash('errorHeader', 'Verified');
         return res.redirect('/auth/login');
       } else {
-        code = uuid.v4();
+        user = userDoc;
+        const code = uuid.v4();
+        ejs.renderFile(
+          htmlPath,
+          {
+            name: userDoc.name,
+            content1:
+              "It seems you've requested a resend of your email confirmation.",
+            content2:
+              "No worries, we've got you covered. Just click the button below to process, and in just a moment, you'll be able to access your account indefinitely.",
+            content3:
+              "Don't forget, this email will expire in two hours, so be sure to complete the process before then.",
+            content4: 'Thank you for chosing to be a part of our platform!',
+            type: 'form',
+            action: site + `/auth/active`,
+            code: code,
+            email: email,
+            oldEmail: '',
+          },
+          (err, data) => {
+            if (err) {
+              throw err;
+            } else {
+              html = data;
+            }
+          }
+        );
         const msg = {
-          from: process.env.SG_EMAIL,
+          from: { email: process.env.SG_EMAIL, name: process.env.SG_NAME },
           to: email,
-          subject: 'Your Account Verification',
-          html: `
-        <body style="font-family:'Cascadia Code';color:white;background:rgba(0,0,0,0.8)">
-          <h1 style="color:green;">Congratulations! You've created your new account successful.</h1>
-          <h3>Please click the button below to verify your account.</h3>
-          <h4 style="color:rgba(255,35,35,0.87)">This verification email is valid within 2 hours.</h4>
-          <form action="http://localhost:3000/auth/active" method="post">
-            <input type="hidden" name="code" value="${code}">
-            <input type="hidden" name="email" value="${email}">
-            <button type="submit" style="cursor: pointer;">Click here.</button>
-          </form>
-        </body>
-        `,
+          subject: 'Account Verification Email',
+          html: html,
         };
         return sendGrid.send(msg);
       }
@@ -532,7 +590,7 @@ exports.postLogout = (req, res, next) => {
 //#region MANAGE
 exports.postUpdateEmail = (req, res, next) => {
   const { email, type, oldEmail } = req.body;
-  let user, msg;
+  let user, ejsOption, sendTo;
 
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -547,45 +605,55 @@ exports.postUpdateEmail = (req, res, next) => {
     .then(userDoc => {
       user = userDoc;
       if (type === 'oldEmail') {
-        const msg = {
-          from: process.env.SG_EMAIL,
-          to: userDoc.email,
-          subject: 'Changing email confirmation',
-          html: `
-        <body style="font-family:'Cascadia Code';color:white;background:rgba(0,0,0,0.8)">
-          <h1 style="color:green;">You've requested your new email transfer.</h1>
-          <h3>New email address: ${email}</h3>
-          <h3>Please click the button below to verify your change.</h3>
-          <h4 style="color:rgba(255,35,35,0.87)">This verification email is valid within 1 hours.</h4>
-          <form action="http://localhost:3000/auth/transfer" method="post">
-            <input type="hidden" name="oldEmail" value="${userDoc.email}">
-            <input type="hidden" name="email" value="${email}">
-            <input type="hidden" name="code" value="${code}">
-            <button type="submit" style="cursor: pointer;">Click here.</button>
-          </form>
-        </body>
-        `,
+        sendTo = userDoc.email;
+        ejsOption = {
+          name: userDoc.name,
+          content1:
+            "We have received your request for an email transfer, and we're here to help you make sure it goes smoothly. Before proceeding with the transfer, please take a moment to double-check the email address below to ensure that it is correct.",
+          content2: 'New email address: ' + email,
+          content3:
+            'Once confirmed, you can proceed with the transfer by clicking the button below. Please keep in mind that this email transfer will expire in 1 hour.',
+          content4: 'Thank you for choosing to be a part of our platform!',
+          type: 'form',
+          action: site + '/auth/transfer',
+          code: code,
+          email: userDoc.email,
+          oldEmail: oldEmail,
         };
       }
       if (type === 'newEmail') {
-        const msg = {
-          from: process.env.SG_EMAIL,
-          to: email,
-          subject: 'Changing email confirmation',
-          html: `
-        <body style="font-family:'Cascadia Code';color:white;background:rgba(0,0,0,0.8)">
-          <h1 style="color:green;">You've requested your new email change.</h1>
-          <h3>Please click the button below to verify your account.</h3>
-          <h4 style="color:rgba(255,35,35,0.87)">This verification email is valid within 1 hours.</h4>
-          <form action="http://localhost:3000/auth/active" method="post">
-            <input type="hidden" name="code" value="${code}">
-            <input type="hidden" name="email" value=${email}">
-            <button type="submit" style="cursor: pointer;">Click here.</button>
-          </form>
-        </body>
-        `,
+        sendTo = email;
+        ejsOption = {
+          name: userDoc.name,
+          content1:
+            'We have received your request to change to your email address.',
+          content2:
+            'Before you can start using your new email, you need to click the activation button below to confirm your account. You can proceed with the activation by clicking the button below.',
+          content3:
+            'Please note that this email confirmation will expire in 1 hour, so make sure you do click the button as soon as possible. It will just take a moment to complete.',
+          content4:
+            'Once you have confirmed your account, you can start using your new email address for all your logins.',
+          type: 'form',
+          action: site + '/auth/active',
+          code: code,
+          email: email,
+          oldEmail: '',
         };
       }
+      let html;
+      ejs.renderFile(htmlPath, ejsOption, (err, data) => {
+        if (err) {
+          throw err;
+        } else {
+          html = data;
+        }
+      });
+      const msg = {
+        from: { email: process.env.SG_EMAIL, name: process.env.SG_NAME },
+        to: sendTo,
+        subject: 'Changing email confirmation',
+        html: html,
+      };
       return sendGrid.send(msg);
     })
     .then(sent => {
@@ -608,7 +676,7 @@ exports.postUpdateEmail = (req, res, next) => {
       return user.save().then(result => {
         res.session.destroy(err => {
           if (err) {
-            throw new Error(err);
+            throw err;
           }
           res.redirect('/auth/login');
         });
@@ -717,7 +785,7 @@ exports.postUpdatePassword = (req, res, next) => {
             return user.save().then(result => {
               req.session.destroy(err => {
                 if (err) {
-                  throw new Error(err);
+                  throw err;
                 }
                 res.redirect('/auth/login');
               });
@@ -891,7 +959,7 @@ exports.postDelete = (req, res, next) => {
         return user.deleteOne().then(result => {
           req.session.destroy(err => {
             if (err) {
-              throw new Error(err);
+              throw err;
             }
             res.redirect('/');
           });

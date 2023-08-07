@@ -109,17 +109,17 @@
 }
 
 .progress.active:before {
-  animation: progress 5s linear forwards;
+  animation: progress 6s linear forwards;
 }
 
 .progress.info.active:before {
-  animation: progress 5s linear forwards;
+  animation: progress 6s linear forwards;
 }
 .progress.warning.active:before {
-  animation: progress 5s linear forwards;
+  animation: progress 6s linear forwards;
 }
 .progress.alert.active:before {
-  animation: progress 5s linear forwards;
+  animation: progress 6s linear forwards;
 }
 
 @keyframes progress {

@@ -21,8 +21,8 @@
         <div class="container">
           <h2 class="mb-5">All users</h2>
           <h4 class="sortHeader"> Sort by: 
-            <a class="list-link <%= sortOption==='nameaz' ? 'active' : '' %>" href="?sort=nameaz">Name(Z-A)</a>
-            <a class="list-link <%= sortOption==='nameza' ? 'active' : '' %>" href="?sort=nameza">Name(A-Z)</a>
+            <a class="list-link <%= sortOption==='nameaz' ? 'active' : '' %>" href="?sort=nameaz">Name(A-Z)</a>
+            <a class="list-link <%= sortOption==='nameza' ? 'active' : '' %>" href="?sort=nameza">Name(Z-A)</a>
             <a class="list-link <%= sortOption==='level' ? 'active' : '' %>" href="?sort=level">Level</a>
             <a class="list-link <%= sortOption==='banned' ? 'active' : '' %>" href="?sort=banned">Banned</a>
             <%- include('../components/sort.ejs') %>

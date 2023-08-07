@@ -192,6 +192,7 @@ router.post(
       })
       .normalizeEmail(),
     body('oldEmail').notEmpty().isEmail().withMessage('Invalid email address'),
+    body('type').notEmpty(),
   ],
   authController.postUpdateEmail
 );
@@ -266,7 +267,7 @@ router.post(
     body('userId')
       .notEmpty()
       .custom((value, { req }) => {
-        return User.findById(userId).then(user => {
+        return User.findById(value).then(user => {
           if (!user) {
             return Promise.reject("We can't find your account.");
           }
@@ -284,7 +285,7 @@ router.post(
     body('userId')
       .notEmpty()
       .custom((value, { req }) => {
-        return User.findById(userId).then(user => {
+        return User.findById(value).then(user => {
           if (!user) {
             return Promise.reject("We can't find your account.");
           }
@@ -305,7 +306,7 @@ router.post(
     body('userId')
       .notEmpty()
       .custom((value, { req }) => {
-        return User.findById(userId).then(user => {
+        return User.findById(value).then(user => {
           if (!user) {
             return Promise.reject("We can't find your account.");
           }
@@ -326,7 +327,7 @@ router.post(
     body('userId')
       .notEmpty()
       .custom((value, { req }) => {
-        return User.findById(userId).then(user => {
+        return User.findById(value).then(user => {
           if (!user) {
             return Promise.reject("We can't find your account.");
           }
@@ -345,7 +346,7 @@ router.post(
     body('userId')
       .notEmpty()
       .custom((value, { req }) => {
-        return User.findById(userId).then(user => {
+        return User.findById(value).then(user => {
           if (!user) {
             return Promise.reject("We can't find your account.");
           }
