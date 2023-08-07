@@ -188,8 +188,6 @@ body.light-theme {
   --background-color-inner: #fae9e9;
   --border-color-inner: #ff9999;
   --input-color: #000;
-  --dots-color: #00dd11;
-  --remember-checked-color: #99c0ff;
   /* comment section */
   --reply-hover-color: var(--border-color-inner);
   --comment-background-color: var(--background-color-inner);

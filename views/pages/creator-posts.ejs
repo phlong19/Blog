@@ -1,0 +1,63 @@
+<%- include('../components/header.ejs') %>
+
+</head>
+
+<%- include('../components/nav.ejs') %>
+<div class="section-header-offset custom-header">
+  <h2 class="title section-title" data-name="All <%= name %> posts">All <%= name %> posts</h2>
+  <h3 class="sortHeader"> Sort by:
+    <a class="list-link <%= sortOption==='titleaz' ? 'active' : '' %>" href="?sort=titleaz">Title(A-Z)</a>
+    <a class="list-link <%= sortOption==='titleza' ? 'active' : '' %>" href="?sort=titleza">Title(Z-A)</a>
+    <a class="list-link <%= sortOption==='most' ? 'active' : '' %>" href="?sort=most">Most-Liked</a>
+    <a class="list-link <%= sortOption==='least' ? 'active' : '' %>" href="?sort=least">Least-Liked</a>
+    <%- include('../components/sort.ejs') %>
+  </h3>
+</div>
+
+<section class="older-posts section">
+  <% if(posts.length > 0) { %>
+    <div class="container">
+      <div class="older-posts-grid-wrapper d-grid">
+        <% for (const post of posts) { %>
+          <a href="/post/<%= post.slug %>" class="article d-grid">
+            <div class="older-posts-article-image-wrapper">
+              <img
+                src="<%= post.imageUrl %>"
+                alt=""
+                class="article-image"
+              />
+            </div>
+
+            <div class="article-data-container">
+              <div class="article-data">
+                <span>
+                  <%= post.createdAt.toLocaleDateString('en-us',{
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric' }) %>
+                </span>
+                <span class="article-data-spacer"></span>
+                <span><%= post.like ? post.like.length : '0' %> likes.</span>
+              </div>
+
+              <h3 class="title article-title"><%= post.title %></h3>
+              <p class="article-description"><%= post.description%></p>
+            </div>
+          </a>
+        <% } %>
+      </div>
+      <%- include('../components/pagination.ejs') %>
+    </div>
+  <% } else { %>
+    <div class="container">
+      <h1>No posts found.</h1>
+    </div>
+  <% } %>
+</section>
+
+<%- include('../components/footer.ejs') %>
+  
+  <script src="/js/pagination.js"></script>
+  
+</body>
+</html>

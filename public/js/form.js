@@ -24,6 +24,7 @@ document.addEventListener('keydown', function (event) {
 });
 
 const imgPreview = document.getElementById('imgPreview');
+const imgView = document.getElementById('imgView');
 const imgPicker = document.getElementById('image');
 const fileStatus = document.getElementById('fileStatus');
 
@@ -45,7 +46,7 @@ function showPreviewImage() {
     fileReader.readAsDataURL(files);
     fileReader.addEventListener('load', function () {
       imgPreview.style.display = 'block';
-      imgPreview.innerHTML +=
+      imgView.innerHTML =
         '<img style="max-width:250px;" src="' + this.result + '" />';
     });
   }

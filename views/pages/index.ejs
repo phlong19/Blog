@@ -13,10 +13,10 @@
   <div class="featured-articles-container container d-grid">
     <div class="featured-content d-grid">
       <div class="headline-banner">
-        <h3 class="headline fancy-border">
-          <span class="place-items-center">Breaking news</span>
+        <h3 class="headline fancy-border" style="background-color: var(--synthwave-gradient-color);">
+          <span class="place-items-center">Hey there !</span>
         </h3>
-        <span class="headline-description">Apple announces a new partnership...</span>
+        <span class="headline-description">First time come to this site or not. Enjoy your reading...</span>
       </div>
 
       <% for (let i = 0; i < 3; i++) { %>
@@ -141,13 +141,11 @@
   <div class="newsletter-container">
       <h2 class="title section-title" data-name="Newsletter">Newsletter</h2>
       <div class="form-container-inner">
-          <h6 class="title newsletter-title">Subscribe to NewsFlash</h6>
-          <p class="newsletter-description">Lorem ipsum dolor sit amet consectetur adipisicing quaerat dignissimos.</p>
-
-          <form action="" class="form from-xr">
-              <input class="form-input" type="text" placeholder="Enter your email address" required>
-              <!-- <input type="hidden" name="_csrf" value=""> -->
-
+          <h6 class="title newsletter-title">Subscribe to Synthwave</h6>
+          <p class="newsletter-description">Just one click and you will receive notification about every new posts!</p>
+          <form action="/subcribe" method="post" class="form from-xr">
+              <input class="form-input" type="email" name="email" placeholder="Enter your email address" required>
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
               <button class="btn form-btn" type="submit">
                   <i class="ri-mail-send-line"></i>
               </button>

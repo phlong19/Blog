@@ -1,5 +1,5 @@
 <%- include('../components/header.ejs') %>
-    <link rel="stylesheet" href="/css/about.css">
+    <link rel="stylesheet" href="/css/contact.css">
 
     <link rel="stylesheet" href="/css/noti.css">
 </head>
@@ -27,14 +27,14 @@
             </div>
             <div class="screen-body">
               <div class="screen-body-item left">
-                <div class="app-contact">Contact info : synthwave.contact@gmail.com</div>
+                <div class="app-contact">Contact info : <a href="mailto:synthwaveblog.contact@gmail.com" class="list-link">synthwaveblog.contact@gmail.com</a></div>
               </div>
               <div class="screen-body-item" style="flex: 1.63;">
                 <div class="app-form">
                     <form action="/contact" method="post">
                         <div class="app-form-group">
                             <label for="name" class="formbold-form-label">Name</label>
-                            <input class="app-form-control" name="name" id="name" placeholder="What shout I call you?" type="text" required>
+                            <input class="app-form-control" name="name" id="name" placeholder="What should I call you?" type="text" required>
                         </div>
                         <div class="app-form-group">
                             <label for="email" class="formbold-form-label">Email address</label>
@@ -42,11 +42,11 @@
                         </div>
                         <div class="app-form-group">
                             <label for="subject" class="formbold-form-label">Subject</label>
-                            <input class="app-form-control" name="subject" id="subject" placeholder="Email's subject / header" type="text" required>
+                            <input class="app-form-control" name="subject" id="subject" placeholder="Message subject / header / whatever" type="text" required>
                         </div>
                         <div class="app-form-group message">
                             <label for="message" class="formbold-form-label">Message <i class="ri-information-line" title="You can drag this box bigger at the right corner if the message goes too long. Maximum 500 characters!"></i></label>
-                            <textarea class="app-form-control" name="message" id="message" placeholder="What do you want to tell me?" required></textarea>
+                            <textarea class="app-form-control" name="message" id="message" placeholder="What are you going to tell me?" required></textarea>
                         </div>
                         <input type="hidden" name="_csrf" value="<%= csrfToken%>">
                         <div class="app-form-group buttons">

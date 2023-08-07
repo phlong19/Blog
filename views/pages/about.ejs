@@ -1,13 +1,56 @@
 <%- include('../components/header.ejs') %>
 
+    <link rel="stylesheet" href="/css/table.css">  
+    
+    <link rel="stylesheet" href="/css/about.css">
+
 </head>
 
 <%- include('../components/nav.ejs') %>
     <div class="section-header-offset custom-header">
-        About me, or creator team pages.
+        <h2 class="title section-title" data-name="About me and my team">About me and my creator team</h2>
     </div>
 
-    
+    <div class="container">
+        <h2 class="who">Who Am I?</h2>
+        
+        <div class="profile-card">
+            <img id="avatar"
+              src="https://i.ytimg.com/vi/h7wTOLv9NiY/hqdefault.jpg?sqp=-oaymwE8CKgBEF5IWvKriqkDLwgBFQAAAAAYASUAAMhCPQCAokN4AfABAfgB_g6AArgIigIMCAAQARhlIFgoVzAP&rs=AOn4CLDl7-wgkVWWtYNYZwbHng98apqbOQ"
+              alt="Admin Profile Image"
+            />
+            <br><br>
+            <a class="list-link" id="name" style="font-size: var(--font-size-lg);" href="/user/<%= admin.name %>">Pham Hoang Long</a>
+            <br><br>
+            <p class="main-description"><%= admin.shortDes %></p>
+        </div>
+
+        <div class="section-header-offset custom-header">
+            <h2 class="title section-title" style="margin-bottom: 3.5rem;" data-name="My team">My team</h2>
+            <p>My friend actually, give them permission to write whatever they like (of course <span style="color: red;"> no nsfw content</span>)</p>
+        </div>
+
+        <div class="wrap">
+            <% for (const creator of creators) { %>
+                <div class="box">
+                    <div class="box-top">
+                    
+                    <a href="/user/<%= creator.name %>" class="user-info">
+                        <div class="user-avatar">
+                            <img class="box-image" src="<%= creator.avatarUrl %>" alt="Creator Profile Image">
+                        </div>
+                    <div class="title-flex">
+                        <h3 class="box-title"><%= creator.name %></h3>
+                    </a>
+                    </div>
+                    <p class="description"><%= creator.shortDes %></p>
+                    </div>
+
+                    <a href="/posts/<%= creator.name %>" id="userPosts" class="button">See all <%= creator.name %> posts</a>
+                </div>
+            <% } %>
+        </div>
+    </div>
 
 <%- include('../components/footer.ejs') %>
 

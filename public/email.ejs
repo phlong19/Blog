@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <style>
+      .parent-container {
+        background-image: url('https://res.cloudinary.com/ddot3p3my/image/upload/v1691290468/resource/background_tssdwk.png');
+        padding: 0px;
+        background-repeat: no-repeat;
+        background-position: center top;
+        background-color: rgba(28,19,44,255);
+        font-family: 'Cascadia Code', monospace;
+      }
+      .container {
+        max-width: 600px;
+        height: 100%;
+        margin: 0 auto;
+        font-family: 'Cascadia Code', monospace;
+      }
+      .logo {
+        min-height: 295.7px;
+      }
+      .editable {
+        padding: 20px 50px 33px;
+        color: white;
+        line-height: 140%;
+        text-align: justify;
+        overflow-wrap: break-word;
+        font-size: 14px;
+        font-weight: 350;
+        font-family: 'Cascadia Code', monospace;
+      }
+      .editable a {
+        text-decoration: none;
+        font-family: 'Cascadia Code', monospace;
+        color: #f1c40f;
+      }
+      p a {
+        color: #f1c40f;
+        text-decoration: none;
+        font-family: 'Cascadia Code', monospace;
+      }
+      .regard {
+        font-weight: bold;
+        font-size: 15px;
+        font-family: 'Cascadia Code', monospace;
+      }
+      .questions {
+        padding: 20px 80px 10px;
+        color: white;
+        line-height: 160%;
+        text-align: center;
+        overflow-wrap: break-word;
+        font-size: 14px;
+        font-family: 'Cascadia Code', monospace;
+      }
+      .links {
+        font-size: 14px;
+        color: white;
+        text-align: center;
+        font-family: 'Cascadia Code', monospace;
+      }
+      .links a{
+        display: inline-block; 
+        padding: 5px 15px; 
+        text-decoration: none;
+        color: white;
+      }
+      .links span {
+        display: inline-block; 
+        font-family: 'Cascadia Code', monospace;
+        padding: 5px 10px; 
+      }
+      span.copyright-notice span#synthwave{
+        font-family: 'Cascadia Code', monospace;
+        background: linear-gradient(
+          115deg,
+          #8a04ed,
+          #ef9af2,
+          #240c76,
+          #570296,
+          #831187,
+          #0c0c0c
+        );
+      }
+      .end {
+        color:white; 
+        line-height: 160%;
+        text-align: center; 
+        overflow-wrap: break-word; 
+        font-size: 14px;
+        font-family: 'Cascadia Code', monospace;
+      }
+      .end span.copyright-notice a {
+        color: white;
+        text-decoration: none;
+        font-family: 'Cascadia Code', monospace;
+      }
+      button {
+        cursor: pointer;
+      }
+      .button-50 {
+        appearance: button;
+        background-color: #f1c40f;
+        background-image: none;
+        border: 1px solid #000;
+        border-radius: 4px;
+        box-shadow: #fff 2px 2px 0 0,#000 2px 2px 0 1px;
+        box-sizing: border-box;
+        color: #000;
+        cursor: pointer;
+        font-family: 'Cascadia Code', monospace;
+        display: inline-block;
+        font-size: 14px;
+        font-weight: 400;
+        line-height: 20px;
+        margin: 0 5px 10px 0;
+        overflow: visible;
+        padding: 12px 40px;
+        text-align: center;
+        text-transform: none;
+        touch-action: manipulation;
+        user-select: none;
+        -webkit-user-select: none;
+        vertical-align: middle;
+        white-space: nowrap;
+      }
+
+      .button-50:focus {
+        text-decoration: none;
+        cursor: pointer;
+      }
+
+      .button-50:hover {
+        text-decoration: none;
+        cursor: pointer;
+      }
+
+      .button-50:active {
+        box-shadow: rgba(0, 0, 0, .125) 0 3px 5px inset;
+        outline: 0;
+      }
+
+      @media (min-width: 768px) {
+        .button-50 {
+          padding: 12px 45px;
+          cursor: pointer;
+          box-shadow: #fff 2px 2px 0 0, #000 2px 2px 0 1px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="parent-container">
+      <div class="container">
+        <div class="logo">
+          <img src="https://res.cloudinary.com/ddot3p3my/image/upload/v1691290467/resource/logo_qffm1g.png" alt="logo synthwave blog" />
+        </div>
+        <div class="editable">
+          <p style="color: white; font-size: 14px; line-height: 160%; font-family: 'Cascadia Code', monospace;">Dear <%= name %>,</p>
+          <p style="color: white; font-size: 14px; line-height: 160%; font-family: 'Cascadia Code', monospace;"><%= content1 %></p>
+          <p style="color: white; font-size: 14px; line-height: 160%; font-family: 'Cascadia Code', monospace;"><%= content2 %></p>
+          <p style="color: white; font-size: 14px; line-height: 160%; font-family: 'Cascadia Code', monospace;"><%= content3 %></p>
+          <p style="color: white; font-size: 14px; line-height: 160%; font-family: 'Cascadia Code', monospace;"><%= content4 %></p>
+          <% if(type === 'form') { %>
+            <form action="<%= action %>" target="_blank" method="post">
+              <input type="hidden" name="code" value="<%= code %>">
+              <input type="hidden" name="email" value="<%= email %>">              
+              <input type="hidden" name="oldEmail" value="<%= oldEmail %>">
+              <button type="submit" class="button-50" style="cursor: pointer; box-shadow: #fff 2px 2px 0 0,#000 2px 2px 0 1px;">Click here</button>
+            </form>
+          <% } else { %>
+            <a rel="noopener" target="_blank" class="button-50" style="cursor: pointer; box-shadow: #fff 2px 2px 0 0,#000 2px 2px 0 1px;" href="<%= href %>">Click here</a>
+          <% } %>
+          <div class="regard">
+            <p style="color: white; font-size: 14px; line-height: 160%; font-family: 'Cascadia Code', monospace;">Have a great day,</p>
+            <p style="color: white; font-size: 14px; line-height: 160%; font-family: 'Cascadia Code', monospace;">Synthwave Postman.</p>
+          </div>
+        </div>
+        <div class="questions">
+          <p style="font-size: 14px; line-height: 160%">
+            If you have any questions, please email us at
+            <a style="color: #f1c40f;font-family: 'Cascadia Code', monospace;" rel="noopener" href="mailto:synthwave.contact@gmail.com" target="_blank" >synthwave.contact@gmail.com</a> 
+            or you can visit our 
+            <a style="color: #f1c40f;font-family: 'Cascadia Code', monospace;" rel="noopener" href="https://synthwave-blog.onrender.com" target="_blank">contact page</a>,
+              I'll answer your concern ASAP
+          </p>
+        </div>
+        <div style="text-align: center; line-height: 0;">
+          <div style="border-top: 1px solid rgb(187, 187, 187); width: 47%; display: inline-block; line-height: 1px; height: 0px; vertical-align: middle;">
+            <div style="border-top: 1px solid rgb(187, 187, 187); width: 47%; display: inline-block; line-height: 1px; height: 0px; vertical-align: middle;"> 
+            </div>
+          </div>
+        </div>
+        <br>
+        <div class="links">
+          <a href="https://synthwave-blog.onrender.com" target="_self">Home</a>
+          <span>|</span>
+          <a href="https://synthwave-blog.onrender.com/categories" target="_self" >Categories</a>
+          <span>|</span>
+          <a href="https://synthwave-blog.onrender.com/about" target="_self">About Us</a>
+          <span>|</span>
+          <a href="https://synthwave-blog.onrender.com/contact" target="_self" >Contact US</a>
+        </div>
+        <div class="end">
+          <p>You have received this email as a registered user of <a style="color: #f1c40f;font-family: 'Cascadia Code', monospace;" rel="noopener" href="https://synthwave-blog.onrender.com" target="_blank" >Synthwave Blog</a></p>
+        <p>&nbsp;</p>
+        <span class="copyright-notice">&copy; <span id="year">2023</span><a href="https://synthwave-blog.onrender.com"> <span id="synthwave"> Synthwave</span></a>. All rights reserved.</span>
+      </div>
+    </div>
+  </body>
+</html>

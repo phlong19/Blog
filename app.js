@@ -69,6 +69,7 @@ app.use((req, res, next) => {
 const authRoutes = require('./routes/auth');
 const pageRoutes = require('./routes/page');
 const adminRoutes = require('./routes/admin');
+const { log } = require('console');
 
 app.use(pageRoutes);
 app.use('/auth', authRoutes);

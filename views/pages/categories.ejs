@@ -1,10 +1,15 @@
 <%- include('../components/header.ejs') %>
     <link rel="stylesheet" href="/css/pages.css">
+    
+    <link rel="stylesheet" href="/css/noti.css">
 </head>
 
 <%- include('../components/nav.ejs') %>
+    <% if(error) { %>
+        <%- include('../components/notification.ejs') %>
+    <% } %>
     <div class="section-header-offset custom-header">
-        <h2 class="title section-title" data-name="Views all categories">Categories.</h2>
+        <h2 class="title section-title" data-name="Categories">Categories</h2>
     </div>
     <div class="wrapper">
         <div class="cols">
@@ -30,6 +35,6 @@
     </div>
        
 <%- include('../components/footer.ejs') %>
-    
+    <script src="/js/noti.js"></script>
 </body>
 </html>
