@@ -226,8 +226,8 @@
           <div class="formbold-mb-3">
             <label for="active" class="formbold-form-label">Active</label>
             <select name="active" id="level" class="formbold-form-input">
-              <option value="0" <%= user.active === false ? 'Selected' : '' %> > Not yet </option>
-              <option value="1" <%= user.active === true ? 'Selected' : '' %> > Actived </option>
+              <option value="0" <%= user.active === false ? 'selected' : '' %> > Not yet </option>
+              <option value="1" <%= user.active === true ? 'selected' : '' %> > Actived </option>
             </select>
           </div>
           
@@ -236,9 +236,9 @@
             <p>Curren Level: <span style="color: green;"><%= user.level %></span></p>
             <br>
             <select name="level" id="level" class="formbold-form-input">
-              <option value="1" selected> 1 - Basic User </option>
-              <option value="2"> 2 - Editor </option>
-              <option value="3"> 3 - Admin </option>
+              <option value="1" <%= user.level === 1 ? 'selected' : '' %> > 1 - Basic User </option>
+              <option value="2" <%= user.level === 2 ? 'selected' : '' %> > 2 - Editor </option>
+              <option value="3" <%= user.level === 3 ? 'selected' : '' %> > 3 - Admin </option>
             </select>
           </div>
 

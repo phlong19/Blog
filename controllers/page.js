@@ -81,7 +81,7 @@ exports.getPostDetails = (req, res, next) => {
   const slug = req.params.slug;
   Post.findOne({ slug: slug, status: true })
     .select('-description -imageId')
-    .populate('author', 'name active level banned social avatarUrl')
+    .populate('author', 'name active level banned social avatarUrl shortDes')
     .populate('category', 'name slug')
     .populate({
       path: 'comments',

@@ -38,6 +38,7 @@
                     <th scope="col">Email</th>
                     <th scope="col">Active</th>
                     <th scope="col">Social</th>
+                    <th scope="col">Level</th>
                     <th scope="col">Warning</th>
                     <th scope="col">Banned</th>
                     <th scope="col">Created At</th>
@@ -57,6 +58,7 @@
                       <td><%= user.email %></td>
                       <td><%= user.active %></td>
                       <td><%= user.social.length %></td>
+                      <td><%= user.level %></td>
                       <td><%= user.warning %></td>
                       <td><%= user.banned %></td>
                       <td><%= user.createdAt.toLocaleDateString('en-us') %></td>

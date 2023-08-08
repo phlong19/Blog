@@ -97,9 +97,21 @@ exports.getReset = (req, res, next) => {
 };
 
 exports.getNewPassword = (req, res, next) => {
-  const userId = req.query.id;
-  const code = req.query.code;
-  User.findOne({ _id: userId, reset_code: code })
+  const { id, code } = req.query;
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    req.flash('error', errors.array()[0].msg);
+    req.flash('errorType', '');
+    req.flash('errorHeader', 'Validation Error');
+    return res.redirect('/auth/login');
+  }
+
+  User.findOne({
+    _id: id,
+    reset_code: code,
+    reset_expiration: { $gt: Date.now() },
+  })
     .select('email')
     .then(user => {
       if (!user) {
@@ -189,11 +201,7 @@ exports.postRegister = (req, res, next) => {
         'This one-time process will be quick and easy. Thank you for choosing to be a part of our platform!',
       content4:
         'Please click the button below to verify your account. This email will expire within two hours.',
-      type: 'form',
-      action: site + '/auth/active',
-      code: code,
-      email: email,
-      oldEmail: '',
+      href: site + '/auth/active?email=' + email + '&code=' + code,
     },
     (err, data) => {
       if (err) {
@@ -244,14 +252,8 @@ exports.postRegister = (req, res, next) => {
     .catch(err => next(new Error(err)));
 };
 
-exports.postActive = (req, res, next) => {
-  const { email, code } = req.body;
-  if (code === 'actived') {
-    req.flash('error', 'Your account has been verified before.');
-    req.flash('errorType', 'info');
-    req.flash('errorHeader', 'Verified');
-    return res.redirect('/auth/login');
-  }
+exports.getActive = (req, res, next) => {
+  const { email, code } = req.query;
   User.findOne({
     email: email,
     activation_code: code,
@@ -443,6 +445,7 @@ exports.postReset = (req, res, next) => {
 exports.postNewPassword = (req, res, next) => {
   const { id, code, password, confirmPassword } = req.body;
   let user;
+
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     req.flash('error', errors.array()[0].msg);
@@ -498,6 +501,7 @@ exports.postResendEmail = (req, res, next) => {
   const email = req.body.email;
   let html;
   let user;
+  const code = uuid.v4();
 
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
@@ -516,7 +520,6 @@ exports.postResendEmail = (req, res, next) => {
         return res.redirect('/auth/login');
       } else {
         user = userDoc;
-        const code = uuid.v4();
         ejs.renderFile(
           htmlPath,
           {
@@ -528,11 +531,7 @@ exports.postResendEmail = (req, res, next) => {
             content3:
               "Don't forget, this email will expire in two hours, so be sure to complete the process before then.",
             content4: 'Thank you for chosing to be a part of our platform!',
-            type: 'form',
-            action: site + `/auth/active`,
-            code: code,
-            email: email,
-            oldEmail: '',
+            href: site + '/auth/active?email=' + email + '&code=' + code,
           },
           (err, data) => {
             if (err) {
@@ -561,6 +560,7 @@ exports.postResendEmail = (req, res, next) => {
         req.flash('errorHeader', 'Email Error');
         return res.redirect('/auth/resend-email');
       } else {
+        user.code = code;
         user.activation_expiration = Date.now() + 7200000;
         return user.save().then(result => {
           req.flash(
@@ -614,11 +614,14 @@ exports.postUpdateEmail = (req, res, next) => {
           content3:
             'Once confirmed, you can proceed with the transfer by clicking the button below. Please keep in mind that this email transfer will expire in 1 hour.',
           content4: 'Thank you for choosing to be a part of our platform!',
-          type: 'form',
-          action: site + '/auth/transfer',
-          code: code,
-          email: userDoc.email,
-          oldEmail: oldEmail,
+          href:
+            site +
+            '/auth/transfer?email=' +
+            userDoc.email +
+            '&code=' +
+            code +
+            '&oldEmail=' +
+            oldEmail,
         };
       }
       if (type === 'newEmail') {
@@ -633,11 +636,7 @@ exports.postUpdateEmail = (req, res, next) => {
             'Please note that this email confirmation will expire in 1 hour, so make sure you do click the button as soon as possible. It will just take a moment to complete.',
           content4:
             'Once you have confirmed your account, you can start using your new email address for all your logins.',
-          type: 'form',
-          action: site + '/auth/active',
-          code: code,
-          email: email,
-          oldEmail: '',
+          href: site + '/auth/active?email=' + email + '&code=' + code,
         };
       }
       let html;
@@ -674,7 +673,7 @@ exports.postUpdateEmail = (req, res, next) => {
       user.activation_expiration = Date.now() + 3600000;
 
       return user.save().then(result => {
-        res.session.destroy(err => {
+        req.session.destroy(err => {
           if (err) {
             throw err;
           }

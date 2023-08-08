@@ -193,7 +193,7 @@
                   Describe your self
                   <i class="ri-information-line" title="Maximum biography length is 500 characters."></i>
                 </label>
-                <textarea type="text" name="bio" id="bio" class="formbold-form-input" rows="7" required></textarea>
+                <textarea type="text" name="bio" id="bio" class="formbold-form-input" rows="7" required><%= user.shortDes %></textarea>
                 <input type="hidden" name="userId" value="<%= user._id %>">
                 <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                 <button type="submit" class="formbold-btn">Update bio</button>

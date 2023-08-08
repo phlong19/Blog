@@ -98,10 +98,7 @@
         text-decoration: none;
         font-family: 'Cascadia Code', monospace;
       }
-      button {
-        cursor: pointer;
-      }
-      .button-50 {
+      a.button-50 {
         appearance: button;
         background-color: #f1c40f;
         background-image: none;
@@ -128,23 +125,23 @@
         white-space: nowrap;
       }
 
-      .button-50:focus {
+      a.button-50:focus {
         text-decoration: none;
         cursor: pointer;
       }
 
-      .button-50:hover {
+      a.button-50:hover {
         text-decoration: none;
         cursor: pointer;
       }
 
-      .button-50:active {
+      a.button-50:active {
         box-shadow: rgba(0, 0, 0, .125) 0 3px 5px inset;
         outline: 0;
       }
 
       @media (min-width: 768px) {
-        .button-50 {
+        a.button-50 {
           padding: 12px 45px;
           cursor: pointer;
           box-shadow: #fff 2px 2px 0 0, #000 2px 2px 0 1px;
@@ -164,16 +161,9 @@
           <p style="color: white; font-size: 14px; line-height: 160%; font-family: 'Cascadia Code', monospace;"><%= content2 %></p>
           <p style="color: white; font-size: 14px; line-height: 160%; font-family: 'Cascadia Code', monospace;"><%= content3 %></p>
           <p style="color: white; font-size: 14px; line-height: 160%; font-family: 'Cascadia Code', monospace;"><%= content4 %></p>
-          <% if(type === 'form') { %>
-            <form action="<%= action %>" target="_blank" method="post">
-              <input type="hidden" name="code" value="<%= code %>">
-              <input type="hidden" name="email" value="<%= email %>">              
-              <input type="hidden" name="oldEmail" value="<%= oldEmail %>">
-              <button type="submit" class="button-50" style="cursor: pointer; box-shadow: #fff 2px 2px 0 0,#000 2px 2px 0 1px;">Click here</button>
-            </form>
-          <% } else { %>
-            <a rel="noopener" target="_blank" class="button-50" style="cursor: pointer; box-shadow: #fff 2px 2px 0 0,#000 2px 2px 0 1px;" href="<%= href %>">Click here</a>
-          <% } %>
+         
+          <a rel="noopener" target="_blank" class="button-50" style="cursor: pointer;color: #000; box-shadow: #fff 2px 2px 0 0,#000 2px 2px 0 1px;" href="<%= href %>">Click here</a>
+          
           <div class="regard">
             <p style="color: white; font-size: 14px; line-height: 160%; font-family: 'Cascadia Code', monospace;">Have a great day,</p>
             <p style="color: white; font-size: 14px; line-height: 160%; font-family: 'Cascadia Code', monospace;">Synthwave Postman.</p>

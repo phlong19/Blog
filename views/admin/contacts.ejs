@@ -62,21 +62,21 @@
               <tbody>
                 <% for (let i = 0; i < contacts.length; i++) { %>
                   <% const contact = contacts[i]; %>                    
-                    <tr scope="row">
+                    <tr scope="row" style="text-align: center;">
                       <th scope="row">
                         <%= i+1 %>
                       </th>
-                      <td class="centered">
+                      <td>
                         <%= contact.name %>
                       </td>
-                      <td class="centered"><%= contact.email %></td>
-                      <td class="centered">
+                      <td><%= contact.email %></td>
+                      <td>
                         <%= contact.subject %>
                         <!-- <small class="d-block">Far far away, behind the word mountains.</small> -->
                       </td>
-                      <td class="centered"><%= contact.limit.toLocaleDateString('en-us',{year:'numeric',month:'short',day:'numeric'}) %></td>
-                      <td class="centered"><%= contact.checked %></td>
-                      <td class="centered"><a href="/admin/details-id/<%= contact._id %>?edit=contact" class="list-link">Details</a></td>
+                      <td><%= contact.limit.toLocaleDateString('en-us',{year:'numeric',month:'short',day:'numeric'}) %></td>
+                      <td><%= contact.checked %></td>
+                      <td><a href="/admin/details-id/<%= contact._id %>?edit=contact" class="list-link">Details</a></td>
                     </tr>
                 <% } %>
                 
