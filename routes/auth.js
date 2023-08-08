@@ -1,5 +1,5 @@
 const express = require('express');
-const { body } = require('express-validator');
+const { body, query } = require('express-validator');
 const User = require('../models/user');
 const isAuth = require('../middlewares/isAuth');
 const authController = require('../controllers/auth');
@@ -25,8 +25,7 @@ router.post(
             );
           }
         });
-      })
-      .normalizeEmail(),
+      }),
     body('password')
       .isLength({ min: 8, max: 20 })
       .withMessage('Password length is 8-20 chars.'),
@@ -67,8 +66,7 @@ router.post(
             );
           }
         });
-      })
-      .normalizeEmail(),
+      }),
     body('password')
       .trim()
       .isLength({ min: 8, max: 20 })
@@ -90,7 +88,27 @@ router.post(
   authController.postRegister
 );
 
-router.post('/active', authController.postActive);
+router.get(
+  '/active',
+  [
+    query('email')
+      .notEmpty()
+      .isEmail()
+      .withMessage('Invalid email address')
+      .custom((value, { req }) => {
+        return User.findOne({ email: value }).then(userDoc => {
+          if (!userDoc) {
+            return Promise.reject('Your account does not exist.');
+          }
+        });
+      }),
+    query('code')
+      .notEmpty()
+      .isUUID()
+      .withMessage('Your activation code is not valid.'),
+  ],
+  authController.getActive
+);
 //#endregion
 
 //#region PASSWORD + EMAIL
@@ -111,13 +129,19 @@ router.post(
             );
           }
         });
-      })
-      .normalizeEmail(),
+      }),
   ],
   authController.postReset
 );
 
-router.get('/new-password', authController.getNewPassword);
+router.get(
+  '/new-password',
+  [
+    query('id').notEmpty(),
+    query('code').notEmpty().isUUID().withMessage('Invalid activation code'),
+  ],
+  authController.getNewPassword
+);
 
 router.post(
   '/new-password',
@@ -160,8 +184,7 @@ router.post(
             );
           }
         });
-      })
-      .normalizeEmail(),
+      }),
   ],
   authController.postResendEmail
 );
@@ -189,8 +212,7 @@ router.post(
             );
           }
         });
-      })
-      .normalizeEmail(),
+      }),
     body('oldEmail').notEmpty().isEmail().withMessage('Invalid email address'),
     body('type').notEmpty(),
   ],
@@ -199,13 +221,7 @@ router.post(
 
 router.post(
   '/transfer',
-  [
-    body('email')
-      .notEmpty()
-      .isEmail()
-      .withMessage('Invalid email address')
-      .normalizeEmail(),
-  ],
+  [body('email').notEmpty().isEmail().withMessage('Invalid email address')],
   authController.postTransfer
 );
 

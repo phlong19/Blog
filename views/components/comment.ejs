@@ -1,7 +1,7 @@
 <div class="comment-section blog-post-container">
   <div class="container">
     <div class="like-post">
-      <h3>The Conversation <span class="total-comment"><%= post.comment ? post.comment.length : 'Not yet any' %> comment</span> </h3>
+      <h3>The Conversation <span class="total-comment"><%= comments.length > 0 ? comments.length : 'Not yet any' %> comment</span> </h3>
       <h4>Good post? Like it. ->
         <form action="/post/like" method="post" style="display: inline;">
           <input type="hidden" name="postId" value="<%= post._id %>">

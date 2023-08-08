@@ -58,7 +58,7 @@ exports.getPostsManage = (req, res, next) => {
       sort = { like: 'asc' };
       break;
     case 'status':
-      sort = { status: 'desc' };
+      sort = { status: 'asc' };
       break;
     case 'newest':
       sort = { createdAt: 'desc' };
@@ -518,7 +518,7 @@ exports.getDetailsId = (req, res, next) => {
 //#region CREATE
 
 exports.createPost = (req, res, next) => {
-  const { title, content, catIds } = req.body.title;
+  const { title, content, catIds } = req.body;
   const des = req.body.description;
   const status = req.body.published;
   const image = req.file;
