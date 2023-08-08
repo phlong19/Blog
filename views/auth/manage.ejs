@@ -218,7 +218,7 @@
                 <br>
               <% } %>
               <select name="select-list" id="select-list" class="formbold-form-input">
-                <option value="close" selected>Choose a platform to update link.</option>
+                <option value="close" selected>Choose a platform to update / delete your link.</option>
                 <option value="ri-facebook-circle-line">Facebook</option>
                 <option value="ri-instagram-line">Instagram</option>
                 <option value="ri-twitter-line">Twitter</option>
@@ -235,6 +235,12 @@
                   <input type="hidden" name="userId" value="<%= user._id %>">
                   <input type="hidden" name="_csrf" value="<%= csrfToken %>">
                   <button type="submit" class="formbold-btn">Update link</button>
+                </form>
+                <form action="/auth/manage/delete-link" method="post">
+                  <input type="hidden" name="icon" id="icon2" value="">
+                  <input type="hidden" name="userId" value="<%= user._id %>">
+                  <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                  <button type="submit" class="formbold-btn-delete">Delete this link</button>
                 </form>
               </div>
             </section>
@@ -259,6 +265,7 @@
       icon=e.target.value;
       document.getElementById('div-social').style.display = 'block';
       document.getElementById('icon').setAttribute('value',icon);
+      document.getElementById('icon2').setAttribute('value',icon);
     }
   });
   function confirmed(){

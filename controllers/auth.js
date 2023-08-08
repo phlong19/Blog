@@ -935,6 +935,46 @@ exports.postUpdateLink = (req, res, next) => {
   }
 };
 
+exports.postDeleteLink = (req, res, next) => {
+  const { userId, icon } = req.body;
+  const sessionId = req.session.user._id;
+
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    req.flash('error', errors.array()[0].msg);
+    req.flash('errorType', 'alert');
+    req.flash('errorHeader', 'Validation Error');
+    return res.redirect('/auth/manage');
+  }
+
+  if (userId !== sessionId) {
+    return User.findById(sessionId).then(userDoc => {
+      userDoc.warning += 1;
+      return userDoc.save().then(result => {
+        req.flash(
+          'error',
+          "You're trying to violate another account. Receive enough 5 warnings, you will be banned."
+        );
+        req.flash('errorType', 'alert');
+        req.flash('errorHeader', '+1 warning');
+        return res.redirect('/auth/manage');
+      });
+    });
+  }
+
+  User.findOne({ _id: userId }).then(user => {
+    const links = [...user.social];
+    const userSocialLinks = links.filter(i => i.icon !== icon);
+    userDoc.social = userSocialLinks;
+    return user.save().then(result => {
+      req.flash('error', 'Deleted selected social link successfully.');
+      req.flash('errorType', '');
+      req.flash('errorHeader', 'Success');
+      return res.redirect('/auth/manage');
+    });
+  });
+};
+
 //#endregion
 
 exports.postDelete = (req, res, next) => {

@@ -336,6 +336,24 @@ router.post(
   ],
   authController.postUpdateLink
 );
+
+router.post(
+  '/manage/delete-link',
+  isAuth,
+  [
+    body('userId')
+      .notEmpty()
+      .custom((value, { req }) => {
+        return User.findById(value).then(userDoc => {
+          if (!userDoc) {
+            return Promise.reject("We can't find any account");
+          }
+        });
+      }),
+  ],
+  authController.postDeleteLink
+);
+
 //#endregion
 
 // SELF DELETE ACCOUNT
