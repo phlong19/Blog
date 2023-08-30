@@ -21,6 +21,20 @@ marked.use({
 const window = new JSDOM('').window;
 const DOMPurify = createDOMPurify(window);
 
+// config dompurify to allow ytb embed video
+const config = {
+  ADD_TAGS: ['iframe'],
+  ADD_ATTR: [
+    'class',
+    'src',
+    'allow',
+    'allowfullscreen',
+    'frameborder',
+    'scrolling',
+  ],
+};
+
+// global variables
 const items_per_table = 10;
 let sum;
 let option = {};
@@ -550,7 +564,7 @@ exports.createPost = (req, res, next) => {
         return res.redirect('/admin/posts');
       } else {
         const categories = catIds.map(id => new mongoose.Types.ObjectId(id));
-        const cleanContent = DOMPurify.sanitize(content);
+        const cleanContent = DOMPurify.sanitize(content, config);
         const markdownContent = marked(cleanContent);
 
         const post = new Post({
@@ -702,7 +716,7 @@ exports.updatePost = (req, res, next) => {
         return res.redirect('/admin/details/' + oldSlug + '?edit=post');
       } else {
         const categories = catIds.map(id => new mongoose.Types.ObjectId(id));
-        const cleanContent = DOMPurify.sanitize(content);
+        const cleanContent = DOMPurify.sanitize(content, config);
         const markdownContent = marked(cleanContent);
 
         if (req.file) {
