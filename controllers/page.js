@@ -31,7 +31,7 @@ exports.getIndex = (req, res, next) => {
   Post.find({ status: true })
     .sort({ createdAt: 'desc' })
     .limit(9)
-    .select('title like slug category createdAt imageUrl')
+    .select('title like slug category createdAt imageUrl description')
     .populate('category', 'name slug')
     .then(postsDoc => {
       posts = postsDoc;
@@ -45,6 +45,7 @@ exports.getIndex = (req, res, next) => {
       return Category.find().limit(6);
     })
     .then(cats => {
+      console.log(posts[4]);
       res.render('pages/index', {
         pageTitle: 'Synthwave Home Page',
         error: error,
