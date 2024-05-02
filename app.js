@@ -1,47 +1,49 @@
 // dotenv
-require('dotenv').config();
+require("dotenv").config();
 
 // Plugins
-const path = require('path');
-const express = require('express');
-const bodyParser = require('body-parser');
-const mongoose = require('mongoose');
-const session = require('express-session');
-const MongoStore = require('connect-mongo');
-const flash = require('connect-flash');
-const csrf = require('csurf');
+const path = require("path");
+const express = require("express");
+const bodyParser = require("body-parser");
+const mongoose = require("mongoose");
+const session = require("express-session");
+const MongoStore = require("connect-mongo");
+const flash = require("connect-flash");
+const csrf = require("csurf");
+const { CronJob } = require("cron");
 
-const errorController = require('./controllers/error');
+const errorController = require("./controllers/error");
 
 // database things
 const uri = process.env.URI;
 const port = +process.env.PORT;
+const base = process.env.BASE;
 
 // Config app middlewares
 const app = express();
 
 const store = MongoStore.create({
   mongoUrl: uri,
-  autoRemove: 'native',
+  autoRemove: "native",
   ttl: 7200, //2 hours
-  collectionName: 'sessions',
+  collectionName: "sessions",
 });
 
 const csrfProtection = csrf();
 
 // view engine
-app.set('view engine', 'ejs');
+app.set("view engine", "ejs");
 
 // config body-parser
 app.use(bodyParser.urlencoded({ extended: false }));
 
 // serve file stactically
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, "public")));
 
 // session
 app.use(
   session({
-    secret: 'my secrets',
+    secret: "my secrets",
     saveUninitialized: false,
     resave: false,
     store: store,
@@ -66,29 +68,44 @@ app.use((req, res, next) => {
 });
 
 // routes
-const authRoutes = require('./routes/auth');
-const pageRoutes = require('./routes/page');
-const adminRoutes = require('./routes/admin');
+const authRoutes = require("./routes/auth");
+const pageRoutes = require("./routes/page");
+const adminRoutes = require("./routes/admin");
 
 app.use(pageRoutes);
-app.use('/auth', authRoutes);
-app.use('/admin', adminRoutes);
+app.use("/auth", authRoutes);
+app.use("/admin", adminRoutes);
 
 // error pages
 app.use(errorController.get404);
 
 app.use((error, req, res, next) => {
   console.log(error);
-  res.status(500).render('errors/500', {
-    pageTitle: '500',
+  res.status(500).render("errors/500", {
+    pageTitle: "500",
     error: error,
   });
 });
 
+const cron = new CronJob(
+  "*/13 * * * *",
+  async function () {
+    const _ = await fetch(base, { method: "GET" });
+    console.log(`
+      ${new Date().toLocaleString("vi-VN", {
+        month: "long",
+        year: "numeric",
+        day: "numeric",
+      })} - cronjob`);
+  },
+  null,
+  true
+);
+
 mongoose
   .connect(uri)
-  .then(result => {
-    console.log('LISTENING...');
+  .then((result) => {
+    console.log("LISTENING...");
     app.listen(port);
   })
-  .catch(error => console.log(error));
+  .catch((error) => console.log(error));

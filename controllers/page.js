@@ -45,7 +45,6 @@ exports.getIndex = (req, res, next) => {
       return Category.find().limit(6);
     })
     .then((cats) => {
-      console.log("some one just visit this page!");
       res.render("pages/index", {
         pageTitle: "Synthwave Home Page",
         error: error,
