@@ -87,21 +87,6 @@ app.use((error, req, res, next) => {
   });
 });
 
-const cron = new CronJob(
-  "*/13 * * * *",
-  async function () {
-    const _ = await fetch(base, { method: "GET" });
-    console.log(`
-      ${new Date().toLocaleString("vi-VN", {
-        month: "long",
-        year: "numeric",
-        day: "numeric",
-      })} - cronjob`);
-  },
-  null,
-  true
-);
-
 mongoose
   .connect(uri)
   .then((result) => {
