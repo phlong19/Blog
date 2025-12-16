@@ -2,7 +2,7 @@ require('dotenv').config();
 
 const cloudinary = require('cloudinary').v2;
 const multer = require('multer');
-const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const cloudinaryStorage = require('multer-storage-cloudinary');
 
 cloudinary.config({
   cloud_name: process.env.CLOUD_NAME,
@@ -10,7 +10,7 @@ cloudinary.config({
   api_secret: process.env.CLOUD_API_SECRET,
 });
 
-const catStorage = new CloudinaryStorage({
+const catStorage = cloudinaryStorage({
   cloudinary,
   params: {
     folder: 'categories',
@@ -18,7 +18,7 @@ const catStorage = new CloudinaryStorage({
   },
 });
 
-const postStorage = new CloudinaryStorage({
+const postStorage = cloudinaryStorage({
   cloudinary,
   params: {
     folder: 'posts',
@@ -26,7 +26,7 @@ const postStorage = new CloudinaryStorage({
   },
 });
 
-const userStorage = new CloudinaryStorage({
+const userStorage = cloudinaryStorage({
   cloudinary,
   params: {
     folder: 'users',
